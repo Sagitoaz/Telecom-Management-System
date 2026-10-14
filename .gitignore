@@ -1,0 +1,14 @@
+.idea/
+*.iml
+.vscode/
+
+# Build outputs
+target/
+out/
+*.class
+
+# Local system files
+.DS_Store
+Thumbs.db
+
+.env
