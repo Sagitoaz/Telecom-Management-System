@@ -1,280 +1,126 @@
 # Nhật ký làm rõ yêu cầu – Telecom Subscription Management System
 
-**Mã tài liệu:** DOC-PROJ-003  
-**Phiên bản:** 0.1  
-**Ngày cập nhật:** 14/10/2026  
-**Trạng thái:** Bản nháp – chờ người phụ trách dự án duyệt  
-**Giai đoạn:** Phase 0 – Project Definition & Scope
+**Mã tài liệu:** DOC-PROJ-003
 
-## 1. Mục đích và căn cứ
+**Phiên bản:** 1.0
 
-Tài liệu theo dõi các điểm chưa rõ, khác biệt giữa tài liệu, quyết định đã được ghi nhận và đề xuất cần duyệt trước khi đặc tả SRS, mô hình đối tượng, CSDL, API và kế hoạch kiểm thử.
+**Ngày xác nhận:** 14/10/2026
 
-| Tài liệu nguồn | Vai trò |
-|---|---|
-| [Đề bài gốc](../requirement.md) | Căn cứ đối chiếu yêu cầu bắt buộc và điều kiện nghiệm thu. |
-| [Tổng quan dự án](overview.md) | Nguồn các quyết định DEC-01–DEC-06 và câu hỏi OQ-01–OQ-07 hiện có. |
-| [Phạm vi và thuật ngữ](scope-and-glossary.md) | Nguồn phạm vi SC-01–SC-06, chất lượng QS-01–QS-07 và thuật ngữ nghiệp vụ. |
+**Trạng thái:** Baseline Phase 0 đã duyệt; các chi tiết còn mở có mốc xử lý
 
-Các quyết định trong tài liệu hiện có được ghi lại đúng nguồn; nhật ký này không khẳng định người ra đề đã phê duyệt chúng. Nếu một cách hiểu có thể làm thay đổi yêu cầu gốc, cần xác nhận riêng trước khi dùng làm tiêu chí nghiệm thu. Mọi nội dung có nhãn **Đề xuất** đều chưa được duyệt.
+**Người xác nhận:** Chủ dự án – người dùng, có quyền quyết định nghiệm thu cuối cùng
 
-## 2. Quy ước theo dõi
+**Giai đoạn:** Phase 0 – Project Definition & Scope – hoàn thành
 
-- **Open:** Chưa có câu trả lời hoặc chưa đủ căn cứ để chốt.
-- **Proposed:** Có phương án đề xuất, đang chờ duyệt.
-- **Resolved:** Đã có quyết định, người xác nhận, ngày xác nhận và căn cứ được lưu lại.
-- **Superseded:** Được thay thế bởi quyết định khác; giữ lại để tra cứu lịch sử.
-- **P0:** Cần chốt trước khi hoàn tất SRS, thiết kế dữ liệu hoặc tiêu chí nghiệm thu liên quan.
-- **P1:** Cần chốt trước khi triển khai và kiểm thử chức năng liên quan.
+## 1. Căn cứ và thẩm quyền
 
-Người phụ trách dự án tổng hợp câu trả lời; các vấn đề diễn giải đề bài và nghiệm thu cần được người ra đề/người nghiệm thu xác nhận. Vai trò này chưa được gán cho cá nhân cụ thể. Không chuyển trạng thái chỉ vì có đề xuất trong tài liệu.
+- [Đề bài gốc](../requirement.md): giữ nguyên nội dung; phân biệt yêu cầu gốc với cách diễn giải được chủ dự án duyệt.
+- [Tổng quan](overview.md), [phạm vi và thuật ngữ](scope-and-glossary.md), [roadmap](../ROADMAP.md): được đồng bộ theo các quyết định dưới đây.
+- Căn cứ duyệt: 14 lựa chọn trong phiếu Phase 0 và yêu cầu trong chat “đã điền xong, giờ update tài liệu và đẩy lên git”. Q13=C, ghi chú của chủ dự án: “vai trò của tôi là người làm chủ mọi yếu tố trong dự án”. Chủ dự án xác nhận quyền quyết định nghiệm thu cuối cùng cho dự án này; không ghi thay thành đã có xác nhận từ một người ra đề bên ngoài.
+- Phiếu tạm đã được chuyển đầy đủ thành bảng quyết định bên dưới và được xóa theo yêu cầu. Bảng này là bản ghi duyệt được lưu lâu dài, không phụ thuộc file tạm.
 
-## 3. Yêu cầu gốc cần bảo toàn
+## 2. Quy ước trạng thái
 
-Các mã REQ dưới đây chỉ dùng để truy vết trong nhật ký này, không thay thế mã HLR hoặc QS của tài liệu nguồn.
+**Resolved:** Nội dung câu hỏi đã được quyết định đầy đủ. **Open:** Còn chi tiết cần quyết định; được phép chuyển giai đoạn nếu có người phụ trách và hạn chốt. **Superseded:** Quyết định cũ được thay thế, giữ lịch sử để tra cứu.
 
-| Mã | Nội dung từ đề bài | Điểm cần làm rõ |
-|---|---|---|
-| REQ-01 | Thiết kế mô hình đối tượng và CSDL quan hệ giữa các thực thể. | OQ-01, OQ-08, OQ-09, OQ-12 |
-| REQ-02 | API đấu nối mới thuê bao vào mạng. | OQ-05, OQ-08, OQ-12 |
-| REQ-03 | API đăng ký và hủy gói cước. | OQ-06, OQ-07, OQ-09 |
-| REQ-04 | API cộng tiền và trừ tiền khi sử dụng dịch vụ. | OQ-01, OQ-02, OQ-06, OQ-10 |
-| REQ-05 | Luồng báo cáo hàng ngày và API liệt kê thuê bao có tiêu dùng từ X đến Y trên gói A, B. | OQ-03, OQ-13 |
-| REQ-06 | Job hàng ngày kiểm tra và xóa dữ liệu gói cước, tài khoản hết hạn. | OQ-07, OQ-11 |
-| REQ-07 | CSDL có tối thiểu 500.000 bản ghi. | OQ-04 |
-| REQ-08 | Tool kiểm thử đăng ký gói cước và trừ tiền đạt tối thiểu 30 TPS đồng thời. | OQ-04 |
-| REQ-09 | Giả lập 50% request trừ tiền đồng thời trên cùng thuê bao và cùng tài khoản. | OQ-04, OQ-14 |
-| REQ-10 | Có công cụ và phương pháp kiểm chứng trừ tiền đúng, đủ khi có đồng thời. | OQ-02, OQ-10, OQ-14 |
+Một lựa chọn có thể chốt định hướng nhưng chưa đóng toàn bộ OQ. Các đề xuất chưa được chọn ở bản nháp 0.1 không tự trở thành yêu cầu. Mọi quyết định mới cần ghi người duyệt, ngày thực tế, lý do thay đổi và tài liệu chịu ảnh hưởng.
 
-## 4. Quyết định đã ghi nhận trong tài liệu hiện có
+## 3. Bản ghi đầy đủ 14 lựa chọn đã duyệt
 
-Nguồn: mục 6.2 của `overview.md` và mục 7.1 của `scope-and-glossary.md`. Các mã DEC được giữ nguyên để tránh mất liên kết.
+Tất cả các dòng được chủ dự án duyệt ngày **14/10/2026**. Mã Q giữ lại để truy vết sau khi xóa phiếu; không phải đường dẫn tới file đã xóa.
 
-| Mã | Nội dung đã ghi nhận | Tình trạng đối chiếu đề bài |
-|---|---|---|
-| DEC-01 | Một khách hàng có thể sở hữu nhiều thuê bao. | Cần xác nhận cách hiểu câu “mỗi khách hàng ... với 1 số thuê bao”; theo dõi OQ-08. |
-| DEC-02 | Cấp số tự động hoặc chọn số khả dụng qua CSKH. | Chi tiết bổ sung từ tài liệu dự án; đề bài không quy định hai hình thức này. Theo dõi OQ-05. |
-| DEC-03 | Đăng ký gói cước và trừ tiền là hai chức năng độc lập, có thể phối hợp. | Chưa quyết định xử lý thành công một phần; theo dõi OQ-06. |
-| DEC-04 | Hủy gói có hiệu lực khi kết thúc chu kỳ hiện tại. | Chi tiết bổ sung từ tài liệu dự án; cần chốt chu kỳ và chuyển trạng thái tại OQ-07, OQ-09. |
-| DEC-05 | Không đủ số dư thì rollback, không thay đổi số dư và trả lỗi. | Chưa chốt đơn vị tiền, tài khoản hết hạn và các trường hợp biên; theo dõi OQ-10. |
-| DEC-06 | Soft delete dữ liệu hết hạn, giữ lịch sử nghiệp vụ cần thiết. | Cần xác nhận có đáp ứng từ “xóa” trong đề bài hay không; theo dõi OQ-11. |
-
-## 5. Danh sách vấn đề cần làm rõ
-
-OQ-01–OQ-07 giữ nguyên chủ đề trong hai tài liệu nguồn. OQ-08 trở đi bổ sung các khoảng trống khi đối chiếu đề bài. Tất cả hiện có trạng thái **Open**; phương án bên dưới chỉ phục vụ duyệt.
-
-| Mã | Chủ đề | Mức | Cần chốt trước |
+| Câu | Đáp án | Nội dung được duyệt | Truy vết |
 |---|---|---|---|
-| OQ-01 | Loại tài khoản và khởi tạo | P0 | Mô hình dữ liệu và API tài khoản |
-| OQ-02 | Nhận diện yêu cầu trùng và retry | P0 | Thiết kế giao dịch và đối soát |
-| OQ-03 | Điều kiện báo cáo tiêu dùng | P0 | SRS và truy vấn báo cáo |
-| OQ-04 | Quy mô dữ liệu và cách đo hiệu năng | P0 | Chốt kế hoạch kiểm thử hiệu năng |
-| OQ-05 | Cấp số và chống cấp trùng | P1 | Triển khai đấu nối |
-| OQ-06 | Phối hợp đăng ký gói và trừ tiền | P0 | Luồng đăng ký và giao dịch |
-| OQ-07 | Hủy gói, hết hạn và chuyển trạng thái | P0 | Mô hình vòng đời dữ liệu |
-| OQ-08 | Quan hệ khách hàng – thuê bao | P0 | Chốt phạm vi và mô hình dữ liệu |
-| OQ-09 | Chu kỳ, gia hạn và đăng ký lại | P0 | Thiết kế đăng ký gói |
-| OQ-10 | Quy tắc tiền và tính đúng của giao dịch | P0 | Thiết kế tài khoản và kiểm chứng |
-| OQ-11 | Ý nghĩa “xóa” và bảo toàn lịch sử | P0 | Chốt nghiệm thu job hết hạn |
-| OQ-12 | Thông tin khách hàng khi đấu nối | P1 | Đặc tả API đấu nối |
-| OQ-13 | Phạm vi luồng báo cáo hàng ngày | P0 | Chốt đầu ra báo cáo |
-| OQ-14 | Tải đồng thời 50% và phương pháp đối soát | P0 | Thiết kế tool kiểm thử |
-| OQ-15 | Hợp đồng API và quyền truy cập | P1 | Triển khai tích hợp CSKH |
-
-### OQ-01. Loại tài khoản và quy tắc khởi tạo
-
-**Căn cứ:** Đề bài cho phép nhiều tài khoản phục vụ các dịch vụ khác nhau; SC-04 và OQ-01 hiện có chưa mô tả chi tiết.
-
-**Cần xác nhận:** Có tài khoản chính và tài khoản riêng theo dịch vụ không? Mỗi loại được tạo khi đấu nối, khi đăng ký gói hay qua lệnh riêng? Một tài khoản dùng cho nhiều gói được không? Số dư và thời hạn ban đầu lấy từ đâu? Khi gói kết thúc thì tài khoản liên quan được giữ hay hết hạn theo?
-
-**Đề xuất:** Liệt kê từng loại tài khoản với thời điểm tạo, đơn vị số dư, thời hạn, gói/dịch vụ được phép sử dụng; không mặc định quan hệ một gói – một tài khoản.
-
-**Ảnh hưởng:** Quan hệ Account–Subscriber–Package, API cộng/trừ tiền và job hết hạn.
-
-### OQ-02. Yêu cầu trùng lặp và retry
-
-**Căn cứ:** OQ-02 hiện có và yêu cầu kiểm chứng trừ tiền đúng, đủ khi đồng thời.
-
-**Cần xác nhận:** CSKH có gửi mã yêu cầu duy nhất không? Mã có phạm vi duy nhất nào và được lưu bao lâu? Gửi lại cùng mã, cùng nội dung trả kết quả cũ hay lỗi? Cùng mã nhưng khác nội dung xử lý thế nào? Hai request cùng mã đến đồng thời hoặc retry sau timeout phải trả kết quả gì?
-
-**Đề xuất:** Dùng mã yêu cầu để bảo đảm một nghiệp vụ chỉ tác động số dư một lần; trả lại kết quả đã ghi nhận cho retry hợp lệ và từ chối mã bị tái sử dụng với nội dung khác. Chốt riêng phạm vi áp dụng cho đăng ký, hủy, cộng tiền và trừ tiền.
-
-**Ảnh hưởng:** Ràng buộc duy nhất, lưu kết quả giao dịch, kiểm thử retry và cách tính TPS giao dịch mới.
-
-### OQ-03. Điều kiện báo cáo tiêu dùng
-
-**Căn cứ:** API truy vấn thuê bao có tiêu dùng từ X đến Y trên gói A, B; OQ-03 hiện có.
-
-**Cần xác nhận:** A, B có nghĩa dùng ít nhất một gói (OR) hay phải dùng cả hai (AND)? “Tiêu dùng” chỉ tính trừ tiền thành công cho dịch vụ hay gồm phí đăng ký? Mỗi giao dịch liên kết gói bằng thông tin nào, đặc biệt khi tài khoản dùng chung? Thời gian lọc là thời điểm sử dụng hay thời điểm ghi nhận? Có tính giao dịch của gói/tài khoản đã hết hạn không?
-
-**Đề xuất:** Dùng OR, chỉ tính giao dịch trừ tiền tiêu dùng thành công; trả thuê bao không trùng, có phân trang và thứ tự ổn định. Lưu liên kết gói/dịch vụ tại thời điểm giao dịch để truy vấn được lịch sử sau khi hết hạn. Nếu X, Y là ngày, chuyển thành khoảng từ đầu ngày X đến trước đầu ngày sau Y theo múi giờ thống nhất.
-
-**Ảnh hưởng:** Thuộc tính giao dịch, truy vấn, chỉ mục và dữ liệu kiểm thử báo cáo.
-
-### OQ-04. Dữ liệu 500.000 bản ghi và tiêu chí 30 TPS
-
-**Căn cứ:** Các yêu cầu hiệu năng trong đề bài; HLR-01–HLR-04, QS-01–QS-04 và OQ-04 hiện có.
-
-**Cần xác nhận:**
-
-1. 500.000 bản ghi là tổng các bảng, số thuê bao hay số giao dịch? Phân bố dữ liệu và tỷ lệ bản ghi còn hiệu lực cần như thế nào? Quy mô này phải có sẵn trước khi chạy tải hay được tích lũy trong khi chạy?
-2. 30 TPS áp dụng riêng cho đăng ký và trừ tiền, hay tổng hai loại lệnh? Hai nghiệp vụ phải cùng chạy hay được đo riêng? Nếu chạy hỗn hợp, tỷ lệ mỗi loại là bao nhiêu?
-3. TPS đếm request gửi, response hoàn tất hay nghiệp vụ mới thành công? Lỗi nghiệp vụ dự kiến, lỗi hệ thống và retry được tính thế nào?
-4. Cấu hình CPU/RAM, CSDL, số instance, mạng và máy phát tải là gì? Thời gian khởi động tải, thời gian đo ổn định, số kết nối đồng thời, giới hạn độ trễ p95/p99 và tỷ lệ lỗi chấp nhận là bao nhiêu?
-
-**Đề xuất:** Đo trên dữ liệu được sinh sẵn; công bố số bản ghi từng bảng. Có bài đo riêng từng nghiệp vụ đạt ít nhất 30 nghiệp vụ mới thành công/giây và bài tải hỗn hợp để kiểm tra tác động đồng thời. Tạm đề xuất 2 phút khởi động tải, 10 phút đo ổn định; thời lượng và ngưỡng độ trễ chờ duyệt. Báo cáo riêng số gửi, thành công, từ chối nghiệp vụ, lỗi hệ thống, timeout và retry, kèm cấu hình môi trường.
-
-**Ảnh hưởng:** Điều kiện nghiệm thu, bộ sinh dữ liệu và cách diễn giải kết quả. Chưa kết luận đạt yêu cầu chỉ dựa vào tốc độ gửi 30 request/giây.
-
-### OQ-05. Cấp số và chống cấp trùng
-
-**Căn cứ:** DEC-02, SC-01 và OQ-05 hiện có; kho số là chi tiết bổ sung so với đề bài.
-
-**Cần xác nhận:** Có giữ số tạm khi khách chọn không hay chỉ kiểm tra tại lúc đấu nối? Nếu số vừa được cấp cho yêu cầu khác, trả lỗi hay tự chọn số thay thế? Có cho tái sử dụng số đã ngừng hoạt động không?
-
-**Đề xuất:** Nếu chưa yêu cầu giữ số, chỉ hiển thị khả dụng tại thời điểm tra cứu; cấp phát phải nguyên tử và có ràng buộc không trùng trong CSDL. Tranh chấp số được chọn trả lỗi rõ ràng để chọn lại; cấp tự động chọn một số còn khả dụng.
-
-**Ảnh hưởng:** Kho số, transaction đấu nối và kiểm thử hai yêu cầu cùng chọn một số.
-
-### OQ-06. Phối hợp đăng ký gói cước và trừ tiền
-
-**Căn cứ:** DEC-03, SC-02 và OQ-06 hiện có.
-
-**Cần xác nhận:** Phí đăng ký có thuộc phạm vi không? Nếu có, CSKH hay backend điều phối hai chức năng? Đăng ký thành công nhưng trừ tiền thất bại có được sử dụng gói không? Trừ tiền thành công nhưng đăng ký lỗi thì hoàn tiền hay thử lại? API báo thành công ở thời điểm nào?
-
-**Đề xuất:** Nếu có thu phí, gói chỉ có hiệu lực khi đã thu tiền thành công; cần quyết định rõ cách bảo đảm nguyên tử hoặc cơ chế bù và đối soát phù hợp với ranh giới hệ thống. Nếu đăng ký không thu phí, ghi rõ và giữ hai API độc lập. Chưa lựa chọn phương án kỹ thuật khi chưa chốt nghiệp vụ.
-
-**Ảnh hưởng:** Trạng thái đăng ký, hợp đồng API, giao dịch hoàn tiền nếu có và kiểm thử lỗi từng bước.
-
-### OQ-07. Hủy gói, hết hạn và chuyển trạng thái
-
-**Căn cứ:** DEC-04, SC-03, SC-06 và OQ-07 hiện có.
-
-**Cần xác nhận:** Yêu cầu hủy được lưu dưới trạng thái nào? Gửi hủy nhiều lần xử lý ra sao? Sau thời điểm hết hạn nhưng trước lần chạy job, gói/tài khoản có còn được dùng không? Khi hủy, gia hạn, trừ tiền và job cùng tác động thì nghiệp vụ nào hợp lệ? Job chạy giờ nào, múi giờ nào, xử lý lỗi và chạy lại thế nào?
-
-**Đề xuất:** Dùng thời hạn thực tế để kiểm tra quyền sử dụng tại lúc xử lý request; không kéo dài hiệu lực chỉ vì job chưa chạy. Ghi nhận hủy chờ cuối chu kỳ. Job xử lý theo lô, chạy lại không tạo tác động lặp và ghi nhận số bản ghi thành công/thất bại. Đề xuất múi giờ nghiệp vụ `Asia/Ho_Chi_Minh`; giờ chạy và trạng thái cụ thể chờ duyệt.
-
-**Ảnh hưởng:** Quy tắc vòng đời, xử lý đồng thời, scheduler và trường hợp biên tại thời điểm hết hạn.
-
-### OQ-08. Quan hệ khách hàng – thuê bao
-
-**Căn cứ:** Đề bài viết “mỗi khách hàng thực tế được đại diện với 1 số thuê bao”; DEC-01 và SC-01 cho phép một khách hàng có nhiều thuê bao.
-
-**Cần xác nhận:** Câu này bắt buộc quan hệ 1–1 hay chỉ mô tả cách đại diện một khách hàng qua thuê bao? Có chấp nhận quan hệ 1–N trong phạm vi bài làm không?
-
-**Đề xuất:** Giữ hướng 1–N của tài liệu hiện có nếu được người ra đề chấp nhận. Nếu bắt buộc 1–1, cập nhật DEC-01, phạm vi, thuật ngữ và ràng buộc dữ liệu tương ứng.
-
-**Ảnh hưởng:** Phạm vi, khóa/ràng buộc dữ liệu khách hàng và API đấu nối. Đây là điểm khác biệt cần xác nhận, chưa tự kết luận là mâu thuẫn.
-
-### OQ-09. Chu kỳ, gia hạn và đăng ký lại gói
-
-**Căn cứ:** Đề bài yêu cầu thời gian sử dụng; DEC-04 cần khái niệm kết thúc chu kỳ.
-
-**Cần xác nhận:** Chu kỳ là số giờ/ngày tính từ đăng ký hay theo lịch? Có tự gia hạn không? Có được đăng ký lại cùng gói khi còn hiệu lực hoặc đang chờ hủy không? Hủy rồi đăng ký lại có mở chu kỳ mới không? Có các gói loại trừ lẫn nhau không?
-
-**Đề xuất:** Mỗi gói khai báo rõ cách tính thời hạn; khoảng hiệu lực gồm thời điểm bắt đầu và không gồm thời điểm kết thúc. Chưa đưa tự gia hạn vào phạm vi nếu chưa được yêu cầu. Đề xuất từ chối đăng ký trùng cùng gói khi lần đăng ký trước còn hiệu lực, kể cả đang chờ hủy; đây là quy tắc cần duyệt.
-
-**Ảnh hưởng:** Dữ liệu đăng ký, tính thời hạn, kiểm thử đồng thời và khả năng sinh đủ đăng ký hợp lệ khi đo TPS.
-
-### OQ-10. Quy tắc tiền và tính đúng của giao dịch
-
-**Căn cứ:** API cộng/trừ tiền, DEC-05 và yêu cầu kiểm chứng giao dịch.
-
-**Cần xác nhận:** Đơn vị là VND nguyên hay có phần thập phân? Có số dư ban đầu khác 0 không? Cộng/trừ số tiền bằng 0 hoặc âm, giao dịch trên tài khoản hết hạn và cộng tiền để gia hạn xử lý thế nào? Có hạn mức giao dịch và nghiệp vụ hoàn/đảo tiền không?
-
-**Đề xuất:** Nếu dùng VND nguyên, lưu số tiền bằng kiểu chính xác; nhận số tiền dương và phân biệt chiều cộng/trừ bằng loại nghiệp vụ. Không cho số dư âm theo DEC-05. Cập nhật số dư và ghi giao dịch thành công trong cùng một database transaction. Lỗi nghiệp vụ không làm thay đổi số dư; log yêu cầu thất bại nếu cần phải phân biệt với giao dịch tài chính thành công.
-
-**Ảnh hưởng:** Kiểu dữ liệu tiền, validation, tính nguyên tử và công thức đối soát tại OQ-14.
-
-### OQ-11. Ý nghĩa “xóa” dữ liệu hết hạn
-
-**Căn cứ:** Đề bài yêu cầu “xóa”; DEC-06 và SC-06 chọn soft delete.
-
-**Cần xác nhận:** Người nghiệm thu có chấp nhận soft delete/cập nhật trạng thái không? Đối tượng xử lý là lần đăng ký gói hay cả định nghĩa gói trong danh mục? Tài khoản hết hạn còn số dư xử lý ra sao? Lịch sử giữ bao lâu và có yêu cầu xóa vật lý sau một thời hạn không?
-
-**Đề xuất:** Xử lý lần đăng ký và tài khoản hết hạn bằng trạng thái/soft delete; giữ danh mục gói và lịch sử giao dịch để báo cáo, đối soát. Không tự xóa hoặc chuyển số dư còn lại khi chưa có quy tắc. Nếu bắt buộc xóa vật lý, cần chốt cách lưu trữ lịch sử và bảo toàn tham chiếu trước khi thiết kế job.
-
-**Ảnh hưởng:** Khả năng đáp ứng đề bài, quan hệ CSDL, báo cáo lịch sử và đối soát. Chưa coi DEC-06 là bằng chứng nghiệm thu yêu cầu “xóa”.
-
-### OQ-12. Thông tin khách hàng và phạm vi đấu nối
-
-**Căn cứ:** Đề bài nhắc CMT, ngày sinh, nghề nghiệp và API đấu nối; SC-01 giới hạn ở backend.
-
-**Cần xác nhận:** Trường nào bắt buộc? CMT/CCCD có phải khóa nhận diện khách hàng không? Khi khách hàng đã tồn tại thì dùng lại hồ sơ hay cập nhật? Đấu nối có tạo tài khoản mặc định không? Có yêu cầu xác minh giấy tờ hoặc kích hoạt trên mạng thực không?
-
-**Đề xuất:** Chốt danh sách trường và quy tắc kiểm tra; hỗ trợ nhận diện khách hàng đã tồn tại theo khóa nghiệp vụ đã duyệt. Giữ phạm vi đấu nối ở cấp ứng dụng theo EX-03; chưa thêm tích hợp mạng thực hay xác minh giấy tờ bên ngoài.
-
-**Ảnh hưởng:** API đầu vào, dữ liệu cá nhân, quy tắc tránh trùng hồ sơ và dữ liệu giả lập.
-
-### OQ-13. Phạm vi luồng báo cáo hàng ngày
-
-**Căn cứ:** Đề bài nêu “các luồng báo cáo định kỳ hàng ngày”, sau đó liệt kê API truy vấn và job hết hạn; SC-05 hiện mô tả truy vấn theo yêu cầu.
-
-**Cần xác nhận:** API truy vấn và job hết hạn đã đủ hay cần thêm job tổng hợp báo cáo hàng ngày? Nếu cần, đầu ra là bảng tổng hợp, file hay API; gồm chỉ tiêu nào và ngày nghiệp vụ được chốt lúc nào?
-
-**Đề xuất:** Giữ API truy vấn theo yêu cầu; chỉ bổ sung job tổng hợp khi được xác nhận. Khi đó cần chốt kỳ dữ liệu, cách chạy lại và cập nhật báo cáo nếu giao dịch được ghi nhận muộn.
-
-**Ảnh hưởng:** Phạm vi bàn giao, scheduler, dữ liệu báo cáo và tiêu chí nghiệm thu.
-
-### OQ-14. Tải đồng thời 50% và kiểm chứng đúng, đủ
-
-**Căn cứ:** Hai yêu cầu cuối của đề bài; chi tiết hóa phần tải và đối soát của OQ-04.
-
-**Cần xác nhận:** Mẫu số 50% là tổng request trừ tiền hay tổng mọi request trong bài hỗn hợp? 50% cùng một cặp thuê bao–tài khoản cố định hay chia thành nhiều nhóm tranh chấp? Cần mức chồng lấn xử lý tối thiểu nào? Có yêu cầu tình huống đủ tiền, thiếu tiền, retry, timeout và gián đoạn không?
-
-**Đề xuất kịch bản:** Trong bài trừ tiền riêng, chọn chính xác 50% request gửi đến một cặp thuê bao–tài khoản cố định, 50% còn lại phân tán sang cặp khác. Dùng nhiều worker đồng thời và lưu thời điểm gửi/nhận, số request đang chờ xử lý để chứng minh tải chồng lấn. Nếu cần chứng minh transaction thực sự tranh chấp trong backend, bổ sung dấu vết xử lý phía server. Gửi tuần tự vào một tài khoản không đủ chứng minh yêu cầu đồng thời.
-
-**Đề xuất kiểm chứng:**
-
-1. Chụp số dư đầu, sinh mã yêu cầu duy nhất và lưu dữ liệu đầu vào để có kết quả kỳ vọng độc lập với phản hồi API.
-2. Chạy một ca đủ tiền với số request và số tiền biết trước để kiểm tra không mất lần trừ; chạy riêng ca thiếu tiền để kiểm tra số dư không âm và giao dịch bị từ chối không thay đổi tiền. Ca retry xác nhận một mã nghiệp vụ chỉ có một tác động.
-3. Sau khi tải kết thúc và các request đã được xác định kết quả, đối chiếu từng mã yêu cầu với kết quả API và giao dịch đã commit. Request timeout phải được tra cứu/đối soát đến khi biết kết quả; chưa coi timeout là chưa trừ tiền.
-4. Với từng tài khoản, kiểm tra: `số dư cuối = số dư đầu + tổng cộng tiền thành công - tổng trừ tiền thành công`, mỗi nghiệp vụ thành công có đúng một bản ghi tài chính, không có tác động trùng hoặc giao dịch đã commit nhưng thiếu trong kết quả đối soát.
-5. Báo cáo tỷ lệ request nhắm vào cặp cố định, mức tải đồng thời quan sát được, TPS, độ trễ, số thành công/thất bại/chưa xác định và mọi chênh lệch. Chỉ công bố đúng, đủ khi không còn kết quả chưa xác định và không có chênh lệch.
-
-**Ảnh hưởng:** Thiết kế tool phát tải, dữ liệu đầu vào, log giao dịch và bằng chứng nghiệm thu. Công thức số dư một mình không đủ phát hiện các lỗi bù trừ lẫn nhau; phải đối chiếu cả từng nghiệp vụ.
-
-### OQ-15. Hợp đồng API và quyền truy cập
-
-**Căn cứ:** Các API phục vụ CSKH; mục 2.3 của tài liệu phạm vi để mở phương thức tích hợp.
-
-**Cần xác nhận:** API xử lý đồng bộ hay trả mã lệnh để tra cứu sau? Môi trường bài tập có yêu cầu xác thực/phân quyền không? Định dạng lỗi, mã theo dõi yêu cầu và cách trả trạng thái giao dịch sau timeout là gì?
-
-**Đề xuất:** Thống nhất hợp đồng REST API gồm validation, mã lỗi nghiệp vụ, mã yêu cầu và kết quả xử lý trước khi triển khai. Chọn phạm vi xác thực phù hợp yêu cầu bài tập; chưa bổ sung hệ thống quản lý người dùng riêng khi chưa có yêu cầu.
-
-**Ảnh hưởng:** Tích hợp CSKH, retry, tool kiểm thử và phạm vi triển khai.
-
-## 6. Các câu hỏi ưu tiên khi duyệt
-
-Bạn có thể duyệt trước các điểm ảnh hưởng trực tiếp đến cách hiểu đề bài:
-
-1. **OQ-08:** Giữ mô hình một khách hàng có nhiều thuê bao như tài liệu hiện có được không?
-2. **OQ-11:** Soft delete có được chấp nhận cho yêu cầu “xóa” dữ liệu hết hạn không?
-3. **OQ-04:** 500.000 bản ghi được tính trên đối tượng nào; 30 TPS đo riêng từng nghiệp vụ hay tổng tải hỗn hợp?
-4. **OQ-14:** Có chấp nhận cách đo 50% tổng request trừ tiền cùng nhắm vào một cặp thuê bao–tài khoản, với tải thực sự đồng thời không?
-5. **OQ-06:** Đăng ký gói có thu phí và cần phối hợp với trừ tiền trong phạm vi bài này không?
-6. **OQ-13:** Có cần một job báo cáo hàng ngày riêng ngoài API truy vấn và job xử lý hết hạn không?
-
-Các câu hỏi còn lại tiếp tục được chốt khi xây dựng SRS. Việc duyệt bố cục tài liệu không đồng nghĩa phê duyệt tất cả đề xuất nghiệp vụ trong tài liệu.
-
-## 7. Cách ghi nhận câu trả lời và đóng vấn đề
-
-Với mỗi OQ được trả lời, bổ sung bản ghi theo mẫu dưới đây; giữ nguyên mã OQ khi cập nhật tài liệu liên quan.
-
-| Trường | Nội dung cần ghi |
-|---|---|
-| Mã OQ | Mã vấn đề được giải quyết. |
-| Quyết định cuối cùng | Quy tắc cụ thể, gồm trường hợp biên và ngoại lệ nếu có. |
-| Người xác nhận, ngày xác nhận | Cá nhân/vai trò xác nhận và ngày thực tế; không điền thay khi chưa có phản hồi. |
-| Căn cứ | Phản hồi người ra đề, biên bản hoặc nội dung duyệt có thể tra cứu. |
-| Tài liệu cần cập nhật | Overview, Scope, SRS, mô hình dữ liệu, API hoặc Test Plan tương ứng. |
-| Bằng chứng nghiệm thu | Ví dụ đầu vào/đầu ra hoặc cách đo có thể kiểm chứng quyết định. |
-| Trạng thái | Chuyển sang Resolved sau khi đủ căn cứ; nếu thay quyết định cũ, dẫn mã quyết định thay thế. |
-
-Hiện chưa có câu trả lời mới được phê duyệt trong nhật ký này. Khi chốt OQ-08 hoặc OQ-11, cần cập nhật nhất quán DEC-01 hoặc DEC-06 và các đoạn liên quan trong hai tài liệu nguồn.
+| Q01 | A | Bàn giao backend REST API, CSDL quan hệ, job hàng ngày, công cụ sinh dữ liệu/phát tải/đối soát và tài liệu. Không xây giao diện CSKH/mobile, tích hợp mạng thật, ngân hàng, tính cước hay BI hoàn chỉnh. | SC-01–SC-06, EX-01–EX-06 |
+| Q02 | A | Một khách hàng có nhiều thuê bao; mỗi thuê bao thuộc một khách hàng tại một thời điểm. | DEC-01, OQ-08 |
+| Q03 | A | Cấp số tự động và chọn số khả dụng; xem danh sách không giữ số. Cấp phát phải không trùng; số được chọn đã bị cấp thì trả lỗi để chọn lại. | DEC-02, OQ-05 |
+| Q04 | B | Đăng ký gói có thu phí, backend điều phối. Chỉ có hiệu lực khi thu phí thành công; lỗi một bước không để lại gói hoạt động hoặc khoản trừ tiền thành công một phần. Cơ chế transaction chốt ở thiết kế. | DEC-03, OQ-06 |
+| Q05 | A | Hủy có hiệu lực cuối chu kỳ hiện tại; khách hàng dùng gói đến hết chu kỳ. | DEC-04, OQ-07, OQ-09 |
+| Q06 | A | Soft delete/cập nhật trạng thái lần đăng ký và tài khoản hết hạn; ngừng sử dụng trong nghiệp vụ hiện tại, giữ lịch sử báo cáo/đối soát; không xóa định nghĩa gói chỉ vì một lần đăng ký hết hạn. | DEC-06, OQ-11 |
+| Q07 | B | Có job tổng hợp tiêu dùng hàng ngày riêng, ngoài API truy vấn và job hết hạn. Đầu ra, chỉ tiêu và lịch chạy chốt trong SRS. | DEC-07, OQ-13 |
+| Q08 | A | Tổng các bảng dữ liệu nghiệp vụ đạt tối thiểu 500.000 bản ghi trước đo tải; phân bố đủ chạy các nghiệp vụ hợp lệ và thống kê từng bảng. | DEC-08, OQ-04 |
+| Q09 | B | Đăng ký gói và trừ tiền chạy cùng lúc, mỗi nghiệp vụ ít nhất 30 TPS, tổng ít nhất 60 TPS. TPS đếm nghiệp vụ mới hoàn tất thành công; không đếm retry trả kết quả cũ như nghiệp vụ mới; báo riêng lỗi nghiệp vụ/hệ thống/timeout. | DEC-09, OQ-04 |
+| Q10 | B | 50% tổng request trừ tiền chia thành nhiều nhóm cặp thuê bao–tài khoản có tranh chấp; phải có request thực sự chồng lấn. Cách chia nhóm chốt ở Test Plan. Chủ dự án chấp nhận cách diễn giải theo nhóm thay cho một cặp cố định. | DEC-10, OQ-14 |
+| Q11 | A | Không cho số dư âm; thiếu tiền thì thất bại, không thay đổi số dư và không ghi giao dịch tài chính thành công. | DEC-05, OQ-10 |
+| Q12 | A | Đối chiếu từng mã yêu cầu với giao dịch đã commit, kiểm tra một tác động khi retry và số dư đầu/cuối; có ca đủ tiền, thiếu tiền, timeout; không kết luận đúng/đủ khi còn request chưa xác định kết quả. | DEC-11, OQ-02, OQ-10, OQ-14 |
+| Q13 | C | Chủ dự án có quyền quyết định nghiệm thu cuối cùng và xác nhận các lựa chọn; vai trò được ghi tại mục 1. | Thẩm quyền baseline |
+| Q14 | A | Chốt Phase 0 khi tài liệu nhất quán; chi tiết chưa đủ đáp án vẫn Open, chủ dự án phụ trách, trợ lý tổng hợp/đề xuất đúng mốc. Không tự chọn thay quy tắc chưa duyệt. | M0, danh sách còn mở |
+
+Ngoài ghi chú vai trò tại Q13, phiếu không có ghi chú nghiệp vụ bổ sung. Vì vậy không suy diễn thêm loại tài khoản, thời hạn, phí, hoàn phí hay công nghệ khóa từ các đáp án.
+
+## 4. Danh mục quyết định baseline
+
+| Mã | Quyết định có hiệu lực | Căn cứ |
+|---|---|---|
+| DEC-01 | Customer–Subscriber là 1–N; mỗi thuê bao thuộc một khách hàng tại một thời điểm. | Q02=A |
+| DEC-02 | Có cấp số tự động/chọn số; tra cứu không giữ số; không cấp trùng; tranh chấp số chọn trả lỗi. | Q03=A |
+| DEC-03 | Đăng ký và trừ tiền là các chức năng riêng; backend phối hợp thu phí khi đăng ký, bảo đảm không thành công một phần. | Q04=B; làm rõ DEC-03 cũ |
+| DEC-04 | Hủy gói có hiệu lực cuối chu kỳ hiện tại. | Q05=A |
+| DEC-05 | Thiếu tiền: thất bại, không thay đổi số dư, không có giao dịch tài chính thành công; không thấu chi. | Q11=A |
+| DEC-06 | Hết hạn: soft delete/trạng thái lần đăng ký và tài khoản, giữ lịch sử, giữ danh mục gói. | Q06=A |
+| DEC-07 | Có job tổng hợp tiêu dùng hàng ngày bên cạnh API báo cáo và job hết hạn. | Q07=B |
+| DEC-08 | Tổng bản ghi nghiệp vụ tối thiểu 500.000, có sẵn trước đo, thống kê từng bảng. | Q08=A |
+| DEC-09 | Hai nghiệp vụ cùng chạy, mỗi loại ≥30 TPS thành công mới, tổng ≥60 TPS; retry không tăng số nghiệp vụ mới. | Q09=B |
+| DEC-10 | 50% tổng request trừ tiền vào nhiều nhóm cặp thuê bao–tài khoản có tranh chấp và chồng lấn thực tế. | Q10=B |
+| DEC-11 | Đối soát từng yêu cầu/giao dịch, một tác động khi retry, số dư đầu/cuối; có ca đủ/thiếu tiền/timeout. | Q12=A |
+
+Định nghĩa “xóa”, mô hình 1–N, phạm vi job báo cáo, tổng 500.000 bản ghi, mục tiêu tải hỗn hợp và phân nhóm 50% là các diễn giải đã được chủ dự án có quyền nghiệm thu xác nhận. Không sửa lại đề bài gốc để làm mất dấu các diễn giải này.
+
+## 5. Truy vết yêu cầu gốc
+
+Các mã REQ chỉ dùng trong nhật ký, giữ liên tục từ bản 0.1.
+
+| Mã | Yêu cầu gốc | Quyết định và phần còn mở |
+|---|---|---|
+| REQ-01 | Mô hình đối tượng và CSDL quan hệ | DEC-01; OQ-01, OQ-09, OQ-12 |
+| REQ-02 | API đấu nối thuê bao | DEC-02; OQ-05, OQ-12, OQ-15 |
+| REQ-03 | API đăng ký/hủy gói | DEC-03, DEC-04; OQ-06, OQ-07, OQ-09 |
+| REQ-04 | API cộng/trừ tiền | DEC-05, DEC-11; OQ-01, OQ-02, OQ-10 |
+| REQ-05 | Báo cáo hàng ngày và truy vấn tiêu dùng X–Y trên gói A, B | DEC-07; OQ-03, OQ-13 |
+| REQ-06 | Job hàng ngày kiểm tra/xóa gói và tài khoản hết hạn | DEC-06; OQ-07, OQ-11 |
+| REQ-07 | CSDL tối thiểu 500.000 bản ghi | DEC-08; OQ-04 |
+| REQ-08 | Tool đăng ký/trừ tiền tối thiểu 30 TPS đồng thời | DEC-09; OQ-04 |
+| REQ-09 | 50% request đồng thời cùng thuê bao/tài khoản | DEC-10; OQ-14 |
+| REQ-10 | Tool/phương pháp kiểm chứng đúng và đủ khi đồng thời | DEC-11; OQ-02, OQ-10, OQ-14 |
+
+## 6. Trạng thái và kế hoạch xử lý OQ
+
+**Người phụ trách tất cả OQ còn mở:** Chủ dự án (người dùng) quyết định; trợ lý tổng hợp và đề xuất. Hạn chốt là mốc công việc, không phải ngày lịch. Các vấn đề đã chốt định hướng nhưng còn chi tiết vẫn giữ Open; không chặn việc đóng Phase 0.
+
+| Mã | Trạng thái | Đã chốt | Còn cần quyết định | Hạn chốt |
+|---|---|---|---|---|
+| OQ-01 | Open | Một thuê bao có nhiều tài khoản dịch vụ | Loại tài khoản, tạo khi nào, số dư/thời hạn đầu, quan hệ với gói | SRS trước thiết kế tài khoản/gói |
+| OQ-02 | Open | Một tác động khi retry và đối soát từng yêu cầu (DEC-11) | Mã chống trùng, phạm vi duy nhất, thời gian lưu, xử lý cùng mã khác nội dung/đồng thời | SRS trước thiết kế đăng ký/giao dịch |
+| OQ-03 | Open | Có API lọc X–Y và gói, giữ dữ liệu lịch sử | OR/AND gói, định nghĩa tiêu dùng/phí đăng ký, liên kết gói, thời điểm lọc, phân trang | SRS trước thiết kế báo cáo |
+| OQ-04 | Open | Tổng 500K có sẵn, cùng chạy ≥30 TPS mỗi loại, định nghĩa TPS (DEC-08/09) | Máy, CSDL, phân bố dữ liệu, thời lượng đo, độ trễ, tỷ lệ lỗi, ảnh hưởng của phí đăng ký lên cách đếm giao dịch | Mục tiêu ở NFR; phép đo đầy đủ trong Test Plan trước chạy tải |
+| OQ-05 | Open | Hai cách cấp số; không giữ khi xem; không trùng; tranh chấp trả lỗi (DEC-02) | Tái sử dụng số, quy tắc trạng thái và thiết kế cấp phát nguyên tử | SRS/thiết kế UC01 trước code đấu nối |
+| OQ-06 | Open | Có thu phí, backend điều phối, không thành công một phần (DEC-03) | Tài khoản thu phí, mức phí, lỗi/retry và cơ chế transaction cụ thể | SRS rồi thiết kế trước code đăng ký gói |
+| OQ-07 | Open | Hủy cuối chu kỳ (DEC-04), có job hết hạn | Trạng thái, hủy lặp, hiệu lực trước khi job chạy, xung đột đồng thời, lịch/múi giờ/chạy lại | SRS trước thiết kế gói/tài khoản/job |
+| OQ-08 | Resolved | Quan hệ 1–N được chủ dự án có quyền nghiệm thu duyệt (DEC-01) | Không còn trong phạm vi câu hỏi này | Đã chốt 14/10/2026 |
+| OQ-09 | Open | Thời điểm hủy theo DEC-04 | Cách tính chu kỳ, tự gia hạn, đăng ký trùng/lại, gói loại trừ | SRS trước thiết kế đăng ký gói |
+| OQ-10 | Open | Không âm/không đủ tiền không thay đổi số dư (DEC-05); đối soát theo DEC-11 | Đơn vị tiền, số tiền hợp lệ, số dư đầu, tài khoản hết hạn, hạn mức/hoàn tiền | SRS trước thiết kế tài khoản/giao dịch |
+| OQ-11 | Open | Soft delete/trạng thái và giữ lịch sử/danh mục đã được chấp nhận (DEC-06) | Giữ lịch sử bao lâu, tài khoản hết hạn còn số dư xử lý thế nào | SRS trước thiết kế tài khoản/job |
+| OQ-12 | Open | Đấu nối trong backend, không nối mạng thật | Trường hồ sơ bắt buộc, khóa nhận diện CMT/CCCD, hồ sơ đã tồn tại, tài khoản mặc định | SRS UC01 trước thiết kế API đấu nối |
+| OQ-13 | Open | Có job tổng hợp hàng ngày (DEC-07) | Chỉ tiêu, đầu ra bảng/file/API, kỳ dữ liệu, lịch chạy, dữ liệu muộn và chạy lại | SRS trước thiết kế báo cáo |
+| OQ-14 | Open | Phân nhóm 50% và tiêu chí đúng/đủ đã duyệt (DEC-10/11) | Số nhóm, phân bố, mẫu tải, bằng chứng chồng lấn, tool, cách xác định kết quả timeout | Tính đúng trước thiết kế giao dịch; kịch bản đầy đủ trước chạy tải |
+| OQ-15 | Open | REST API phục vụ CSKH | Đồng bộ/bất đồng bộ, lỗi, xác thực/phân quyền, tra cứu sau timeout | SRS UC01 trước hợp đồng API đầu tiên |
+
+### Các ràng buộc cần giữ khi đặc tả chi tiết
+
+- Đăng ký có thu phí có thể tạo giao dịch trừ tiền nội bộ. Test Plan phải phân biệt nghiệp vụ đăng ký với lệnh trừ tiền được phát độc lập; không đếm hai lần một thao tác để đạt TPS.
+- Tỷ lệ 50% dùng tổng request trừ tiền làm mẫu số theo Q10; việc phân loại request trong bài hỗn hợp và cách tách giao dịch thu phí nội bộ phải được ghi rõ trước khi đo.
+- Với từng tài khoản, kiểm tra `số dư cuối = số dư đầu + tổng cộng tiền thành công - tổng trừ tiền thành công`, đồng thời đối chiếu từng nghiệp vụ; công thức tổng một mình không đủ.
+- Không mặc định OR cho báo cáo, VND nguyên, giờ chạy job, tự gia hạn hay cách xử lý số dư hết hạn khi chủ dự án chưa duyệt.
+
+## 7. Điều kiện đóng Phase 0 và thay đổi tiếp theo
+
+Đã có đủ mục tiêu, ranh giới, thuật ngữ, quyết định được duyệt và danh sách OQ có trách nhiệm/mốc xử lý. Chủ dự án chọn Q14=A cho phép đóng Phase 0; Phase 1 chưa bắt đầu. Các OQ còn mở không phải bằng chứng đã hoàn thành SRS hay kiểm thử.
+
+Khi đóng một OQ sau này, ghi quyết định chi tiết, người/ngày xác nhận, căn cứ, tài liệu thay đổi và tiêu chí kiểm chứng. Giữ mã OQ và DEC; nếu thay quyết định thì dẫn quyết định thay thế và lý do.
 
 ## 8. Lịch sử cập nhật
 
 | Phiên bản | Ngày | Nội dung |
 |---|---|---|
-| 0.1 | 14/10/2026 | Tạo bản nháp từ đề bài và hai tài liệu Phase 0; truy vết yêu cầu, giữ DEC-01–DEC-06 và OQ-01–OQ-07, bổ sung OQ-08–OQ-15 cùng phương án để duyệt. |
+| 0.1 | 14/10/2026 | Bản nháp từ đề bài, DEC-01–DEC-06 và OQ-01–OQ-15; các phương án khi đó chưa duyệt. |
+| 1.0 | 14/10/2026 | Lưu đủ 14 đáp án và thẩm quyền; làm rõ DEC-03, xác nhận DEC-01–DEC-06, thêm DEC-07–DEC-11; đóng OQ-08, giữ chi tiết còn mở có người/mốc xử lý; chốt Phase 0 và chuyển thông tin khỏi phiếu tạm. |

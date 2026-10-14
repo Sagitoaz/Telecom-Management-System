@@ -1,9 +1,13 @@
 # Tổng quan dự án – Hệ thống Quản lý thuê bao viễn thông
 
-**Tên dự án:** Telecom Subscription Management System  
-**Mã tài liệu:** DOC-PROJ-001  
-**Phiên bản:** 1.0  
-**Trạng thái:** Baseline ban đầu – còn các vấn đề cần làm rõ  
+**Tên dự án:** Telecom Subscription Management System
+
+**Mã tài liệu:** DOC-PROJ-001
+
+**Phiên bản:** 1.1
+
+**Trạng thái:** Baseline Phase 0 đã được chủ dự án duyệt ngày 14/10/2026; chi tiết còn mở được theo dõi riêng
+
 **Giai đoạn:** Phase 0 – Project Definition & Scope
 
 ## 1. Giới thiệu dự án (Project Introduction)
@@ -24,7 +28,7 @@ Một khách hàng có thể sở hữu nhiều số thuê bao. Khi thực hiệ
 
 Mỗi thuê bao có thể đăng ký nhiều gói cước và có các tài khoản phục vụ những dịch vụ khác nhau. Các gói cước và tài khoản có thời hạn sử dụng riêng.
 
-Việc đăng ký gói cước và trừ tiền được thực hiện bởi hai chức năng nghiệp vụ độc lập, nhưng có thể phối hợp trong cùng một luồng nghiệp vụ khi khách hàng đăng ký sử dụng dịch vụ.
+Đăng ký gói cước và trừ tiền là các chức năng riêng. Khi đăng ký gói có thu phí, backend điều phối hai bước; gói chỉ có hiệu lực khi thu phí thành công. Nếu một bước lỗi, không để lại gói hoạt động hoặc khoản trừ tiền thành công một phần (DEC-03).
 
 Trong quá trình tiêu dùng, hệ thống phải ghi nhận đầy đủ các giao dịch làm tăng hoặc giảm số dư tài khoản, đồng thời bảo đảm tính chính xác khi có nhiều giao dịch tác động đồng thời lên cùng tài khoản.
 
@@ -55,6 +59,7 @@ Xây dựng hệ thống backend hỗ trợ các nghiệp vụ quản lý thuê 
 6. Trừ tiền từ tài khoản khi sử dụng dịch vụ.
 7. Tra cứu danh sách thuê bao có phát sinh tiêu dùng theo khoảng thời gian và gói cước.
 8. Kiểm tra và xử lý dữ liệu hết hạn theo lịch trình hàng ngày.
+9. Tổng hợp tiêu dùng bằng một job báo cáo hàng ngày riêng (DEC-07).
 
 ### 3.2. Mục tiêu kỹ thuật
 
@@ -85,7 +90,7 @@ Hỗ trợ hai hình thức xác định số thuê bao khi đấu nối:
 
 Quản lý việc đăng ký, hủy đăng ký và theo dõi thời gian sử dụng gói cước.
 
-Nghiệp vụ đăng ký gói cước không trực tiếp thực hiện chức năng trừ tiền. Hai chức năng được thiết kế độc lập để có thể phối hợp trong cùng một luồng nghiệp vụ.
+Đăng ký gói cước có thu phí do backend điều phối. Chỉ trả kết quả đăng ký thành công khi gói và việc thu phí cùng thành công; không để lại trạng thái thành công một phần. Các chức năng đăng ký và trừ tiền vẫn có trách nhiệm riêng; cơ chế transaction được chốt ở thiết kế (OQ-06).
 
 Khi khách hàng yêu cầu hủy gói cước, hiệu lực hủy được áp dụng tại thời điểm kết thúc chu kỳ sử dụng hiện tại. Gói cước tiếp tục có hiệu lực đến thời điểm đó.
 
@@ -101,7 +106,7 @@ Các giao dịch phải được xử lý an toàn và nhất quán khi nhiều 
 
 Cung cấp khả năng tra cứu danh sách thuê bao có phát sinh tiêu dùng trên một hoặc nhiều gói cước trong khoảng thời gian xác định.
 
-Các điều kiện lọc và quy tắc xác định kết quả sẽ được đặc tả chi tiết trong giai đoạn phân tích yêu cầu.
+Có thêm job tổng hợp tiêu dùng hàng ngày riêng, ngoài API truy vấn và job hết hạn. Điều kiện lọc, chỉ tiêu, đầu ra và lịch báo cáo sẽ được đặc tả trong SRS (OQ-03, OQ-13).
 
 **Xử lý dữ liệu định kỳ (Scheduled Processing)**
 
@@ -109,7 +114,7 @@ Thực hiện job hàng ngày để kiểm tra các gói cước và tài khoả
 
 Hệ thống áp dụng cơ chế soft delete hoặc cập nhật trạng thái phù hợp thay vì xóa vật lý dữ liệu nghiệp vụ.
 
-Thông tin lịch sử và giao dịch cần thiết được giữ lại để hỗ trợ truy vấn, kiểm tra và đối soát.
+Soft delete/trạng thái áp dụng cho lần đăng ký gói và tài khoản hết hạn; không xóa định nghĩa gói chỉ vì một lần đăng ký hết hạn. Thông tin lịch sử và giao dịch cần thiết được giữ để truy vấn và đối soát (DEC-06).
 
 ### 4.2. Các đối tượng nghiệp vụ chính
 
@@ -148,47 +153,50 @@ Chịu trách nhiệm phân tích, thiết kế, xây dựng, kiểm thử, tri�
 
 ## 6. Yêu cầu và ràng buộc tổng quan (High-Level Requirements & Constraints)
 
-### 6.1. Yêu cầu từ đề bài
+### 6.1. Yêu cầu gốc và cách áp dụng đã duyệt
 
-| Mã | Yêu cầu |
+| Mã | Yêu cầu / cách áp dụng baseline |
 |---|---|
-| HLR-01 | Xây dựng cơ sở dữ liệu có tối thiểu 500.000 bản ghi. |
-| HLR-02 | Hỗ trợ kiểm thử nghiệp vụ đăng ký gói cước với thông lượng tối thiểu 30 TPS. |
-| HLR-03 | Hỗ trợ kiểm thử nghiệp vụ trừ tiền với thông lượng tối thiểu 30 TPS. |
-| HLR-04 | Trong quá trình kiểm thử trừ tiền, giả lập 50% request đồng thời tác động lên cùng một thuê bao và cùng một tài khoản. |
-| HLR-05 | Có công cụ và phương pháp kiểm chứng các giao dịch trừ tiền được xử lý đúng và đầy đủ khi có tác động đồng thời. |
-| HLR-06 | Có job định kỳ hàng ngày để kiểm tra và xử lý dữ liệu gói cước, tài khoản hết hạn. |
-| HLR-07 | Có API tra cứu các thuê bao có phát sinh tiêu dùng theo thời gian và gói cước yêu cầu. |
+| HLR-01 | Tổng các bảng dữ liệu nghiệp vụ có tối thiểu 500.000 bản ghi trước đo tải; thống kê từng bảng (DEC-08). |
+| HLR-02 | Trong cùng bài tải hỗn hợp, đăng ký gói đạt ít nhất 30 nghiệp vụ mới thành công/giây (DEC-09). |
+| HLR-03 | Đồng thời với HLR-02, trừ tiền đạt ít nhất 30 nghiệp vụ mới thành công/giây; tổng hai loại ít nhất 60 TPS. Không đếm retry như nghiệp vụ mới (DEC-09). |
+| HLR-04 | 50% tổng request trừ tiền chia thành nhiều nhóm cặp thuê bao–tài khoản có tranh chấp và thực sự chồng lấn; phân bố chi tiết chốt trong Test Plan (DEC-10). |
+| HLR-05 | Tool đối chiếu từng mã yêu cầu/giao dịch đã commit, một tác động khi retry và số dư đầu/cuối; ca đủ tiền, thiếu tiền, timeout phải rõ kết quả (DEC-11). |
+| HLR-06 | Job hết hạn hàng ngày dùng soft delete/trạng thái lần đăng ký và tài khoản; giữ lịch sử/danh mục gói (DEC-06). |
+| HLR-07 | API truy vấn thuê bao có tiêu dùng theo X–Y và gói; điều kiện lọc chi tiết còn mở. |
+| HLR-08 | Job tổng hợp tiêu dùng hàng ngày riêng; chỉ tiêu, đầu ra và lịch chạy chốt trong SRS (DEC-07). |
 
-### 6.2. Các quyết định nghiệp vụ đã được thống nhất
+Các dòng trên phân biệt cách áp dụng đã duyệt với [nguyên văn đề bài](../requirement.md), đặc biệt quan hệ khách hàng, “xóa” và cách đo tải. Không coi mục tiêu là kết quả kiểm thử đã đạt.
+
+### 6.2. Quyết định baseline
+
+Chủ dự án xác nhận ngày 14/10/2026 với quyền quyết định nghiệm thu cuối cùng (Q13=C). Toàn bộ 14 đáp án, căn cứ và lịch sử được lưu trong [clarification log](clarification-log.md).
 
 | Mã | Quyết định |
 |---|---|
-| DEC-01 | Một khách hàng có thể sở hữu nhiều thuê bao. |
-| DEC-02 | Số thuê bao có thể được cấp tự động hoặc được lựa chọn từ danh sách số khả dụng thông qua hệ thống CSKH. |
-| DEC-03 | Đăng ký gói cước và trừ tiền là hai chức năng độc lập nhưng có thể phối hợp trong cùng một luồng nghiệp vụ. |
-| DEC-04 | Việc hủy gói cước có hiệu lực khi kết thúc chu kỳ sử dụng hiện tại. |
-| DEC-05 | Giao dịch trừ tiền khi số dư không đủ sẽ bị hủy bỏ, không thay đổi số dư và trả lỗi. |
-| DEC-06 | Dữ liệu gói cước và tài khoản hết hạn được xử lý theo cơ chế soft delete, không xóa vật lý lịch sử nghiệp vụ cần thiết. |
+| DEC-01 | Một khách hàng có nhiều thuê bao; mỗi thuê bao thuộc một khách hàng tại một thời điểm. |
+| DEC-02 | Cấp số tự động/chọn số; xem danh sách không giữ số; cấp phát không trùng; số đã bị cấp thì trả lỗi để chọn lại. |
+| DEC-03 | Đăng ký có thu phí do backend điều phối; gói và thu phí cùng thành công, không để lại thành công một phần. |
+| DEC-04 | Hủy gói có hiệu lực cuối chu kỳ hiện tại. |
+| DEC-05 | Không thấu chi; thiếu tiền không đổi số dư, không ghi giao dịch tài chính thành công và trả lỗi. |
+| DEC-06 | Soft delete/trạng thái lần đăng ký và tài khoản hết hạn; giữ lịch sử và định nghĩa gói. |
+| DEC-07 | Thêm job tổng hợp tiêu dùng hàng ngày riêng. |
+| DEC-08 | Tổng bản ghi nghiệp vụ tối thiểu 500.000, chuẩn bị trước đo tải. |
+| DEC-09 | Cùng chạy ≥30 TPS đăng ký và ≥30 TPS trừ tiền, tổng ≥60 TPS thành công mới; báo riêng lỗi/timeout/retry. |
+| DEC-10 | 50% tổng request trừ tiền vào nhiều nhóm cặp thuê bao–tài khoản có tranh chấp đồng thời. |
+| DEC-11 | Đối soát từng yêu cầu/giao dịch và số dư; kiểm tra retry, đủ tiền, thiếu tiền và timeout. |
 
-Các yêu cầu và quyết định này sẽ được chuyển thành yêu cầu chức năng, quy tắc nghiệp vụ, yêu cầu phi chức năng và tiêu chí nghiệm thu tại giai đoạn SRS.
+## 7. Các vấn đề còn mở và bước tiếp theo
 
-## 7. Các vấn đề cần làm rõ (Open Questions)
+OQ-08 đã Resolved. OQ-01–OQ-07 và OQ-09–OQ-15 vẫn Open ở phần chi tiết, dù một số định hướng đã được duyệt. [Clarification log, mục 6](clarification-log.md#6-trạng-thái-và-kế-hoạch-xử-lý-oq) là danh sách chính về phần còn thiếu, người phụ trách và hạn chốt; không tự xem các đề xuất cũ là quyết định.
 
-Các vấn đề sau chưa được quyết định đầy đủ và sẽ được tiếp tục phân tích tại những giai đoạn phù hợp.
+Chủ dự án phụ trách quyết định; trợ lý tổng hợp và đề xuất. Ưu tiên ở SRS UC01 là OQ-05, OQ-12, OQ-15. Các quy tắc gói, tiền, báo cáo và tải được chốt trước khi thiết kế/triển khai thành phần tương ứng. Việc chọn nhóm tranh chấp không tự quyết định số nhóm; việc có thu phí không tự quyết định mức phí/tài khoản thu.
 
-| Mã | Vấn đề | Trạng thái |
+Phase 0 hoàn thành theo Q14=A: ba tài liệu nhất quán, quyết định rõ và các chi tiết còn mở có kế hoạch. Phase 1 chưa bắt đầu. Xem [roadmap](../ROADMAP.md) để theo dõi bước tiếp theo.
+
+## 8. Lịch sử cập nhật
+
+| Phiên bản | Ngày | Nội dung |
 |---|---|---|
-| OQ-01 | Phân loại các tài khoản dịch vụ và quy tắc khởi tạo tài khoản. | Open |
-| OQ-02 | Cơ chế nhận diện và xử lý yêu cầu giao dịch trùng lặp, đặc biệt khi hệ thống bên ngoài gửi lại yêu cầu. | Open |
-| OQ-03 | Quy tắc lọc và xác định kết quả của API báo cáo khi truy vấn nhiều gói cước. | Open |
-| OQ-04 | Môi trường, thời gian đo, dữ liệu thử nghiệm và tiêu chí đánh giá hiệu năng 30 TPS trên cơ sở dữ liệu tối thiểu 500.000 bản ghi. | Open |
-| OQ-05 | Cơ chế bảo đảm không cấp trùng số thuê bao khi nhiều yêu cầu đấu nối đồng thời. | Open |
-| OQ-06 | Cách phối hợp đăng ký gói cước và trừ tiền, đặc biệt khi một chức năng thành công nhưng chức năng còn lại thất bại. | Open |
-| OQ-07 | Các trạng thái chi tiết và quy tắc chuyển trạng thái khi hủy gói cước hoặc xử lý dữ liệu hết hạn. | Open |
-
-Các vấn đề chưa có quyết định được ghi nhận để tiếp tục phân tích, không được xem là quy tắc nghiệp vụ đã thống nhất.
-
----
-
-*Tài liệu này cung cấp cái nhìn tổng quan về dự án và ghi nhận những quyết định nghiệp vụ ban đầu. Các yêu cầu chi tiết, mô hình nghiệp vụ, kiến trúc, cơ sở dữ liệu, API và phương án kiểm thử sẽ được mô tả trong những tài liệu tương ứng ở các giai đoạn tiếp theo.*
+| 1.0 | Trước duyệt Phase 0 | Tổng quan ban đầu, còn các vấn đề cần làm rõ. |
+| 1.1 | 14/10/2026 | Đồng bộ 14 lựa chọn: thu phí đăng ký, job báo cáo, 500K tổng, tải hỗn hợp 60 TPS, phân nhóm 50%; xác nhận thẩm quyền và đóng Phase 0. |

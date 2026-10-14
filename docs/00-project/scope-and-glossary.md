@@ -1,9 +1,13 @@
 # Phạm vi hệ thống và thuật ngữ – Telecom Subscription Management System
 
-**Tên dự án:** Telecom Subscription Management System  
-**Mã tài liệu:** DOC-PROJ-002  
-**Phiên bản:** 1.0  
-**Trạng thái:** Baseline ban đầu – còn các vấn đề cần làm rõ  
+**Tên dự án:** Telecom Subscription Management System
+
+**Mã tài liệu:** DOC-PROJ-002
+
+**Phiên bản:** 1.1
+
+**Trạng thái:** Baseline Phase 0 được chủ dự án có quyền nghiệm thu duyệt ngày 14/10/2026
+
 **Giai đoạn:** Phase 0 – Project Definition & Scope
 
 ---
@@ -91,7 +95,7 @@ Các khả năng thuộc phạm vi:
 - Lưu thông tin khách hàng và thuê bao.
 - Trả kết quả xử lý cho hệ thống CSKH.
 
-Cơ chế quản lý kho số, giữ số tạm thời và ngăn cấp trùng trong trường hợp đồng thời sẽ được xác định trong giai đoạn phân tích và thiết kế.
+Tra cứu không giữ số. Tại lúc đấu nối, cấp phát phải không trùng; số được chọn đã bị cấp thì trả lỗi để chọn lại (DEC-02). Quy tắc tái sử dụng số, trạng thái và cơ chế nguyên tử chi tiết chốt tại OQ-05 trước code UC01.
 
 #### SC-02. Quản lý đăng ký gói cước
 
@@ -107,9 +111,9 @@ Các khả năng thuộc phạm vi:
 - Theo dõi trạng thái đăng ký gói cước.
 - Trả kết quả xử lý cho hệ thống CSKH.
 
-Đăng ký gói cước và trừ tiền là hai chức năng nghiệp vụ độc lập. Hai chức năng có thể phối hợp trong một luồng nghiệp vụ tổng thể.
+Đăng ký gói cước và trừ tiền là các chức năng riêng. Backend điều phối thu phí khi đăng ký; gói chỉ có hiệu lực khi thu phí thành công (DEC-03).
 
-Phương án phối hợp và xử lý khi một chức năng thành công nhưng chức năng còn lại thất bại chưa được quyết định.
+Nếu một bước lỗi, không để lại gói đang hoạt động hoặc khoản trừ tiền thành công một phần. Mức phí, tài khoản thu phí, retry và cơ chế transaction chốt ở SRS/thiết kế trước code đăng ký (OQ-06).
 
 #### SC-03. Hủy đăng ký gói cước
 
@@ -156,7 +160,9 @@ Các khả năng thuộc phạm vi:
 - Xác định các thuê bao liên quan.
 - Trả danh sách thuê bao đáp ứng điều kiện tra cứu.
 
-Quy tắc kết hợp điều kiện khi truy vấn nhiều gói cước và định nghĩa chi tiết của giao dịch tiêu dùng sẽ được làm rõ trong giai đoạn đặc tả yêu cầu.
+Quy tắc kết hợp điều kiện khi truy vấn nhiều gói cước và định nghĩa chi tiết của giao dịch tiêu dùng sẽ được làm rõ trong SRS (OQ-03). Chưa mặc định phí đăng ký là tiêu dùng dịch vụ.
+
+Phạm vi có thêm **job tổng hợp tiêu dùng hàng ngày riêng** (DEC-07), ngoài API truy vấn và job hết hạn. Chỉ tiêu, đầu ra, kỳ dữ liệu, lịch chạy và cách chạy lại chốt trong SRS (OQ-13).
 
 #### SC-06. Xử lý dữ liệu hết hạn định kỳ
 
@@ -238,13 +244,13 @@ Hệ thống phải đáp ứng các yêu cầu phi chức năng trọng tâm sa
 
 | Mã | Nhóm yêu cầu | Phạm vi |
 |---|---|---|
-| QS-01 | Quy mô dữ liệu | Cơ sở dữ liệu có tối thiểu 500.000 bản ghi |
-| QS-02 | Hiệu năng đăng ký gói cước | Đạt thông lượng tối thiểu 30 TPS trong bài kiểm thử |
-| QS-03 | Hiệu năng trừ tiền | Đạt thông lượng tối thiểu 30 TPS trong bài kiểm thử |
-| QS-04 | Xử lý đồng thời | Giả lập tỷ lệ 50% request trừ tiền đồng thời trên cùng một thuê bao và tài khoản |
-| QS-05 | Tính chính xác dữ liệu | Có phương pháp kiểm chứng việc trừ tiền được xử lý đúng và đầy đủ |
+| QS-01 | Quy mô dữ liệu | Tổng các bảng dữ liệu nghiệp vụ có tối thiểu 500.000 bản ghi trước đo tải, thống kê từng bảng (DEC-08) |
+| QS-02 | Hiệu năng đăng ký gói cước | Đạt ít nhất 30 nghiệp vụ mới thành công/giây trong cùng bài tải hỗn hợp với nghiệp vụ còn lại; tổng ít nhất 60 TPS (DEC-09) |
+| QS-03 | Hiệu năng trừ tiền | Đạt ít nhất 30 nghiệp vụ mới thành công/giây trong cùng bài tải hỗn hợp với nghiệp vụ còn lại; tổng ít nhất 60 TPS (DEC-09) |
+| QS-04 | Xử lý đồng thời | 50% tổng request trừ tiền chia vào nhiều nhóm cặp thuê bao–tài khoản có tranh chấp và thực sự chồng lấn (DEC-10) |
+| QS-05 | Tính chính xác dữ liệu | Tool đối soát từng mã yêu cầu/giao dịch và số dư; một tác động khi retry, đủ/thiếu tiền và timeout phải xác định kết quả (DEC-11) |
 | QS-06 | Tính toàn vẹn giao dịch | Ngăn ngừa việc cập nhật sai số dư hoặc ghi nhận thiếu giao dịch thành công |
-| QS-07 | Xử lý định kỳ | Hỗ trợ chạy job kiểm tra dữ liệu hết hạn hàng ngày |
+| QS-07 | Xử lý định kỳ | Job hết hạn hàng ngày theo DEC-06 và job tổng hợp tiêu dùng hàng ngày theo DEC-07 |
 
 Các thông số về môi trường, thời gian kiểm thử, đặc điểm tải và điều kiện nghiệm thu sẽ được đặc tả chi tiết trong tài liệu yêu cầu phi chức năng và kế hoạch kiểm thử.
 
@@ -273,8 +279,9 @@ Các thông số về môi trường, thời gian kiểm thử, đặc điểm t
 | Soft Delete | Logical Deletion | Đánh dấu dữ liệu không còn hiệu lực hoặc bị xóa về mặt logic mà không xóa bản ghi vật lý |
 | Scheduler | Task Scheduler | Thành phần kích hoạt các công việc tự động theo lịch |
 | Job định kỳ | Scheduled Job | Tác vụ được thực hiện tự động theo thời điểm hoặc chu kỳ quy định |
+| Job tổng hợp tiêu dùng | Daily Consumption Aggregation Job | Tác vụ tổng hợp tiêu dùng hàng ngày riêng, khác API truy vấn và job hết hạn; chỉ tiêu/đầu ra chốt trong SRS |
 | REST API | REST Application Programming Interface | Giao diện tích hợp cho phép các hệ thống trao đổi yêu cầu và kết quả thông qua HTTP |
-| TPS | Transactions Per Second | Số giao dịch được xử lý trong một giây theo tiêu chí đo được xác định trong kế hoạch kiểm thử |
+| TPS | Transactions Per Second | Số nghiệp vụ mới hoàn tất thành công trong một giây; retry trả lại kết quả cũ không được tính thành nghiệp vụ mới; công bố riêng lỗi và timeout |
 | Xử lý đồng thời | Concurrent Processing | Việc nhiều yêu cầu được thực hiện trong các khoảng thời gian chồng lấn nhau |
 | Tính nhất quán | Data Consistency | Tính chất bảo đảm dữ liệu tuân thủ các ràng buộc và quy tắc nghiệp vụ sau những thao tác xử lý |
 | Đối soát giao dịch | Transaction Reconciliation | Quá trình so sánh giao dịch và số dư để phát hiện chênh lệch hoặc sai sót |
@@ -286,39 +293,46 @@ Các thông số về môi trường, thời gian kiểm thử, đặc điểm t
 - Giao dịch nghiệp vụ (Business Transaction) khác với database transaction dùng để bảo đảm tính nguyên tử và nhất quán dữ liệu.
 - Đấu nối thuê bao trong phạm vi dự án hiện tại được hiểu là xử lý và quản lý thuê bao ở cấp ứng dụng, chưa bao gồm thao tác trực tiếp trên hạ tầng mạng viễn thông thực.
 
-## 7. Giả định, giới hạn và vấn đề chưa xác định
+## 7. Quyết định và chi tiết được hoãn
 
-### 7.1. Các quyết định đã thống nhất
+### 7.1. Baseline đã được duyệt
 
-- Một khách hàng có thể sở hữu nhiều thuê bao.
-- Hỗ trợ cấp số thuê bao tự động hoặc để khách hàng lựa chọn số khả dụng thông qua CSKH.
-- Đăng ký gói cước và trừ tiền là hai chức năng độc lập, có thể phối hợp trong một luồng nghiệp vụ.
-- Hủy gói cước có hiệu lực khi kết thúc chu kỳ sử dụng hiện tại.
-- Giao dịch trừ tiền không đủ số dư bị hủy bỏ và hệ thống trả lỗi.
-- Dữ liệu hết hạn được xử lý theo cơ chế soft delete, bảo toàn lịch sử cần thiết.
+Chủ dự án, người dùng có quyền quyết định nghiệm thu cuối cùng, xác nhận ngày 14/10/2026 qua 14 đáp án. Danh mục đầy đủ DEC-01–DEC-11 và nội dung từng đáp án nằm trong [clarification log](clarification-log.md); các quyết định quan trọng:
 
-### 7.2. Các vấn đề cần làm rõ
+- Customer–Subscriber là 1–N; cấp số tự động/chọn số, không giữ số khi xem và không cấp trùng.
+- Đăng ký có thu phí do backend điều phối, không thành công một phần; hủy cuối chu kỳ.
+- Không thấu chi; thiếu tiền không thay đổi số dư hay tạo giao dịch tài chính thành công.
+- Soft delete/trạng thái lần đăng ký và tài khoản hết hạn, giữ lịch sử/danh mục; thời gian giữ và số dư còn lại vẫn cần chốt.
+- Có API báo cáo, job tổng hợp tiêu dùng hàng ngày và job hết hạn hàng ngày.
+- Dữ liệu tối thiểu 500.000 bản ghi tính tổng các bảng nghiệp vụ trước đo; cùng chạy ≥30 TPS mỗi nghiệp vụ, tổng ≥60 TPS. Retry không được đếm như nghiệp vụ mới.
+- 50% tổng request trừ tiền chia vào nhiều nhóm tranh chấp đồng thời; có tool đối soát từng yêu cầu/giao dịch và số dư.
 
-| Mã | Vấn đề | Dự kiến xử lý |
+Phạm vi loại trừ EX-01–EX-06 giữ nguyên theo Q01=A. Các cách diễn giải quan hệ khách hàng, “xóa”, tải hỗn hợp và nhóm tranh chấp đã được người có quyền nghiệm thu chấp nhận; [đề bài gốc](../requirement.md) giữ nguyên để đối chiếu.
+
+### 7.2. Chi tiết còn mở
+
+OQ-08 đã Resolved; các OQ còn lại vẫn Open ở phần chi tiết. Chủ dự án chịu trách nhiệm chốt, trợ lý tổng hợp/đề xuất; mốc đầy đủ tại [clarification log, mục 6](clarification-log.md#6-trạng-thái-và-kế-hoạch-xử-lý-oq).
+
+| Nhóm | Chi tiết cần chốt | Mốc |
 |---|---|---|
-| OQ-01 | Phân loại và khởi tạo tài khoản dịch vụ | Phân tích nghiệp vụ / SRS |
-| OQ-02 | Nhận diện và xử lý yêu cầu giao dịch trùng lặp | SRS và thiết kế transaction |
-| OQ-03 | Quy tắc lọc của API báo cáo | SRS |
-| OQ-04 | Điều kiện đo và đánh giá hiệu năng | NFR và Test Plan |
-| OQ-05 | Chống cấp trùng số thuê bao khi xử lý đồng thời | Phân tích / Thiết kế |
-| OQ-06 | Phối hợp đăng ký gói cước và trừ tiền khi có lỗi | SRS và thiết kế nghiệp vụ |
-| OQ-07 | Quy tắc chuyển trạng thái và thời điểm xử lý dữ liệu hết hạn | SRS / State Diagram |
+| OQ-05, OQ-12, OQ-15 | Tái sử dụng/cấp số nguyên tử, hồ sơ khách hàng, hợp đồng và quyền gọi API | SRS UC01 trước thiết kế/code đấu nối |
+| OQ-01, OQ-02, OQ-06, OQ-09, OQ-10 | Tài khoản, chống trùng, mức phí/tài khoản thu, chu kỳ/gia hạn, đơn vị tiền/hạn mức | SRS và thiết kế trước code gói/tài khoản/giao dịch |
+| OQ-07, OQ-11 | Trạng thái, hiệu lực, chạy lại job, thời gian giữ lịch sử, số dư hết hạn | SRS trước thiết kế gói/tài khoản/job |
+| OQ-03, OQ-13 | OR/AND gói, định nghĩa tiêu dùng/phí, thời gian lọc, đầu ra/chỉ tiêu/lịch báo cáo | SRS trước thiết kế báo cáo |
+| OQ-04, OQ-14 | Môi trường, thời lượng, ngưỡng lỗi/độ trễ, phân bố dữ liệu/nhóm, mẫu số request trong tải hỗn hợp và bằng chứng đồng thời | NFR/Test Plan trước chạy tải; tính đúng trước thiết kế giao dịch |
 
-Các vấn đề chưa được quyết định sẽ được theo dõi trong `clarification-log.md` và không được mặc nhiên xem là đã có phương án thiết kế cuối cùng.
+Hoãn chi tiết không có nghĩa bỏ yêu cầu hoặc chấp nhận một đề xuất chưa duyệt. Không đánh dấu đã nghiệm thu hiệu năng ở Phase 0.
 
-## 8. Liên kết với các tài liệu khác (Related Documents)
+## 8. Tài liệu liên quan và trạng thái giai đoạn
 
-- `overview.md`: Tổng quan, mục tiêu và bối cảnh dự án.
-- `clarification-log.md`: Các quyết định, giả định và vấn đề chưa được giải quyết.
-- `SRS.md`: Đặc tả yêu cầu chức năng và phi chức năng.
-- `use-cases/`: Đặc tả chi tiết từng Use Case.
-- Các tài liệu Domain Model, kiến trúc và thiết kế CSDL: Được xây dựng ở những giai đoạn tiếp theo.
+- [Overview](overview.md): mục tiêu, bối cảnh và danh mục quyết định.
+- [Clarification log](clarification-log.md): bản ghi duyệt, truy vết yêu cầu và danh sách còn mở.
+- [Roadmap](../ROADMAP.md): Phase 0 hoàn thành, Phase 1 chưa bắt đầu.
+- SRS, Use Case, Domain Model, kiến trúc, CSDL và API sẽ tạo ở các giai đoạn tương ứng; chưa có liên kết tới file chưa tồn tại.
 
----
+## 9. Lịch sử cập nhật
 
-*Tài liệu này xác lập phạm vi ban đầu của TelecomManagement. Mọi thay đổi về chức năng, ranh giới trách nhiệm hoặc thuật ngữ nghiệp vụ phải được xem xét và cập nhật nhất quán với các tài liệu liên quan.*
+| Phiên bản | Ngày | Nội dung |
+|---|---|---|
+| 1.0 | Trước duyệt Phase 0 | Phạm vi và thuật ngữ ban đầu. |
+| 1.1 | 14/10/2026 | Đồng bộ các lựa chọn đã duyệt, bổ sung thu phí đăng ký/job báo cáo, cập nhật quy mô/tải và trách nhiệm xử lý chi tiết; đóng Phase 0. |
