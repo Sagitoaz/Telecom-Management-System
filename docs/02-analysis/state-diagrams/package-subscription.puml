@@ -1,0 +1,27 @@
+@startuml
+title DRAFT - PackageSubscription business lifecycle
+state "Effective" as Active
+state "Cancellation pending" as CancelPending
+state "Expired / inactive" as Expired
+[*] --> Active : registration AND fee collection succeeded
+Active --> CancelPending : cancellation accepted
+CancelPending --> Expired : current cycle ends
+Active --> Active : automatic renewal [eligible, sufficient funds, no cancellation]
+Active --> Active : manual re-registration extends from current end [not cancellation pending]
+Active --> Expired : cycle ends without successful renewal
+Expired --> [*]
+note right of CancelPending
+  Remains usable until current cycle ends.
+  New repeated cancellation request: business error.
+  Same-request retry: replay; new repeated request: error.\n  Cancellation accepted before cycle end blocks renewal.\n  Exact acceptance/commit boundary remains detailed design.
+end note
+note right of Active
+  Analytical labels, not final API/DB enums.
+  Cycle length in days; insufficient funds => no grace.\n  Applied price snapshot per registration/renewal.\n  Day arithmetic and technical-error retry: OQ-07/09.
+  Failed initial collection never enters Effective.
+end note
+note bottom of Expired
+  Preserve subscription history and package definition.
+  Grace/recovery/re-registration rules not invented.
+end note
+@enduml

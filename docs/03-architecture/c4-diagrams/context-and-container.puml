@@ -1,0 +1,43 @@
+@startuml
+!pragma layout smetana
+title DRAFT - C4 System Context (ADR-001)
+rectangle "CSKH\nExternal system" as CSKH
+rectangle "Reporting Consumer\nScoped external caller" as R
+rectangle "Local Identity Provider\nOutside Telecom; JWT + JWKS" as IdP
+rectangle "TelecomManagement\nSubscriber and financial backend" as T
+CSKH --> T : business REST + JWT
+R --> T : scoped consumption query
+IdP ..> T : JWKS; issuer/audience verification
+note bottom of T
+  No real telecom network or payment integration.
+  Database, broker, cache and scheduler are internal.
+end note
+@enduml
+
+@startuml
+!pragma layout smetana
+title DRAFT - C4 Containers (accepted technology choices; M3 pending)
+rectangle "External CSKH / Reporting" as Clients
+rectangle "Local external Identity Provider" as IdP
+rectangle "TelecomManagement boundary" {
+  rectangle "Spring Boot / Java21 backend\nAPI + internal jobs + UC01 recovery" as API
+  database "PostgreSQL\nAuthoritative business state" as DB
+  queue "RabbitMQ\nNumber-pool wake-up signal" as MQ
+  database "Redis\nPackage catalog read cache; TTL60s" as Cache
+}
+rectangle "k6 load / reconciliation tools" as Tools
+Clients --> API : REST / JWT
+IdP ..> API : JWKS verification
+API --> DB : JPA CRUD / JDBC with reason\ntransaction + uniqueness
+API --> MQ : publish after stock commit
+MQ --> API : idempotent consumer wake-up
+API --> Cache : cache-aside / invalidate\nfallback to DB
+Tools --> API : independent business test requests
+Tools --> DB : controlled seed / reconciliation read
+note bottom of API
+  Recovery scans DB every60s if signal is lost.
+  DB enforces FIFO, request ownership and expiry.
+  No cache authority for balance, number or request IDs.
+  Exact module/transaction/config review remains M3/M4.
+end note
+@enduml

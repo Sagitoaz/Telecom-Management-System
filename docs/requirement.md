@@ -3,7 +3,7 @@
 + Trong hệ thống viễn thông, mỗi khách hàng thực tế được đại diện với 1 số thuê bao trên hệ thống viễn thông
 + Khi khách hàng muốn sử dụng dịch vụ cần ra cửa hàng để đăng ký thông tin cá nhân như cmt, ngày tháng năm sinh, nghề nghiệp,...
 + 1 thuê bao có nhiều gói cước và tài khoản cho nhiều dịch vụ khác nhau: ví dụ gói cước dùng fb, gói cước dùng chơi game,..=> có thời gian sử dụng
-+ Khi có tiêu dùng và sử dụng dịch vụ t=> sẽ phát sinh các giao dịch cộng  trừ tiền trên hệ thống
++ Khi có tiêu dùng và sử dụng dịch vụ => sẽ phát sinh các giao dịch cộng  trừ tiền trên hệ thống
 
 **Yêu cầu thiết kế 1 hệ thống đáp ứng được các nghiệp vụ bên dưới**
 

@@ -336,3 +336,8 @@ Hoãn chi tiết không có nghĩa bỏ yêu cầu hoặc chấp nhận một đ
 |---|---|---|
 | 1.0 | Trước duyệt Phase 0 | Phạm vi và thuật ngữ ban đầu. |
 | 1.1 | 14/10/2026 | Đồng bộ các lựa chọn đã duyệt, bổ sung thu phí đăng ký/job báo cáo, cập nhật quy mô/tải và trách nhiệm xử lý chi tiết; đóng Phase 0. |
+
+
+## Bổ sung hiện hành ngày 18/10/2026
+
+Baseline phạm vi Phase0 giữ nguyên; các định hướng chi tiết tại DEC-PRE-01–24 trong [clarification log](clarification-log.md) đã được tiếp nhận. Hồ sơ so mọi trường gửi/chứng cứ ngoài; UC01 caller-scoped ID/replay7 ngày+tombstone/FIFO/recovery 60s. Gói giá snapshot/chu kỳ ngày/hủy theo mốc nhận, lịch job00:05/00:30 Asia/Ho_Chi_Minh, lịch sử 5 năm không purge demo. Báo cáo [X,Y) theo commit/cursor; kiểm thử k6 với các ngưỡng bổ sung. RabbitMQ/Redis theo CR-ARCH-001, không mở rộng mạng thật/ngân hàng/UI. Các trạng thái “còn chờ chọn” trong phần baseline lịch sử phải đối chiếu bảng OQ hiện hành; retention tiền/hạn mức phụ còn đề xuất. M1 vẫn chờ chủ dự án đọc SRS0.6/UC01 0.5 và trả lời Q25. [Thứ tự đọc](review-guide.md).

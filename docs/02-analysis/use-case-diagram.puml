@@ -1,0 +1,37 @@
+@startuml
+left to right direction
+title DRAFT - TelecomManagement Use Cases
+actor "CSKH System" as CSKH
+actor "Reporting Consumer\n(caller Open)" as Reporter
+rectangle TelecomManagement {
+  usecase "UC01 Activate Subscriber" as U1
+  usecase "UC02 Subscribe Package" as U2
+  usecase "UC03 Cancel at Cycle End" as U3
+  usecase "UC04 Credit Account" as U4
+  usecase "UC05 Debit Account" as U5
+  usecase "UC06 Query Consumption" as U6
+  usecase "Lookup Available Numbers" as Lookup
+  usecase "Query Activation Request" as Status
+}
+CSKH --> U1
+CSKH --> U2
+CSKH --> U3
+CSKH --> U4
+CSKH --> U5
+CSKH --> Lookup
+CSKH --> Status
+Reporter --> U6
+note bottom of U2
+  Package activation and fee collection
+  succeed together (DEC-03).
+  Internal fee is not UC05 load traffic.
+end note
+note bottom of Lookup
+  Read does not reserve a number.
+end note
+note right of Status
+  CSKH manages requestId automatically.
+  WAITING is not successful activation.
+end note
+note "Internal scheduled processing:\nJOB-01 Expiration\nJOB-02 Daily consumption aggregation\nUC01 recovery task is supporting processing.\nScheduler is not an external actor." as Jobs
+@enduml

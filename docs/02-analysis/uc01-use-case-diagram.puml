@@ -1,0 +1,32 @@
+@startuml
+left to right direction
+title DRAFT - UC01 Hybrid
+actor "CSKH System" as CSKH
+rectangle TelecomManagement {
+  usecase "UC01 Activate Subscriber\n(extension point: automatic pool empty)" as Activate
+  usecase "Activate Selected Number" as Selected
+  usecase "Activate Automatic Number" as Auto
+  usecase "Validate Identity/Profile" as Profile
+  usecase "Check requestId" as Retry
+  usecase "Accept WAITING\n[automatic + empty + consent]" as Wait
+  usecase "Lookup Available Numbers" as Lookup
+  usecase "Query Request Status" as Status
+}
+CSKH --> Activate
+CSKH --> Lookup
+CSKH --> Status
+Selected -|> Activate
+Auto -|> Activate
+Activate ..> Profile : <<include>>
+Activate ..> Retry : <<include>>
+Wait ..> Activate : <<extend>>\n[automatic pool empty AND consent]
+note bottom of Activate
+  Final result synchronously when completed.
+  Selected number conflict: fail, no WAITING.
+  Empty automatic pool without consent: fail.
+end note
+note bottom of Wait
+  At most 24h; replenish trigger + recovery.
+  Expired requests must not allocate numbers.
+end note
+@enduml

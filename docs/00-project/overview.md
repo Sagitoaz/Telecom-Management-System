@@ -4,7 +4,7 @@
 
 **Mã tài liệu:** DOC-PROJ-001
 
-**Phiên bản:** 1.1
+**Phiên bản:** 1.2
 
 **Trạng thái:** Baseline Phase 0 đã được chủ dự án duyệt ngày 14/10/2026; chi tiết còn mở được theo dõi riêng
 
@@ -192,7 +192,7 @@ OQ-08 đã Resolved. OQ-01–OQ-07 và OQ-09–OQ-15 vẫn Open ở phần chi t
 
 Chủ dự án phụ trách quyết định; trợ lý tổng hợp và đề xuất. Ưu tiên ở SRS UC01 là OQ-05, OQ-12, OQ-15. Các quy tắc gói, tiền, báo cáo và tải được chốt trước khi thiết kế/triển khai thành phần tương ứng. Việc chọn nhóm tranh chấp không tự quyết định số nhóm; việc có thu phí không tự quyết định mức phí/tài khoản thu.
 
-Phase 0 hoàn thành theo Q14=A: ba tài liệu nhất quán, quyết định rõ và các chi tiết còn mở có kế hoạch. Phase 1 chưa bắt đầu. Xem [roadmap](../ROADMAP.md) để theo dõi bước tiếp theo.
+Phase 0 hoàn thành theo Q14=A: ba tài liệu nhất quán, quyết định rõ và các chi tiết còn mở có kế hoạch. Phase 1 đang rà soát SRS/UC01; M1 chờ duyệt. Xem [roadmap](../ROADMAP.md) để theo dõi bước tiếp theo.
 
 ## 8. Lịch sử cập nhật
 
@@ -200,3 +200,11 @@ Phase 0 hoàn thành theo Q14=A: ba tài liệu nhất quán, quyết định r�
 |---|---|---|
 | 1.0 | Trước duyệt Phase 0 | Tổng quan ban đầu, còn các vấn đề cần làm rõ. |
 | 1.1 | 14/10/2026 | Đồng bộ 14 lựa chọn: thu phí đăng ký, job báo cáo, 500K tổng, tải hỗn hợp 60 TPS, phân nhóm 50%; xác nhận thẩm quyền và đóng Phase 0. |
+
+
+| 1.2 | 18/10/2026 | CR-DOC-001: đồng bộ trạng thái Phase 1, giữ baseline nghiệp vụ. |
+
+
+## Bổ sung hiện hành ngày 18/10/2026
+
+Baseline phạm vi Phase0 giữ nguyên; các định hướng chi tiết tại DEC-PRE-01–24 trong [clarification log](clarification-log.md) đã được tiếp nhận. Hồ sơ so mọi trường gửi/chứng cứ ngoài; UC01 caller-scoped ID/replay7 ngày+tombstone/FIFO/recovery 60s. Gói giá snapshot/chu kỳ ngày/hủy theo mốc nhận, lịch job00:05/00:30 Asia/Ho_Chi_Minh, lịch sử 5 năm không purge demo. Báo cáo [X,Y) theo commit/cursor; kiểm thử k6 với các ngưỡng bổ sung. RabbitMQ/Redis theo CR-ARCH-001, không mở rộng mạng thật/ngân hàng/UI. Các trạng thái “còn chờ chọn” trong phần baseline lịch sử phải đối chiếu bảng OQ hiện hành; retention tiền/hạn mức phụ còn đề xuất. M1 vẫn chờ chủ dự án đọc SRS0.6/UC01 0.5 và trả lời Q25. [Thứ tự đọc](review-guide.md).

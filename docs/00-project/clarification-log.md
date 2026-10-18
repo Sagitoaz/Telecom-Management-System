@@ -2,15 +2,15 @@
 
 **Mã tài liệu:** DOC-PROJ-003
 
-**Phiên bản:** 1.0
+**Phiên bản:** 1.5 – Tiếp nhận 24 lựa chọn, chờ duyệt tài liệu
 
-**Ngày xác nhận:** 14/10/2026
+**Ngày xác nhận:** 14/10/2026 (Phase 0); cập nhật lựa chọn SRS 15/10/2026
 
-**Trạng thái:** Baseline Phase 0 đã duyệt; các chi tiết còn mở có mốc xử lý
+**Trạng thái:** Phase 0 baseline giữ nguyên; REV-SRS-001 và REV-UC01-002 đã ghi nhận; **quyết định Hybrid UC01 được duyệt 15/10/2026**; các OQ kỹ thuật và M1 vẫn Open
 
 **Người xác nhận:** Chủ dự án – người dùng, có quyền quyết định nghiệm thu cuối cùng
 
-**Giai đoạn:** Phase 0 – Project Definition & Scope – hoàn thành
+**Giai đoạn:** M0 đã duyệt; Phase 1 đang rà soát SRS 0.6/UC01 0.5, M1 chờ duyệt; khung Phase 2–4 DRAFT theo CR-DOC-001.
 
 ## 1. Căn cứ và thẩm quyền
 
@@ -87,40 +87,243 @@ Các mã REQ chỉ dùng trong nhật ký, giữ liên tục từ bản 0.1.
 
 **Người phụ trách tất cả OQ còn mở:** Chủ dự án (người dùng) quyết định; trợ lý tổng hợp và đề xuất. Hạn chốt là mốc công việc, không phải ngày lịch. Các vấn đề đã chốt định hướng nhưng còn chi tiết vẫn giữ Open; không chặn việc đóng Phase 0.
 
-| Mã | Trạng thái | Đã chốt | Còn cần quyết định | Hạn chốt |
+| Mã | Trạng thái | Đã chốt | Còn cần quyết định / thiết kế | Hạn chốt |
 |---|---|---|---|---|
-| OQ-01 | Open | Một thuê bao có nhiều tài khoản dịch vụ | Loại tài khoản, tạo khi nào, số dư/thời hạn đầu, quan hệ với gói | SRS trước thiết kế tài khoản/gói |
-| OQ-02 | Open | Một tác động khi retry và đối soát từng yêu cầu (DEC-11) | Mã chống trùng, phạm vi duy nhất, thời gian lưu, xử lý cùng mã khác nội dung/đồng thời | SRS trước thiết kế đăng ký/giao dịch |
-| OQ-03 | Open | Có API lọc X–Y và gói, giữ dữ liệu lịch sử | OR/AND gói, định nghĩa tiêu dùng/phí đăng ký, liên kết gói, thời điểm lọc, phân trang | SRS trước thiết kế báo cáo |
-| OQ-04 | Open | Tổng 500K có sẵn, cùng chạy ≥30 TPS mỗi loại, định nghĩa TPS (DEC-08/09) | Máy, CSDL, phân bố dữ liệu, thời lượng đo, độ trễ, tỷ lệ lỗi, ảnh hưởng của phí đăng ký lên cách đếm giao dịch | Mục tiêu ở NFR; phép đo đầy đủ trong Test Plan trước chạy tải |
-| OQ-05 | Open | Hai cách cấp số; không giữ khi xem; không trùng; tranh chấp trả lỗi (DEC-02) | Tái sử dụng số, quy tắc trạng thái và thiết kế cấp phát nguyên tử | SRS/thiết kế UC01 trước code đấu nối |
-| OQ-06 | Open | Có thu phí, backend điều phối, không thành công một phần (DEC-03) | Tài khoản thu phí, mức phí, lỗi/retry và cơ chế transaction cụ thể | SRS rồi thiết kế trước code đăng ký gói |
-| OQ-07 | Open | Hủy cuối chu kỳ (DEC-04), có job hết hạn | Trạng thái, hủy lặp, hiệu lực trước khi job chạy, xung đột đồng thời, lịch/múi giờ/chạy lại | SRS trước thiết kế gói/tài khoản/job |
-| OQ-08 | Resolved | Quan hệ 1–N được chủ dự án có quyền nghiệm thu duyệt (DEC-01) | Không còn trong phạm vi câu hỏi này | Đã chốt 14/10/2026 |
-| OQ-09 | Open | Thời điểm hủy theo DEC-04 | Cách tính chu kỳ, tự gia hạn, đăng ký trùng/lại, gói loại trừ | SRS trước thiết kế đăng ký gói |
-| OQ-10 | Open | Không âm/không đủ tiền không thay đổi số dư (DEC-05); đối soát theo DEC-11 | Đơn vị tiền, số tiền hợp lệ, số dư đầu, tài khoản hết hạn, hạn mức/hoàn tiền | SRS trước thiết kế tài khoản/giao dịch |
-| OQ-11 | Open | Soft delete/trạng thái và giữ lịch sử/danh mục đã được chấp nhận (DEC-06) | Giữ lịch sử bao lâu, tài khoản hết hạn còn số dư xử lý thế nào | SRS trước thiết kế tài khoản/job |
-| OQ-12 | Open | Đấu nối trong backend, không nối mạng thật | Trường hồ sơ bắt buộc, khóa nhận diện CMT/CCCD, hồ sơ đã tồn tại, tài khoản mặc định | SRS UC01 trước thiết kế API đấu nối |
-| OQ-13 | Open | Có job tổng hợp hàng ngày (DEC-07) | Chỉ tiêu, đầu ra bảng/file/API, kỳ dữ liệu, lịch chạy, dữ liệu muộn và chạy lại | SRS trước thiết kế báo cáo |
-| OQ-14 | Open | Phân nhóm 50% và tiêu chí đúng/đủ đã duyệt (DEC-10/11) | Số nhóm, phân bố, mẫu tải, bằng chứng chồng lấn, tool, cách xác định kết quả timeout | Tính đúng trước thiết kế giao dịch; kịch bản đầy đủ trước chạy tải |
-| OQ-15 | Open | REST API phục vụ CSKH | Đồng bộ/bất đồng bộ, lỗi, xác thực/phân quyền, tra cứu sau timeout | SRS UC01 trước hợp đồng API đầu tiên |
+| OQ-01 | Open — chốt một phần | Chính0 không hạn; phụ theo cấu hình/seed (DEC-PRE-16). | Hạn mức/hạn phụ và danh mục mẫu: đề xuất R3 chưa duyệt. | Trước UC02/04/05 |
+| OQ-02 | Open — chốt một phần | Scope caller+nghiệp vụ; canonical; UC01 replay7 ngày+tombstone, không dọn đang xử lý/chờ (05–07/15). | Normalize/absent/null, HTTP tombstone/in-progress; retention tiền đề xuất R2. | P4 UC01; trước UC tiền |
+| OQ-03 | Open — chốt một phần | [X,Y) commit, OR/AND/includeFee rõ; cursor, scope riêng, attribution gói/ngữ cảnh (17/18). | Schema attribution/page size/claims và dữ liệu không ánh xạ. | Trước UC06 |
+| OQ-04 | Open — chốt một phần | warm-up2/đo10, p95≤500ms/p99≤1s, lỗi hệ thống≤0,1%, k6 (22/24). | Máy/config, tập latency/mẫu số lỗi/rate, không có số đo. | Trước đo tải |
+| OQ-05 | Open — chốt một phần | FIFO ưu tiên WAITING khi nạp kho; recovery60s, hướng row lock+unique, kiểm hạn hoàn tất (08–10). | Chuẩn số/nạp, tie-break, lock order/retry/deadlock; cách ly số ngoài UC01 đầu. | P4; tái cấp trước ngừng thuê bao |
+| OQ-06 | Open — chốt một phần | Snapshot giá mỗi đăng ký/gia hạn, phí tài khoản chính nguyên tử (12, DEC-03). | Giá mẫu/schema snapshot và lỗi/retry rollback. | Trước UC02 |
+| OQ-07 | Open — chốt một phần | Hủy trước cuối kỳ ngăn gia hạn; hủy mới lặp lỗi, retry cùng ID kết quả cũ (13/14). | Mốc nhận hợp lệ bền vững, exact boundary, hủy sau gia hạn, job idempotency. | Trước UC03/job |
+| OQ-08 | Resolved | Customer–Subscriber 1–N, DEC-01. | Không còn. | Resolved 14/10/2026 |
+| OQ-09 | Open — chốt một phần | Chu kỳ số ngày, nối từ hạn cũ; chờ hủy chặn nối/gia hạn; thiếu tiền hết hiệu lực không grace (13). | Ngày tuyệt đối/lịch, đã hết hạn đăng ký lại, lỗi kỹ thuật cuối kỳ. | Trước UC02/03 |
+| OQ-10 | Open — chốt một phần | VND nguyên dương, kiểm tràn, không âm; hết hạn giữ số dư/chặn giao dịch (16). | Hạn mức cụ thể R3, không tự mở rộng API hoàn tiền. | Trước UC04/05 |
+| OQ-11 | Open — chốt một phần | 5 năm cấu hình, demo không purge, giữ lịch sử (21). | Archive/purge sau demo; không có vòng đời tái cấp. | Trước job/deployment |
+| OQ-12 | Open — chốt một phần | So mọi trường gửi sau chuẩn hóa, chứng cứ xác minh ngoài; loại+số vẫn bắt buộc (01/02). | Rà soát cách hiểu ghi chú R1 trước M1; normalize/absent/null/evidence cụ thể P4. | M1 nghiệp vụ, P4 chi tiết |
+| OQ-13 | Open — chốt một phần | Asia/Ho_Chi_Minh00:05/00:30, riêng cấu hình/chạy tay; ngày trước, count/tổngVND theo chiều, CSV, điều chỉnh kỳ sau (19/20). | Transaction chốt kỳ/cutoff/late adjustment/batch/gia hạn đúng biên. | Trước job |
+| OQ-14 | Open — chốt một phần | 10 cặp chia đều50% debit attempt kể cả retry; phí nội bộ ngoài mẫu số; k6/unresolved không đạt (23/24). | Bằng chứng overlap phía xử lý, điều phối retry giữ tỷ lệ; logical success tách attempt. | Trước thiết kế tiền/đo tải |
+| OQ-15 | Open — chốt một phần | JWKS/IdP local ngoài Telecom, issuer/audience/scope/ownership; hướng API201/202/409 (04/11). | URL/claims/rotation, HTTP replay/lỗi/in-progress/tombstone, polling/timeout. | M3–M4 |
 
 ### Các ràng buộc cần giữ khi đặc tả chi tiết
 
 - Đăng ký có thu phí có thể tạo giao dịch trừ tiền nội bộ. Test Plan phải phân biệt nghiệp vụ đăng ký với lệnh trừ tiền được phát độc lập; không đếm hai lần một thao tác để đạt TPS.
 - Tỷ lệ 50% dùng tổng request trừ tiền làm mẫu số theo Q10; việc phân loại request trong bài hỗn hợp và cách tách giao dịch thu phí nội bộ phải được ghi rõ trước khi đo.
 - Với từng tài khoản, kiểm tra `số dư cuối = số dư đầu + tổng cộng tiền thành công - tổng trừ tiền thành công`, đồng thời đối chiếu từng nghiệp vụ; công thức tổng một mình không đủ.
-- Không mặc định OR cho báo cáo, VND nguyên, giờ chạy job, tự gia hạn hay cách xử lý số dư hết hạn khi chủ dự án chưa duyệt.
+- Đã chốt OR/AND, VND nguyên, tự gia hạn đủ tiền và tài khoản hết hạn giữ số dư/chặn giao dịch; chi tiết còn Open theo mục 6 và 12.
 
 ## 7. Điều kiện đóng Phase 0 và thay đổi tiếp theo
 
-Đã có đủ mục tiêu, ranh giới, thuật ngữ, quyết định được duyệt và danh sách OQ có trách nhiệm/mốc xử lý. Chủ dự án chọn Q14=A cho phép đóng Phase 0; Phase 1 chưa bắt đầu. Các OQ còn mở không phải bằng chứng đã hoàn thành SRS hay kiểm thử.
+Tại thời điểm 14/10/2026 đã có đủ mục tiêu, ranh giới, thuật ngữ, quyết định được duyệt và danh sách OQ có trách nhiệm/mốc xử lý. Chủ dự án chọn Q14=A cho phép đóng Phase 0. **Đến 15/10/2026 Phase 1 đang rà soát M1**, chưa xác nhận nghiệm thu SRS/UC01. Các OQ còn mở không phải bằng chứng đã hoàn thành SRS hay kiểm thử.
 
 Khi đóng một OQ sau này, ghi quyết định chi tiết, người/ngày xác nhận, căn cứ, tài liệu thay đổi và tiêu chí kiểm chứng. Giữ mã OQ và DEC; nếu thay quyết định thì dẫn quyết định thay thế và lý do.
 
-## 8. Lịch sử cập nhật
+> **Cách đọc lịch sử:** Mục 8–12 ghi trạng thái tại thời điểm trước bộ DEC-PRE; dùng mục 6 và 13 cho tình trạng hiện hành. Các câu “chưa chốt” trong lịch sử không mở lại lựa chọn đã được chốt ngày 18/10.
+
+## 8. Bản ghi lựa chọn SRS ngày 15/10/2026 – REV-SRS-001
+
+**Nguồn:** `bản ghi REV-SRS-001, mục 12.2; phiếu đã xóa theo yêu cầu`, do chủ dự án gửi lại với 31/31 câu được đánh dấu; ngày tiếp nhận 15/10/2026. Nội dung này ghi các lựa chọn **đã được người dùng đưa ra**, không ghi sai thành đã nghiệm thu toàn bộ SRS. Baseline DEC-01–DEC-11 ngày 14/10 giữ nguyên.
+
+| Nhóm | Các lựa chọn của chủ dự án | Tham chiếu OQ |
+|---|---|---|
+| UC01 – hồ sơ | Q01=A, Q02=C, Q03=A, Q04=A, Q05=A | OQ-12/01 |
+| UC01 – số | Q06=C, Q07=A, Q08=B, Q09=B, Q10=B | OQ-05 |
+| UC01 – tích hợp | Q11=B **(đã được CR-UC01-001 thay cho UC01)**, Q12=B, Q13=A, Q14=A, Q15=C | OQ-15/02 |
+| Tài khoản/giao dịch | Q16=B, Q17=A, Q18=A, Q24=A, Q27=A | OQ-01/02/10/11 |
+| Gói cước/hủy | Q19=A, Q20=A, Q21=B, Q22=B, Q23=B | OQ-06/07/09 |
+| Báo cáo | Q25=C, Q26=C, Q29=C, Q31=B | OQ-03/13 |
+| Vận hành/job | Q28=B (ghi: "tùy bạn muốn"), Q30=D (ghi: "mix B và C") | OQ-07/11/13 |
+
+**Diễn giải đúng ghi chú Q30:** Mỗi job có lịch và timezone cấu hình riêng (**B**); có giá trị cấu hình mặc định chạy hàng ngày vào một giờ cố định và có khả năng chạy thủ công (**C**). **Không suy diễn giờ hoặc múi giờ mặc định cụ thể.**
+
+**Ghi chú Q28:** Chủ dự án cho phép đề xuất thời hạn lưu, nhưng chưa có con số xác nhận. Gợi ý để thảo luận: **5 năm cấu hình được** cho phạm vi bài tập/demo (không phải tuyên bố yêu cầu pháp lý, không tự xem là thời hạn duyệt).
+
+**Tính nhất quán:** 31 câu mỗi câu đúng một đáp án; không mâu thuẫn trực tiếp DEC Phase 0. Những phụ thuộc cần xử lý: Q07=A (tối thiểu hai trạng thái số) + Q08=B (đã cấp tái sử dụng sau thời gian chờ) cần quy tắc biểu diễn số đang cách ly; Q10=B + Q11=B từng tạo vòng đời bất đồng bộ toàn phần; **CR-UC01-001 đã thay bằng Hybrid có điều kiện và quyền chọn chờ**; Q21=B + Q22=B cần tránh nhân đôi kỳ/phí.
+
+**OQ cần ưu tiên trước khi khóa UC01 (REV-UC01-002):** OQ-05 (cấp tự động khi hết kho); OQ-12 (ghép hồ sơ đa giấy tờ); OQ-15 (JWT, trạng thái xử lý); OQ-02 (cùng requestId khác payload). Các phần khác được phép giữ Open theo mốc riêng.
+
+## 9. Bản ghi bổ sung UC01 ngày 15/10/2026 – REV-UC01-002
+
+**Nguồn:** `bản ghi REV-UC01-002, mục 12.3; phiếu đã xóa theo yêu cầu`; người dùng đã đánh dấu đúng một lựa chọn mỗi câu, **5/5 câu**. Quyết định của người dùng được ghi nhận ở mức nghiệp vụ, không đồng nghĩa đã duyệt toàn bộ SRS/UC01 hay mã kỹ thuật.
+
+| Câu | Lựa chọn | Quy tắc được chọn | OQ |
+|---|---|---|---|
+| Q01 | A | Cấp số tự động hết kho → WAITING tối đa 24 giờ; quá hạn FAILED/EXPIRED, CSKH gửi yêu cầu mới | OQ-05 |
+| Q02 | A | Thử lại yêu cầu WAITING khi nạp/sinh số, có task khôi phục định kỳ để không bỏ sót | OQ-05 |
+| Q03 | B | Customer có thể liên kết nhiều giấy tờ **đã xác minh**; UC01 chỉ dùng liên kết đã xác minh, không tự ghép hồ sơ chưa xác minh | OQ-12 |
+| Q04 | A | JWT được bên xác thực ngoài phát; TelecomManagement kiểm tra chữ ký/issuer/expiry/quyền cần thiết | OQ-15 |
+| Q05 | A | requestId trùng payload khác → lỗi `IDEMPOTENCY_CONFLICT`, không ghi đè hoặc phát sinh yêu cầu thứ hai | OQ-02 |
+
+**Tách rõ phạm vi chưa chốt:** quy tắc kỹ thuật cấp số/khôi phục, cách chuẩn hóa hồ sơ, cấu hình quyền JWT, phạm vi/thời hạn lưu requestId ở Phase 3–4; thời gian cách ly số cũ thuộc vòng đời ngoài UC01; Q28 về năm retention và Q30 về giờ job chưa chốt. **Tất cả các OQ trên tiếp tục Open ở phần còn lại; OQ-08 vẫn Resolved.**
+
+**Đầu ra hiện hành:** `docs/01-requirements/SRS.md` v0.4 và `docs/01-requirements/use-cases/UC01-Subscriber-Activation.md` v0.3, đã tích hợp CR-UC01-001, để chủ dự án rà soát checkpoint M1.
+
+
+## 10. Change Request CR-UC01-001 - Chuyển sang Hybrid cho UC01
+
+| Thuộc tính | Nội dung |
+|---|---|
+| Mã | **CR-UC01-001** |
+| Ngày quyết định | **15/10/2026** |
+| Người quyết định | Chủ dự án – người dùng có quyền nghiệm thu |
+| Xác nhận | Người dùng: “vậy chốt theo hướng hybrid đi” sau khi so sánh các phương án và ví dụ quyền chọn chờ |
+| Trạng thái | **Approved – phê duyệt cách xử lý Hybrid cho UC01, không phải duyệt M1** |
+| Thay thế | REV-SRS-001 Q11=B (bất đồng bộ toàn phần) được thay bằng Hybrid; Q10=B và REV-UC01-002 Q01/Q02 chỉ còn áp dụng cho **nhánh khách hàng chọn chờ** |
+| Không thay đổi | DEC-01–DEC-11 Phase 0; JWT ngoài, idempotency, số không cấp trùng, chờ tối đa 24 giờ khi được phép, task khôi phục |
+| Tài liệu ảnh hưởng | SRS v0.4, UC01 v0.3, clarification log v1.3, ROADMAP |
+
+**Quy tắc nghiệp vụ thay đổi:**
+
+1. CSKH gọi REST API đấu nối và nhận kết quả cuối **đồng bộ** (`SUCCEEDED`/`FAILED`) nếu nghiệp vụ hoàn thành ngay.
+2. Nếu khách **chọn số cụ thể** nhưng số đã cấp: trả lỗi ngay; không chuyển WAITING.
+3. Nếu **tự cấp số** và kho hết AVAILABLE: nếu khách **không đồng ý chờ**, trả `NO_AVAILABLE_NUMBER` ngay. Nếu khách **đồng ý chờ** và CSKH truyền lựa chọn này, ghi WAITING không quá 24 giờ; khi bổ sung số tự xử lý lại và có task khôi phục, quá hạn EXPIRED.
+4. `WAITING` nghĩa là **đã tiếp nhận để chờ**, không phải đấu nối thành công. CSKH **tự động giữ requestId và theo dõi** bằng API, không yêu cầu nhân viên nhập requestId thủ công.
+5. Giữ chống requestId trùng, JWT ngoài, kết quả sau timeout phải có cách tra cứu; cơ chế cụ thể được thiết kế ở Phase 3–4.
+
+**Lưu ý về phạm vi quyết định:** “Khách hàng chọn chờ, không tự ép chờ” là điều kiện trong phương án Hybrid đã trình bày và được người dùng chốt. Chưa chốt tên trường API, hình thức UI CSKH, lịch polling hay điều kiện ưu tiên giữa các yêu cầu WAITING. Những vấn đề này tiếp tục ở OQ-05/OQ-15.
+
+**Không sửa ngược phiếu cũ:** REV-SRS-001 Q10/Q11 và REV-UC01-002 Q01/Q02 vẫn ghi nguyên như lúc được trả lời; ưu tiên CR-UC01-001 khi diễn giải UC01 hiện hành.
+
+## 11. Lịch sử cập nhật
 
 | Phiên bản | Ngày | Nội dung |
 |---|---|---|
 | 0.1 | 14/10/2026 | Bản nháp từ đề bài, DEC-01–DEC-06 và OQ-01–OQ-15; các phương án khi đó chưa duyệt. |
 | 1.0 | 14/10/2026 | Lưu đủ 14 đáp án và thẩm quyền; làm rõ DEC-03, xác nhận DEC-01–DEC-06, thêm DEC-07–DEC-11; đóng OQ-08, giữ chi tiết còn mở có người/mốc xử lý; chốt Phase 0 và chuyển thông tin khỏi phiếu tạm. |
+| 1.1 | 15/10/2026 | Tiếp nhận đủ 31 lựa chọn REV-SRS-001, cập nhật OQ và phân tách các phần được chọn với chi tiết Open, không thay đổi DEC Phase 0. |
+| 1.2 | 15/10/2026 | Tiếp nhận 5/5 lựa chọn REV-UC01-002, cập nhật OQ-02/05/12/15; giữ các chi tiết còn Open và không sửa DEC Phase 0. |
+| 1.3 | 15/10/2026 | CR-UC01-001 approved: chốt Hybrid UC01; đồng bộ luồng hoàn tất ngay, WAITING 24h chỉ khi tự cấp hết số và khách đồng ý chờ; M1 chưa duyệt. |
+| 1.4 | 18/10/2026 | CR-DOC-001: sổ quyết định độc lập chứa đầy đủ nội dung 31+5 lựa chọn; thêm khung tài liệu và phiếu còn mở, giữ M1 chờ duyệt. |
+
+## 12. Sổ quyết định độc lập với phiếu review (18/10/2026)
+
+### 12.1. Quy tắc quản lý tài liệu – CR-DOC-001
+
+- **Approved, 18/10/2026, người duyệt: chủ dự án trong yêu cầu phiên này.**
+- Cũ: SRS/UC01 dẫn phiếu trắc nghiệm như nguồn cần đọc kèm; chưa có khung các phần tiếp theo.
+- Mới: clarification log lưu đầy đủ nội dung quyết định; tài liệu chính dùng DEC/CR/OQ và tự chứa quy tắc áp dụng. Phiếu chỉ là đầu vào thu thập/hồ sơ lịch sử.
+- Lý do: chủ dự án yêu cầu bỏ phụ thuộc phiếu review, viết tiếp khung tài liệu trước code, gom câu chưa rõ vào một file Markdown.
+- Phạm vi: bổ sung DRAFT Phase 2–4, kế hoạch Phase 5–7; không phê duyệt M1–M4, không tự chọn phương án kỹ thuật, không sửa đề bài.
+- Ảnh hưởng: SRS 0.5, UC01 0.4, roadmap, README, UML/kiến trúc/DB/API/test. Không thay đổi code.
+- Thư mục tài liệu hiện tại là docs/; đã chuẩn hóa khỏi cấu trúc lồng nhau theo yêu cầu tiếp theo của chủ dự án ngày 18/10/2026.
+- Kiểm kê 18/10: chưa có .puml trước lượt này. Nhận định “có sơ đồ cũ” trong roadmap và ảnh chụp AGENTS không phù hợp sản phẩm hiện có. UML lượt này là **tạo mới DRAFT**.
+
+### 12.2. Nội dung đầy đủ quyết định yêu cầu đã nhận 15/10/2026
+
+Người quyết định: chủ dự án. Mã dưới đây là bí danh ổn định cho lựa chọn đã ghi mục 8, không phải quyết định nghiệp vụ mới ngày 18/10. Không cần mở phiếu cũ để sử dụng bảng này. Phần Open tại mục 6 vẫn có hiệu lực; M1 chưa duyệt.
+
+| Mã ổn định | Đáp án lịch sử | Nội dung lựa chọn và hiệu lực |
+|---|---|---|
+| DEC-REQ-01 | A | Họ tên, ngày sinh, số giấy tờ định danh; địa chỉ, nghề nghiệp và thông tin liên hệ là tùy chọn. |
+| DEC-REQ-02 | C | Chấp nhận CCCD, CMND/CMT và hộ chiếu; cần quy tắc phân biệt từng loại. |
+| DEC-REQ-03 | A | Tìm theo định danh đã chọn và dùng lại Customer; tạo thêm Subscriber mới. |
+| DEC-REQ-04 | A | Từ chối cập nhật/đấu nối, trả thông báo cần xác minh thông tin. |
+| DEC-REQ-05 | A | Tự tạo một tài khoản cơ bản (số dư ban đầu và hạn dùng chốt riêng trong Q17). |
+| DEC-REQ-06 | C | Cả kho số có sẵn và chức năng bổ sung/sinh số, nhưng chỉ cấp từ tập đã xác nhận khả dụng. |
+| DEC-REQ-07 | A | Tối thiểu AVAILABLE (còn cấp) và ASSIGNED (đã cấp). |
+| DEC-REQ-08 | B | Có thể tái sử dụng sau một khoảng chờ; khoảng chờ sẽ chốt khi đặc tả vòng đời. |
+| DEC-REQ-09 | B | Chọn ngẫu nhiên trong tập số khả dụng. |
+| DEC-REQ-10 | B | Ghi yêu cầu ở trạng thái chờ xử lý sau; không báo đấu nối thành công. **Superseded/điều chỉnh cho UC01 bởi CR-UC01-001; dùng Hybrid có consent.** |
+| DEC-REQ-11 | B | Bất đồng bộ: nhận yêu cầu và trả mã tra cứu trạng thái xử lý. **Superseded/điều chỉnh cho UC01 bởi CR-UC01-001; dùng Hybrid có consent.** |
+| DEC-REQ-12 | B | Bearer token/JWT; cần làm rõ bên phát hành và cách kiểm tra token trước khi thiết kế. |
+| DEC-REQ-13 | A | CSKH gửi mã yêu cầu duy nhất; gửi lại cùng mã/nội dung thì trả cùng kết quả, không cấp số/tạo thuê bao lần hai. |
+| DEC-REQ-14 | A | Có cách tra cứu trạng thái/kết quả theo mã yêu cầu và retry cùng mã; không tạo kết quả thứ hai. |
+| DEC-REQ-15 | C | Chuẩn hóa như A và thêm mã tương quan (correlation ID) để truy vết log. |
+| DEC-REQ-16 | B | Có một tài khoản chính và có thể có thêm tài khoản phụ theo dịch vụ. |
+| DEC-REQ-17 | A | Số dư 0, chưa đặt hạn mặc định (hạn riêng theo sản phẩm/tài khoản khi cần). |
+| DEC-REQ-18 | A | Bên gọi cấp requestId duy nhất; cùng mã và cùng nội dung chỉ thực hiện một lần. |
+| DEC-REQ-19 | A | Đơn giá được lưu theo gói; tính phí cho chu kỳ đăng ký tại thời điểm đăng ký. |
+| DEC-REQ-20 | A | Tài khoản tiền chính của thuê bao. |
+| DEC-REQ-21 | B | Tự động gia hạn nếu đủ tiền và chưa có yêu cầu hủy. |
+| DEC-REQ-22 | B | Có thể đăng ký lại cùng gói để nối dài chu kỳ. |
+| DEC-REQ-23 | B | Trả lỗi nghiệp vụ gói đã có yêu cầu hủy. |
+| DEC-REQ-24 | A | Số nguyên theo đơn vị VND, chỉ chấp nhận số tiền dương (>0). |
+| DEC-REQ-25 | C | API hỗ trợ cả OR/AND bằng tham số được khai báo rõ. |
+| DEC-REQ-26 | C | Hỗ trợ chọn có/không tính phí đăng ký bằng bộ lọc của API. |
+| DEC-REQ-27 | A | Vô hiệu hóa giao dịch mới, giữ số dư và lịch sử để đối soát. |
+| DEC-REQ-28 | B | Giữ theo số năm xác định (ghi số năm trong ghi chú). Ghi chú: “tùy bạn muốn”; CHƯA chốt số năm. |
+| DEC-REQ-29 | C | Vừa lưu bảng tổng hợp, vừa có tùy chọn xuất file. |
+| DEC-REQ-30 | D | Khác (ghi lịch/múi giờ). Ghi chú: “mix B và C”: lịch/timezone riêng cấu hình, mặc định hàng ngày giờ cố định và chạy tay; CHƯA chốt giờ/timezone. |
+| DEC-REQ-31 | B | Chốt số liệu một lần; dữ liệu muộn ghi thành điều chỉnh kỳ sau. |
+
+### 12.3. Nội dung đầy đủ bổ sung UC01 đã nhận 15/10/2026
+
+| Mã ổn định | Nội dung có hiệu lực | Giới hạn |
+|---|---|---|
+| DEC-UC01-01 | Chỉ nhánh tự cấp hết số **và có đồng ý chờ** nhận WAITING tối đa 24h, quá hạn EXPIRED; yêu cầu mới dùng requestId mới. | Q01=A được điều chỉnh bởi CR-UC01-001; không chờ mặc định. |
+| DEC-UC01-02 | Khi bổ sung số thử lại WAITING còn hạn; có recovery chống bỏ sót. | Chưa chốt lịch/thứ tự/khóa. |
+| DEC-UC01-03 | Một Customer có nhiều giấy tờ đã xác minh; UC01 dùng liên kết có sẵn, không tự ghép theo tên/ngày sinh. | Chuẩn hóa/xác minh mới còn OQ-12. |
+| DEC-UC01-04 | JWT do hệ thống ngoài phát; backend kiểm tra chữ ký, issuer, expiry và quyền. | Claims/keys/audience còn OQ-15. |
+| DEC-UC01-05 | Cùng requestId khác payload: IDEMPOTENCY_CONFLICT, giữ yêu cầu gốc, không tác động lần hai. | Phạm vi ID, retention, canonical payload còn OQ-02. |
+
+### 12.4. Thu nhận câu trả lời mới
+
+Dùng [phiếu quyết định trước code](decision-questionnaire.md). Tất cả ô ban đầu để trống. Sau khi chủ dự án trả lời rõ, kiểm tra mâu thuẫn, ghi người/ngày/phạm vi/ảnh hưởng tại đây rồi mới đồng bộ SRS/UML/thiết kế. Chọn giữ Open không đóng OQ; duyệt một checkpoint không mặc nhiên duyệt checkpoint khác.
+
+### 12.5. Đính chính phạm vi Open
+
+- VND nguyên, OR/AND báo cáo, tự gia hạn khi đủ tiền và chặn tài khoản hết hạn **đã được chọn**, xem DEC-REQ-21/24/25/27.
+- Tái cấp số sau cách ly đã chốt định hướng, chưa có thời gian/quy trình; không triển khai trong UC01 đầu.
+- Không tự ấn định số năm retention, giờ job, timeout hay giới hạn đo tải.
+- OQ-08 vẫn Resolved; OQ khác chỉ đóng từng phần khi đủ bằng chứng.
+
+
+### 12.6. Chuẩn hóa vị trí tài liệu — CR-DOC-002
+
+**Approved — 18/10/2026, chủ dự án:** yêu cầu chỉ giữ một thư mục docs. Đưa toàn bộ tài liệu từ thư mục lồng nhau lên docs/, cập nhật đường dẫn README/SRS/UC01/roadmap và hướng dẫn kiểm chứng. Đối chiếu hash từng file khi di chuyển; không thay đổi nghiệp vụ, trạng thái duyệt hoặc nội dung requirement.md.
+
+
+## 13. Quyết định tiếp nhận ngày 18/10/2026 — bộ trước code
+
+Người lựa chọn: chủ dự án. Q01–Q24 mỗi câu một ô, Q25 chưa chọn. Nguồn: file trong workspace, SHA-256 lúc nhận 384c5f849c655649685d1722f1bd38678ba8ab6d01167aafcd4e4642a7df27c8. Yêu cầu hiện tại là đồng bộ để chủ dự án đọc rồi mới duyệt M1. Mã DEC-PRE dưới đây tự chứa nội dung; không cần mở phiếu để hiểu quyết định.
+
+| Mã | Đáp án | Nội dung nguyên văn được chọn | Ghi chú nguyên văn | Hiệu lực |
+|---|---|---|---|---|
+| DEC-PRE-01 | B | So tất cả trường được gửi sau chuẩn hóa; khác bất kỳ trường nào thì từ chối, it nhat 1 truong lien quan den giay to tuy than duoc gui. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-02 | A | CSKH gửi tham chiếu chứng cứ xác minh từ quy trình ngoài; backend chỉ dùng giấy tờ hợp lệ đã xác minh để tạo/liên kết Customer; liên kết thêm giấy tờ vào khách cũ ngoài UC01. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-03 | A | Một ứng dụng Spring Boot chia module, Java 21, PostgreSQL; JPA cho CRUD, JDBC khi có lý do ở thiết kế transaction; Flyway; broker/cache. | Không ghi thêm | Stack đã chọn; broker/cache theo CR-ARCH-001 |
+| DEC-PRE-04 | A | JWT ký bất đối xứng, xác minh qua JWKS cấu hình; issuer/audience được kiểm, scope theo thao tác và caller sở hữu request. Điền issuer/audience/scope map hoặc cấu hình demo ở ghi chú. | he thong xac thuc chay local | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-05 | A | Duy nhất theo caller ứng dụng + UC01 + requestId; caller không xem request bên khác. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-06 | B | Retention cấu hình được; ghi thời hạn cụ thể, xử lý ID sau hết hạn và rủi ro retry muộn trong ghi chú. | Giữ kết quả đầy đủ 7 ngày sau trạng thái cuối; không dọn yêu cầu đang xử lý/chờ. Sau đó giữ dấu mã đã sử dụng, không tự xử lý lại mã cũ như yêu cầu mới. | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-07 | A | So canonical business payload đã chuẩn hóa: hồ sơ, mode, số chọn, consent; bỏ JWT/correlationId và thứ tự JSON. Chuẩn hóa theo Q01/Q02. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-08 | A | FIFO theo mốc WAITING cho các yêu cầu chờ hợp lệ; ưu tiên xử lý yêu cầu chờ trước tự cấp mới khi có số bổ sung. Chọn số vẫn tuân điều kiện khả dụng. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-09 | A | Giao dịch DB ngắn + row lock/unique constraint, lock order và xử lý retry/deadlock có giới hạn sẽ viết chi tiết. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-10 | A | Trigger sau nạp số + recovery mỗi 60 giây (đề xuất); dùng đồng hồ backend thống nhất, kiểm hạn tại hoàn tất, không reset deadline sau retry/restart. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-11 | A | Hướng REST: POST /api/v1/activations, GET /api/v1/activations/{requestId}, GET /api/v1/phone-numbers; success mới 201, WAITING 202, conflict 409. Các lỗi/replay/in-progress cần lập bảng và duyệt OpenAPI tiếp. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-12 | A | Chụp giá áp dụng tại từng lần đăng ký/gia hạn, lưu lịch sử; đơn giá định nghĩa gói có hiệu lực lúc thu. Không sửa phí đã commit. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-13 | A | Chu kỳ theo số ngày gói, nối từ hạn hiện tại nếu còn hiệu lực; hủy chờ chặn đăng ký nối dài, không tự gia hạn; thiếu tiền ở cuối kỳ thì hết hiệu lực, không grace ngầm. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-14 | A | Theo trạng thái được commit trước, nhưng hủy đã được nhận trước mốc cuối kỳ phải ngăn gia hạn; request hủy mới khi đã chờ hủy trả lỗi, retry cùng ID trả kết quả gốc. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-15 | B | Cùng chính sách UC01 sau khi UC01 được chốt nhưng retention riêng: ghi rõ thời hạn. | Thoi han chon tuy ban de xuat, nhung ghi ro ra cho toi va cai y co the cau hinh duoc | Chính sách đã chọn; số ngày tiền chỉ yêu cầu đề xuất |
+| DEC-PRE-16 | A | UC01 chỉ tạo chính; tài khoản phụ theo loại dịch vụ cấu hình, tạo qua seed/quy trình riêng; tiền integer VND trong miền số có giới hạn kiểm tra tràn. Điền max giao dịch/max số dư, hạn tài khoản phụ. | Không ghi thêm | Hướng đã chọn; chưa có hạn mức/hạn phụ |
+| DEC-PRE-17 | A | Khoảng [X,Y) theo thời điểm commit giao dịch; OR/AND và includeFee bắt buộc chỉ rõ, không có mặc định ngầm; chỉ transaction commit thành công. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-18 | A | Mỗi debit tiêu dùng có tham chiếu gói/ngữ cảnh dịch vụ xác định; phí liên kết đăng ký. Báo danh sách thuê bao không trùng, phân trang cursor; caller báo cáo có scope riêng. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-19 | A | Đề xuất Asia/Ho_Chi_Minh; hết hạn 00:05, tổng hợp 00:30 mỗi ngày; từng lịch có thể đổi/chạy tay. Quyền dùng gói/tài khoản không được kéo dài chỉ vì job chạy trễ. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-20 | A | Kỳ ngày trước theo timezone Q19; đếm giao dịch thành công và tổng VND theo ngày/thuê bao/gói/loại phí, lưu DB; CSV tùy chọn. Cutoff lúc chốt; dữ liệu muộn có ID điều chỉnh ở kỳ sau. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-21 | A | Đề xuất retention 5 năm cấu hình; bản demo không chạy purge, số chưa có quy trình giải phóng/cách ly không tái cấp. Thời gian cách ly chốt riêng trước nghiệp vụ ngừng thuê bao. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-22 | A | Đề xuất warm-up 2 phút, đo 10 phút, p95 ≤500ms/p99 ≤1s, lỗi hệ thống ≤0,1%; báo riêng business failure/timeout. Ngưỡng TPS và correctness giữ nguyên; cần ghi cấu hình máy/DB trước đo. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-23 | A | Đề xuất 10 cặp tranh chấp, chia đều 50% tổng request debit phát lên (kể cả retry); 50% còn lại phân rộng, ghi từng attempt + logical ID; phí nội bộ không là request debit độc lập. Chứng minh overlap thực, không chỉ tỷ lệ phân nhóm. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+| DEC-PRE-24 | A | k6 phát tải, script đối soát riêng đọc log request và DB; tra cứu/retry có giới hạn rồi báo unresolved, unresolved >0 thì chưa kết luận đối soát đạt. | Không ghi thêm | Đã chọn; chi tiết còn Open theo bảng OQ |
+
+### 13.1. CR-ARCH-001 — broker và cache
+
+**Approved — 18/10/2026, chủ dự án.** Xác nhận trong phiên: “dùng cả 2, và bạn thấy cái gì tốt nhất thì cứ ghi ra, tôi mặc định duyệt”. Agent được giao chọn công cụ/phạm vi phù hợp; không phải duyệt toàn M3/M4.
+- Cũ: khung không mặc định broker/cache. Mới: RabbitMQ gửi tín hiệu kho số bổ sung sau commit; worker đọc PostgreSQL xử lý WAITING FIFO/idempotent. Recovery DB mỗi 60s vẫn khôi phục nếu mất tín hiệu.
+- Redis cache-aside danh mục gói cho đường đọc, TTL 60s cấu hình và invalidate sau cập nhật, lỗi cache fallback DB. Giá thu phí phải đọc DB/snapshot hợp lệ.
+- Redis không là nguồn quyết định số dư, cấp số, trạng thái request, tombstone hay khóa idempotency. RabbitMQ có publisher confirms, consumer ack sau xử lý và có thể redelivery; không hứa exactly-once delivery.
+- Lý do: phân vai rõ cho tín hiệu nạp số/cache danh mục; giữ một backend, không chuyển UC01 sang async toàn phần.
+- Ảnh hưởng: ADR-001, architecture/C4/modules, recovery/concurrency/test/deployment; chưa sửa pom.xml/code.
+
+### 13.2. CR-DOC-003 — đồng bộ trước duyệt và xóa phiếu cũ
+
+**Approved về phạm vi thao tác — chủ dự án, 18/10/2026.** Lưu quyết định đầy đủ, xóa hai phiếu REV-SRS-001/REV-UC01-002; giữ lịch sử lựa chọn ở mục 8–12. Giữ phiếu trước code hiện tại để trả lời Q25 sau khi đọc SRS 0.6/UC01 0.5.
+Tài liệu cập nhật là DRAFT chờ rà soát; M1–M8 không tự tick. Đề xuất mới trong review-guide không có hiệu lực chỉ vì đã được viết.
+
+### 13.3. Cách đọc các điểm chưa đủ quyết định
+
+Xem [hướng dẫn rà soát](review-guide.md). Q01 ghi ít nhất một trường giấy tờ chưa xác nhận bỏ yêu cầu loại+số; bản cập nhật giữ loại+số và nêu để chủ dự án rà soát. Q14 giữ ưu tiên hủy đã tiếp nhận hợp lệ trước cuối kỳ, không rút gọn thành ai commit trước thắng.
+Q15 chỉ giao đề xuất retention tiền; Q16 chưa điền hạn mức/hạn phụ. Tombstone UC01 cần giữ fingerprint và kết quả tóm tắt để không tái xử lý; HTTP sau hết 7 ngày replay còn P4.
+
+
+## 14. Xóa phiếu cũ theo yêu cầu chủ dự án
+
+Hai phiếu lịch sử REV-SRS-001 và REV-UC01-002 đã xóa ngày18/10/2026 theo CR-DOC-003. Bảng31 quyết định yêu cầu và5 quyết định UC01 ở mục12 được giữ nguyên; mục8–10 còn ghi lịch sử đáp án/thay thế Hybrid. Không yêu cầu mở file đã xóa để hiểu SRS/UC01. Phiếu hiện tại DECISION-PRECODE-001 giữ lại để trả lời Q25.

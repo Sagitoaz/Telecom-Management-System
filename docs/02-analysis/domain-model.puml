@@ -1,0 +1,91 @@
+@startuml
+!pragma layout smetana
+title DRAFT - Business Domain Model (not ERD)
+hide methods
+class Customer {
+  fullName
+  dateOfBirth
+  optionalAddress
+  optionalOccupation
+  optionalContact
+}
+class VerifiedIdentityDocument {
+  documentType
+  documentNumber
+  verificationEvidence
+}
+class Subscriber {
+  activatedAt
+}
+class PhoneNumberInventory
+class PhoneNumber {
+  number
+  availability
+}
+class ActivationRequest {
+  callerApplication
+  requestId
+  canonicalContentFingerprint
+  terminalAt
+  resultRetentionUntil
+  tombstoneSummary
+  allocationMode
+  waitConsent
+  status
+  waitingSince
+  waitingDeadline
+  outcome
+}
+class ServicePackage {
+  name
+  cyclePrice
+  cycleDefinition
+}
+class PackageSubscription {
+  cycleStart
+  cycleEnd
+  cancellationEffectiveAt
+  appliedCyclePrice
+  lifecycleState
+}
+class Account {
+  accountKind
+  balanceVND
+  expiresAtOptional
+  lifecycleState
+}
+class Transaction {
+  direction
+  amountVND
+  businessRequest
+  committedAt
+  serviceOrPackageContext
+}
+Customer "1" -- "0..*" Subscriber : owns currently
+Customer "1" -- "0..*" VerifiedIdentityDocument : verified links
+PhoneNumberInventory "1" o-- "0..*" PhoneNumber
+PhoneNumber "1" -- "0..1" Subscriber : current allocation
+Subscriber "1" -- "1..*" Account
+Account "1" -- "0..*" Transaction
+Subscriber "1" -- "0..*" PackageSubscription
+ServicePackage "1" -- "0..*" PackageSubscription
+ActivationRequest "0..*" --> "0..1" Customer : resolved profile
+ActivationRequest "1" --> "0..1" Subscriber : successful outcome
+note bottom of ActivationRequest
+  SUCCEEDED => exactly one Subscriber + main Account.
+  WAITING => automatic empty pool + explicit consent;
+  no successful Subscriber/Account yet; max 24h.
+  Scope = caller + UC01 + requestId.\n  Same canonical content => at most one effect.\n  Full result 7 days after terminal; then tombstone.\n  WAITING FIFO priority; recovery every60s.
+end note
+note right of Transaction
+  Consumption debit has service/package context;\n  registration fee refers to its subscription.\n  Physical mapping still deferred to detailed design.
+end note
+note right of PhoneNumber
+  AVAILABLE / ASSIGNED are confirmed concepts.
+  Reuse/quarantine lifecycle remains Open.
+end note
+note bottom of VerifiedIdentityDocument
+  No automatic Customer merge.
+  External verification evidence supplied by CSKH.\n  Linking another document to existing Customer\n  is outside UC01.
+end note
+@enduml

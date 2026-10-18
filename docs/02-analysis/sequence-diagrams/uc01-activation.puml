@@ -1,0 +1,79 @@
+@startuml
+title DRAFT - UC01 business sequence (no DB locking algorithm)
+actor "CSKH System" as C
+participant TelecomManagement as T
+participant "Customer/Profile" as P
+participant "Number Inventory" as N
+participant "Activation Outcome" as O
+participant "Internal Trigger / Recovery" as R
+C -> T : activate(requestId, content, numberMode, waitConsent)
+T -> T : validate external JWT, rights, input
+alt invalid input or permission
+  T --> C : reject; no business side effect
+else valid
+  T -> O : inspect caller + UC01 + requestId / canonical content
+  alt existing requestId, different content
+    T --> C : IDEMPOTENCY_CONFLICT
+  else existing requestId, same content
+    O --> T : current status / recorded result
+    T --> C : replay result, no duplicate side effect
+  else new request
+    T -> P : resolve external evidence + verified document; compare all supplied profile fields
+    alt profile conflict / unverified association
+      T --> C : reject; no automatic merge
+    else valid profile
+      T -> N : request selected / random available number
+      alt selected number unavailable / lost race
+        T -> O : record FAILED without allocated subscriber
+        T --> C : FAILED; no replacement, no WAITING
+      else automatic empty pool
+        alt no explicit consent
+          T -> O : record FAILED
+          T --> C : NO_AVAILABLE_NUMBER
+        else consent
+          T -> O : record WAITING; deadline <= waitingSince + 24h
+          T --> C : WAITING + requestId
+        end
+      else available allocation succeeds
+        T -> O : complete number + Subscriber + main Account(0)
+        note right of O
+          Business invariant: consistent committed outcome;
+          no success published before completion.
+          Atomic implementation deferred to Phase 4.
+        end note
+        T --> C : SUCCEEDED + requestId + result
+      end
+    end
+  end
+end
+== Conditional WAITING processing ==
+R -> T : numbers replenished / every60s recovery
+T -> O : find eligible WAITING in FIFO order; prioritize over new automatic allocation
+alt deadline reached
+  T -> O : EXPIRED; must not allocate
+else still eligible with consent
+  T -> P : recheck eligibility
+  T -> N : attempt unique available allocation
+  alt eligible and allocation succeeds before expiry
+    T -> O : complete once; SUCCEEDED
+  else no available number
+    T -> O : remain WAITING within deadline
+  else business eligibility fails
+    T -> O : final FAILED without partial activation
+  end
+end
+== Observation after WAITING / transport timeout ==
+note over C,T
+  Timeout does not prove rollback.
+  A request still processing is not implicitly WAITING.
+  Public in-progress response remains Open (OQ-15).
+end note
+C -> T : query(requestId) / retry same requestId + content
+T -> O : read authoritative status
+T --> C : authorized result; full replay within7 days after final\nthen tombstone policy (HTTP details Open)
+note over T,N
+  Concurrent requests for one selected number: at most one succeeds.
+  Replenishment/recovery/retry overlap: at most one effect per request.
+  FIFO business priority selected; tie-break is detailed design.\n  DB lock algorithm is not shown in this business sequence.\n  RabbitMQ wake-up can duplicate; DB recovery remains authoritative.
+end note
+@enduml
