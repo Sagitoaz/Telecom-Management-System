@@ -2,6 +2,11 @@
 
 **Cập nhật 26/10/2026.** Đã tiếp nhận phiếu 16 và các xác nhận bổ sung; tài liệu được đồng bộ thành bản **REVIEW**. Nghiệp vụ đã chọn có hiệu lực, còn schema/API/transaction mới cần nghiệm thu. Chưa có backend nghiệp vụ chạy được hoặc kết quả đo tải.
 
+## Hai tài liệu để bắt đầu đọc và rà soát
+
+- [Hướng dẫn đọc và rà soát](HUONG-DAN-DOC-VA-RA-SOAT.md): thứ tự theo phase, vòng đọc theo UC, checklist và cách ghi nhận xét.
+- [Báo cáo tổng hợp dự án có UML](BAO-CAO-TONG-HOP-DU-AN.md): đọc liền mạch toàn bộ phase, luồng chuẩn/ngoại lệ, 28 hình, API/DB và 64 ca biên.
+
 ## Thứ tự đọc đề xuất
 
 1. [Báo cáo nghiệp vụ tổng thể](07-business-review/17-BAO-CAO-NGHIEP-VU-TONG-THE_DRAFT.md): hệ thống làm gì, luồng chính và các biên quan trọng.

@@ -308,3 +308,7 @@ Theo yêu cầu chủ dự án, phiếu16 v0.5 viết lại26 câu từ Q09 tớ
 | P6/P7 chuẩn bị | Kế hoạch test/tải và deployment guide | Kế hoạch, chưa có kết quả đo hoặc triển khai |
 
 **Bước tiếp theo duy nhất:** chủ dự án review/duyệt delta MySQL UC01 theo checklist M4; khi đủ điều kiện mới P5.1 khởi tạo backend/migration/test trên MySQL thật. Không yêu cầu duyệt toàn bộ UC sau để triển khai UC01. Người duyệt/ngày cho bản delta: chưa có. Không commit/push/code nghiệp vụ trong lượt biên soạn này.
+
+### Bổ sung cách đọc và báo cáo tổng hợp — 26/10/2026
+
+Theo yêu cầu chủ dự án, bổ sung [hướng dẫn đọc/rà soát](HUONG-DAN-DOC-VA-RA-SOAT.md) và [báo cáo tổng hợp có UML](BAO-CAO-TONG-HOP-DU-AN.md). Phạm vi P1.8/P2.6 là tổng hợp và truy vết, không đổi DEC/CR/SRS/API/UML nguồn. Báo cáo bao quát Phase 0–7 nhưng không tự bắt đầu hoặc nghiệm thu phase sau; delta MySQL UC01 vẫn cần duyệt trước P5.1.

@@ -1,5 +1,16 @@
 # Kiểm chứng bộ thiết kế backend — 26/10/2026
 
+## Bổ sung hướng dẫn đọc và báo cáo tổng hợp — 26/10/2026
+
+Theo yêu cầu chủ dự án, đã tạo [hướng dẫn đọc/rà soát](HUONG-DAN-DOC-VA-RA-SOAT.md) (172 dòng) và [báo cáo tổng hợp](BAO-CAO-TONG-HOP-DU-AN.md) (1.087 dòng). Báo cáo có 18 mục lục neo rõ ràng, bao quát Phase 0–7, nhúng đủ 28 SVG hiện hành từ 27 nguồn, kèm diễn giải luồng chuẩn/nhánh/lỗi, 13 API và nguyên 64 oracle TC-EDGE theo ma trận chuẩn. Các hình có link nguồn và link SVG tương đối cạnh ảnh nhúng local.
+
+Kiểm tra riêng hai tài liệu: không còn placeholder; toàn bộ ảnh tồn tại và XML parse được; tập ảnh đúng bằng tập SVG hiện hành; 18 mục lục trỏ đúng neo; 64 mã/thứ tự/nội dung oracle khớp ma trận; 13 operation khớp bảng API. Checker toàn bộ `verify_backend_docs.py` với validator OpenAPI chạy exit 0 sau khi khôi phục archive bị thiếu. Hash nguồn UML/ảnh, đề bài, phiếu và các đặc tả nghiệp vụ/API/schema không đổi trong lượt tổng hợp này. `git -c core.whitespace=-blank-at-eol diff --check` và `git diff --exit-code -- pom.xml src` đều exit 0.
+
+**Khôi phục hồ sơ thiếu:** đầu lượt phát hiện `docs/00-project/history/2026-10-26-before-sync.zip` không còn dù nhiều tài liệu/checker đang tham chiếu. Đã khôi phục 65 tệp nguồn từ snapshot đầu lượt đồng bộ còn tại `out/docs-sync-20261026/before-texts.json`, chọn byte UTF-8/BOM/line-ending bằng đối chiếu SHA-256 của từng tệp với manifest gốc; tất cả 65 tệp khôi phục khớp hash gốc. Archive giữ thêm manifest 73 mục, không chứa byte 8 ảnh SVG cũ. Checker so nội dung AC đã được sửa để chuẩn hóa CRLF giống `Path.read_text`, tránh báo sai do newline khác giữa ZIP và file local; không đổi nội dung AC hoặc hash baseline để cho qua.
+
+Không có backend/MySQL/race/tải được chạy trong lượt này. Tạo hai báo cáo không đổi DEC/CR hoặc nghiệm thu checkpoint; delta MySQL UC01 vẫn REVIEW trước P5.1.
+
+
 **Phạm vi:** kiểm tra tài liệu và nguồn hình sau tiếp nhận phiếu 16; không chạy backend, migration, MySQL, API, race hoặc tải. Nội dung các ngày trước bên dưới được giữ như nhật ký lịch sử, không dùng để phủ nhận hoặc thay bằng chứng hiện hành.
 
 ## Kết quả đã thực hiện
