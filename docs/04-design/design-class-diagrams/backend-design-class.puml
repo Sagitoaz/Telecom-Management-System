@@ -1,0 +1,189 @@
+@startuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+title Whole backend design classes - REVIEW 2026-10-26
+package API {
+ class SubscriptionController {
+  +register(dto: RegistrationRequest, caller: Caller): OperationResult
+  +cancel(id: UUID, dto: CancellationRequest, caller: Caller): OperationResult
+  +listVersions(subscriber: UUID, cursor: String): SubscriptionPage
+ }
+ class MoneyController {
+  +credit(accountId: UUID, dto: CreditRequest): OperationResult
+  +debit(accountId: UUID, dto: DebitRequest): OperationResult
+ }
+ class QueryController {
+  +operation(name: Operation, requestId: String, caller: Caller): OperationResult
+  +packages(cursor: String): PackagePage
+  +consumption(query: ReportFilter, caller: Caller): ConsumptionPage
+ }
+ class InternalJobController {
+  +trigger(code: JobCode, runKey: String, date: LocalDate): JobRun
+  +status(code: JobCode, runId: UUID): JobRun
+ }
+ class AccessPolicy {
+  +requireScope(caller: Caller, scope: String): void
+  +requireRequestOwner(caller: Caller, owner: String): void
+  +requireEvidenceAuthority(caller: Caller): void
+ }
+}
+package Application {
+ class OperationCoordinator {
+  +claim(caller: Caller, op: Operation, id: String, canonical: Bytes): Claim
+  +lookup(caller: Caller, op: Operation, id: String): OperationResult
+  +recoverProcessing(batch: int): int
+ }
+ class MoneyService {
+  +credit(claim: Claim, account: UUID, amount: long): FinancialResult
+  +consume(claim: Claim, cycle: UUID, account: UUID, amount: long): FinancialResult
+ }
+ class SubscriptionService {
+  +register(claim: Claim, root: UUID, expectedVersion: long): SubscriptionResult
+  +renew(target: RenewalTarget): RenewalResult
+ }
+ class CancellationService {
+  +persistIntent(claim: Claim, root: UUID, expectedVersion: long): PendingIntent
+  +confirmAfterCommit(intent: UUID): CancellationResult
+  +resolvePending(intent: UUID): CancellationResult
+ }
+ class PaidCycleCore {
+  +extendLocked(root: Subscription, target: CycleKey, quote: PriceSnapshot): PaidCycle
+  +assertVersion(root: Subscription, expected: long): void
+  +assertNoAcceptedOrPendingCancellation(root: Subscription): void
+ }
+ class MoneyCore {
+  +checkEligibilityLocked(account: Account, now: Instant): Eligibility
+  +applyLocked(account: Account, delta: long, eligibility: Eligibility): BalanceChange
+ }
+ class CalendarPolicy {
+  +firstCycle(start: Instant, durationDays: int): TimeRange
+  +continuousCycle(previousEnd: Instant, days: int): TimeRange
+  +businessDate(recordedAt: Instant): LocalDate
+ }
+ class ReportQueryService {
+  +getOrCreate(caller: Caller, queryRequestId: String, filters: ReportFilter): ReportQuery
+  +freezeMembersSingleStatement(query: UUID): void
+  +page(query: UUID, cursor: String, limit: int): ConsumptionPage
+ }
+ class CursorCodec {
+  +encode(boundary: PageBoundary, context: QueryContext): String
+  +verify(cursor: String, caller: Caller, filters: ReportFilter): PageBoundary
+ }
+ class DailySummaryService {
+  +getOrCreatePeriod(date: LocalDate, run: UUID): ReportPeriod
+  +freezeContributionsSingleStatement(period: UUID): int
+  +finalizeFromPersistedMembers(period: UUID): Summary
+ }
+}
+package PersistencePorts {
+ interface TransactionBoundary {
+  +readCommitted(work: Work): Result
+  +rollbackAndRetryTransient(work: Work): Result
+ }
+ interface OperationRequestStore {
+  +insertClaim(key: RequestKey, hash: String): Claim
+  +lockWithFence(id: UUID, fence: long): OperationRequest
+  +storeTerminal(result: OperationResult): void
+ }
+ interface AccountStore {
+  +lock(accountId: UUID): Account
+  +updateBalance(change: BalanceChange): void
+ }
+ interface SubscriptionStore {
+  +ensureEmptyGuard(subscriber: UUID, packageId: UUID): UUID
+  +lock(root: UUID): Subscription
+  +insertCycle(cycle: PaidCycle): void
+  +incrementVersion(root: Subscription): void
+ }
+ interface LedgerStore {
+  +append(entry: FinancialEntry): UUID
+ }
+ interface CatalogStore {
+  +loadCurrentQuote(packageId: UUID, existingSubscriber: boolean): PriceSnapshot
+ }
+ interface SnapshotStore {
+  +insertSelectMembers(query: UUID): int
+  +pageImmutable(query: UUID, boundary: PageBoundary): ConsumptionPage
+  +insertUniqueContribution(source: UUID, period: UUID, kind: Kind): void
+ }
+ interface IntentStore {
+  +insertPending(intent: PendingIntent): UUID
+  +lockPending(id: UUID): PendingIntent
+  +recordReceipt(id: UUID, dbNow: Instant): void
+ }
+ interface DbClock {
+  +nowUtcAfterLock(): Instant
+ }
+}
+package Jobs {
+ class JobCoordinator {
+  +getOrCreate(code: JobCode, runKey: String, cutoff: Instant): JobRun
+  +claimLease(run: UUID): Fence
+  +checkpoint(run: UUID, fence: long, cursor: String): void
+ }
+ class RenewalWorker {
+  +scanDue(batch: int): int
+  +process(target: RenewalTarget): void
+ }
+ class LifecycleJob {
+  +run(date: LocalDate, fence: Fence): JobResult
+  +expireAccountsAndSubscriptions(batch: int): int
+ }
+ class ConsumptionSummaryJob {
+  +run(date: LocalDate, fence: Fence): JobResult
+ }
+}
+SubscriptionController --> SubscriptionService
+SubscriptionController --> CancellationService
+MoneyController --> MoneyService
+QueryController --> ReportQueryService
+QueryController --> OperationCoordinator
+InternalJobController --> JobCoordinator
+SubscriptionController --> AccessPolicy
+MoneyController --> AccessPolicy
+QueryController --> AccessPolicy
+InternalJobController --> AccessPolicy
+MoneyService --> OperationCoordinator
+MoneyService --> MoneyCore
+MoneyService --> LedgerStore
+MoneyService --> SubscriptionStore
+SubscriptionService --> PaidCycleCore
+SubscriptionService --> OperationCoordinator
+SubscriptionService --> CatalogStore
+SubscriptionService --> TransactionBoundary
+PaidCycleCore --> MoneyCore
+PaidCycleCore --> SubscriptionStore
+PaidCycleCore --> LedgerStore
+PaidCycleCore --> CalendarPolicy
+MoneyCore --> AccountStore
+MoneyCore --> DbClock
+MoneyService --> TransactionBoundary
+CancellationService --> IntentStore
+CancellationService --> SubscriptionStore
+CancellationService --> OperationCoordinator
+CancellationService --> DbClock
+CancellationService --> TransactionBoundary
+OperationCoordinator --> OperationRequestStore
+ReportQueryService --> SnapshotStore
+ReportQueryService --> CursorCodec
+ReportQueryService --> TransactionBoundary
+DailySummaryService --> SnapshotStore
+DailySummaryService --> CalendarPolicy
+RenewalWorker --> SubscriptionService : same fee/cycle core
+LifecycleJob --> SubscriptionService
+LifecycleJob --> AccountStore
+LifecycleJob --> CancellationService
+LifecycleJob --> JobCoordinator
+ConsumptionSummaryJob --> DailySummaryService
+ConsumptionSummaryJob --> JobCoordinator
+note bottom of PaidCycleCore
+  Account -> subscription -> cycles, one target cycle / one fee.
+  Balance + immutable ledger + paid cycle + rights + request outcome
+  are one transaction. These are responsibilities, not JPA entities.
+end note
+note bottom of CancellationService
+  CR-CAN-003: DB receipt after confirmed durable intent.
+  Late receipt -> terminal failure; accepted lost ACK -> replay.
+  Protocol implementation and boundary tests remain REVIEW.
+end note
+@enduml

@@ -1,0 +1,183 @@
+@startuml
+!pragma layout smetana
+hide circle
+skinparam classAttributeIconSize 0
+title MySQL 8.0.46 full backend physical ERD - REVIEW 2026-10-26
+entity customer {
+  id PK
+  full_name VARCHAR200
+  birth_date DATE
+}
+entity verified_document {
+  id PK
+  customer_id FK
+  document_type + normalized_number UQ
+  verification_ref
+}
+entity phone_number_inventory {
+  id PK
+  msisdn UQ
+  status
+  random_key DOUBLE
+}
+entity subscriber {
+  id PK
+  customer_id FK
+  phone_number_id FK UQ
+  status
+}
+entity service_account {
+  id PK
+  subscriber_id FK
+  account_type
+  balance_vnd BIGINT
+  expires_at DATETIME6
+  subscriber + type UQ
+}
+entity activation_request {
+  id PK
+  caller + request UQ
+  fingerprint
+  status / fence / lease
+  subscriber_id FK UQ nullable
+  wait_deadline
+}
+entity allocation_gate {
+  gate_key PK
+}
+entity service_package {
+  id PK
+  code UQ
+  catalog_version
+  price / duration_days
+  sale_status / grandfather_renewal
+}
+entity package_subscription {
+  id PK
+  subscriber_id FK
+  package_id FK
+  subscriber + package UQ
+  version / state
+  coverage_end
+}
+entity subscription_cycle {
+  id PK
+  subscription_id FK
+  cycle_key
+  subscription + cycle_key UQ
+  starts_at / ends_at
+  fee_transaction_id FK UQ
+  price / duration / catalog snapshot
+}
+entity operation_request {
+  id PK
+  caller + operation + request UQ
+  status / fingerprint / fence
+  eligibility_checked_at
+  replay_until
+}
+entity financial_transaction {
+  id PK
+  operation_request_id FK UQ nullable
+  account_id / subscriber_id FK
+  subscription_id FK nullable
+  subscription_cycle_id FK nullable
+  logical_key UQ
+  recorded_at DATETIME6
+  source_type / amount / balances
+}
+entity cancellation_intent {
+  id PK
+  operation_request_id FK UQ
+  subscription_id FK
+  status / expected_version
+  observed_coverage_end
+  receipt_checked_at
+}
+entity report_query {
+  id PK
+  caller + query_request_id UQ
+  filter_hash / cutoff_at
+  state / version
+}
+entity report_snapshot_member {
+  id PK
+  report_query_id FK
+  source_transaction_id FK
+  query + source UQ
+  copied display fields
+}
+entity daily_report_period {
+  id PK
+  business_date + kind UQ
+  job_execution_id FK
+  cutoff_at / status
+}
+entity summary_contribution {
+  id PK
+  period_id FK
+  source_transaction_id FK UQ
+  kind BASE or ADJUSTMENT
+ source_type
+  source_business_date
+}
+entity daily_consumption_summary {
+  id PK
+  period_id / subscriber_id / package_id FK
+  period + subscriber + package + source_type UQ
+  base / adjustment amounts and counts
+}
+entity job_execution {
+  id PK
+  job_code + run_key UQ
+  status / lease / fence
+  cutoff_at / checkpoint
+}
+entity report_snapshot_subscriber {
+ id PK
+ report_query_id FK
+ subscriber_id FK
+ query + subscriber UQ
+ amount / count / package_totals JSON
+}
+entity renewal_attempt {
+ id PK
+ subscription_id FK
+ target_cycle_key
+ subscription + target UQ
+ status / result_code
+ cycle_id FK UQ nullable
+}
+report_query ||--o{ report_snapshot_subscriber : distinct result
+subscriber ||--o{ report_snapshot_subscriber : member
+package_subscription ||--o{ renewal_attempt : bounded target
+subscription_cycle |o--o| renewal_attempt : outcome
+customer ||--o{ verified_document : owns
+customer ||--o{ subscriber : owns
+subscriber ||--o{ service_account : owns
+subscriber ||--o{ package_subscription : registers
+service_package ||--o{ package_subscription : defines
+package_subscription ||--o{ subscription_cycle : paid coverage
+service_account ||--o{ financial_transaction : ledger
+subscriber ||--o{ financial_transaction : owner
+package_subscription ||--o{ financial_transaction : package association
+package_subscription ||--o{ cancellation_intent : intent
+report_query ||--o{ report_snapshot_member : fixed members
+financial_transaction ||--o{ report_snapshot_member : queried source
+daily_report_period ||--o{ summary_contribution : contributions
+daily_report_period ||--o{ daily_consumption_summary : totals
+job_execution ||--o{ daily_report_period : builds
+phone_number_inventory ||--o| subscriber : allocated
+subscriber |o--o| activation_request : success
+operation_request |o--o| financial_transaction : financial effect
+operation_request ||--o| cancellation_intent : cancellation
+financial_transaction ||--o| subscription_cycle : pays
+subscription_cycle |o--o{ financial_transaction : consumption
+financial_transaction ||--o| summary_contribution : globally once
+note bottom of financial_transaction
+  UUID = proposed CHAR(36) ascii_bin consistently on PK/FK.
+  UTC DATETIME(6), integer VND. Full columns/checks/indexes in database-schema.md.
+  Source contribution UNIQUE(source_transaction_id) spans BASE and ADJUSTMENT.
+  ERD alone does not enforce atomic fee/cycle/balance, temporal overlap or owner checks.
+end note
+@enduml

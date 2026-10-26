@@ -1,0 +1,42 @@
+@startuml
+title UC05 - independent consumption debit (REVIEW)
+autonumber
+actor "Authorized caller" as C
+participant "Debit service" as S
+participant "Operation outcomes" as O
+participant "Specified account" as A
+participant "Subscription / current cycle" as P
+participant "Financial history" as L
+C -> S : requestId, subscriber, account, amount, package/cycle
+S -> O : resolve caller + UC05 + ID / canonical content
+alt replay / conflict / PROCESSING
+ O --> S : saved outcome / conflict / in progress
+ S --> C : no new effect
+else new operation
+ group one consistent debit responsibility
+  S -> A : coordinate specified account; verify owner and DEBIT permission
+  S -> P : coordinate subscriber-owned root / cycle
+  S -> A : AFTER all account/root/cycle coordination take fresh DB checkedAt
+  S -> P : recheck cycle [start,end) and account expiry at this checkedAt
+  alt no effective package / future or expired cycle / account expired
+   S -> O : FAILED, no monetary effect
+  else valid package and account
+   S -> A : verify amount and sufficient balance
+   alt insufficient funds
+    A --> S : reject; no fallback/pooling
+    S -> O : terminal FAILED, unchanged balance
+   else enough funds
+    S -> A : subtract exactly amount, never negative
+    S -> L : SERVICE_CONSUMPTION, one cycle, recordedAt, balances
+    S -> O : SUCCEEDED
+   end
+  end
+ end
+ S --> C : committed outcome
+end
+note over A,L
+ Concurrent debit/credit preserves balance/ledger consistency.
+ A fee inside UC02/renewal is not another UC05 API call/TPS.
+ Timeout means outcome unknown to caller: lookup or retry same ID.
+end note
+@enduml

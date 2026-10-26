@@ -1,0 +1,35 @@
+@startuml
+title Frequent renewal worker - one late cycle, shared core (REVIEW)
+autonumber
+participant "Renewal worker" as W
+participant "Due subscriptions" as R
+participant "Shared cycle service" as S
+participant "MAIN account" as A
+participant "Cycle / financial history" as L
+W -> R : limited batch of due auto-renewal candidates
+loop candidate
+ W -> S : attempt candidate root/version/cycleKey
+ S -> R : re-evaluate state, version, cancellation receipt, prior outcome
+ alt cycle already made / business FAILED / cancelled
+  R --> S : saved outcome / skip / conflict
+ else eligible intent, no accepted/unresolved cancellation
+  S -> A : DB expiry eligibility under coordination, current MAIN funds
+  alt insufficient funds
+   S -> R : EXPIRED + final failed attempt, no auto resurrection
+  else valid
+   group consistent renewal
+    S -> A : deduct one current-price MAIN fee
+    S -> L : one AUTO_RENEWAL_FEE + one immutable cycle
+    S -> R : ACTIVE, coverageEnd/version advanced
+   end
+  end
+ end
+ S --> W : committed outcome; record progress
+end
+note over W,L
+ Interval/batch are technical proposals, not approved60s.
+ Delayed seconds/days: one new cycle starts at valid processing instant.
+ No retroactive rights, no collection for all missed cycles.
+ Manual purchase/JOB-01 share guards; technical failure rollback/retry bounded.
+end note
+@enduml

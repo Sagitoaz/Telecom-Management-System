@@ -1,32 +1,32 @@
 @startuml
+title UC01 - Hybrid activation (REVIEW)
 left to right direction
-title DRAFT - UC01 Hybrid
-actor "CSKH System" as CSKH
-rectangle TelecomManagement {
-  usecase "UC01 Activate Subscriber\n(extension point: automatic pool empty)" as Activate
-  usecase "Activate Selected Number" as Selected
-  usecase "Activate Automatic Number" as Auto
-  usecase "Validate Identity/Profile" as Profile
-  usecase "Check requestId" as Retry
-  usecase "Accept WAITING\n[automatic + empty + consent]" as Wait
-  usecase "Lookup Available Numbers" as Lookup
-  usecase "Query Request Status" as Status
+actor "CSKH application" as Care
+rectangle "Telecom backend" {
+ usecase "UC01 Activate subscriber" as A
+ usecase "Select available number" as S
+ usecase "Automatic random allocation" as R
+ usecase "Accept WAITING\nmax24h, explicit consent" as W
+ usecase "Validate verified identity\nand caller evidence authority" as V
+ usecase "Create Subscriber + MAIN0\nand allocate one number" as C
+ usecase "Lookup request outcome" as Q
+ usecase "Lookup available numbers" as L
 }
-CSKH --> Activate
-CSKH --> Lookup
-CSKH --> Status
-Selected -|> Activate
-Auto -|> Activate
-Activate ..> Profile : <<include>>
-Activate ..> Retry : <<include>>
-Wait ..> Activate : <<extend>>\n[automatic pool empty AND consent]
-note bottom of Activate
-  Final result synchronously when completed.
-  Selected number conflict: fail, no WAITING.
-  Empty automatic pool without consent: fail.
+Care --> A
+Care --> Q
+Care --> L
+S -|> A
+R -|> A
+A ..> V : <<include>>
+W ..> R : <<extend>>\n[empty pool and consent]
+note bottom of C
+ Conditional successful completion responsibility.
+ Not included unconditionally: WAITING creates no Subscriber.
 end note
-note bottom of Wait
-  At most 24h; replenish trigger + recovery.
-  Expired requests must not allocate numbers.
+A -- C : completion responsibility
+note bottom of W
+ No consent => synchronous FAILED.
+ Selected-number conflict never becomes WAITING.
+ FIFO + stock signal + recovery60s; deadline not reset.
 end note
 @enduml

@@ -1,0 +1,57 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam classAttributeIconSize 0
+skinparam nodesep 24
+skinparam ranksep 40
+title UC06 query and JOB-02 summary - focused design - REVIEW
+class QueryController {
+  +consumption(query: ReportFilter, caller: Caller): ConsumptionPage
+ }
+class ReportQueryService {
+  +getOrCreate(caller: Caller, queryRequestId: String, filters: ReportFilter): ReportQuery
+  +freezeMembersSingleStatement(query: UUID): void
+  +page(query: UUID, cursor: String, limit: int): ConsumptionPage
+ }
+class DailySummaryService {
+  +getOrCreatePeriod(date: LocalDate, run: UUID): ReportPeriod
+  +freezeContributionsSingleStatement(period: UUID): int
+  +finalizeFromPersistedMembers(period: UUID): Summary
+ }
+interface SnapshotStore {
+  +insertSelectMembers(query: UUID): int
+  +pageImmutable(query: UUID, boundary: PageBoundary): ConsumptionPage
+  +insertUniqueContribution(source: UUID, period: UUID, kind: Kind): void
+ }
+class CursorCodec {
+  +encode(boundary: PageBoundary, context: QueryContext): String
+  +verify(cursor: String, caller: Caller, filters: ReportFilter): PageBoundary
+ }
+class CalendarPolicy {
+  +firstCycle(start: Instant, durationDays: int): TimeRange
+  +continuousCycle(previousEnd: Instant, days: int): TimeRange
+  +businessDate(recordedAt: Instant): LocalDate
+ }
+interface TransactionBoundary {
+  +readCommitted(work: Work): Result
+  +rollbackAndRetryTransient(work: Work): Result
+ }
+QueryController --> ReportQueryService
+ReportQueryService --> CursorCodec
+ReportQueryService --> SnapshotStore
+DailySummaryService --> SnapshotStore
+DailySummaryService --> CalendarPolicy
+ReportQueryService ..> TransactionBoundary : short RC transactions
+note bottom of SnapshotStore
+  Freeze source membership with one INSERT SELECT.
+  Derive DISTINCT subscriber results from saved sources.
+  Cursor binds caller, filters, query and version.
+  Global UNIQUE(source) across BASE and ADJUSTMENT.
+  Finalize only saved contributions; late sources go later.
+end note
+legend bottom
+  Focused view: selected classes from backend-design-class.puml.
+  Cross-cutting access checks / operation coordination remain in full overview.
+  Methods show responsibilities and ports, not JPA entities.
+endlegend
+@enduml

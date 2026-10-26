@@ -1,0 +1,70 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam classAttributeIconSize 0
+skinparam nodesep 24
+skinparam ranksep 40
+title Money UC04 / UC05 - focused design - REVIEW
+class MoneyController {
+  +credit(accountId: UUID, dto: CreditRequest): OperationResult
+  +debit(accountId: UUID, dto: DebitRequest): OperationResult
+ }
+class MoneyService {
+  +credit(claim: Claim, account: UUID, amount: long): FinancialResult
+  +consume(claim: Claim, cycle: UUID, account: UUID, amount: long): FinancialResult
+ }
+class OperationCoordinator {
+  +claim(caller: Caller, op: Operation, id: String, canonical: Bytes): Claim
+  +lookup(caller: Caller, op: Operation, id: String): OperationResult
+  +recoverProcessing(batch: int): int
+ }
+interface OperationRequestStore {
+  +insertClaim(key: RequestKey, hash: String): Claim
+  +lockWithFence(id: UUID, fence: long): OperationRequest
+  +storeTerminal(result: OperationResult): void
+ }
+class MoneyCore {
+  +checkEligibilityLocked(account: Account, now: Instant): Eligibility
+  +applyLocked(account: Account, delta: long, eligibility: Eligibility): BalanceChange
+ }
+interface AccountStore {
+  +lock(accountId: UUID): Account
+  +updateBalance(change: BalanceChange): void
+ }
+interface LedgerStore {
+  +append(entry: FinancialEntry): UUID
+ }
+interface SubscriptionStore {
+  +ensureEmptyGuard(subscriber: UUID, packageId: UUID): UUID
+  +lock(root: UUID): Subscription
+  +insertCycle(cycle: PaidCycle): void
+  +incrementVersion(root: Subscription): void
+ }
+interface DbClock {
+  +nowUtcAfterLock(): Instant
+ }
+interface TransactionBoundary {
+  +readCommitted(work: Work): Result
+  +rollbackAndRetryTransient(work: Work): Result
+ }
+MoneyController --> MoneyService
+MoneyService --> OperationCoordinator
+OperationCoordinator --> OperationRequestStore
+MoneyService --> MoneyCore
+MoneyCore --> AccountStore
+MoneyCore --> DbClock
+MoneyService --> LedgerStore
+MoneyService --> SubscriptionStore : consumption cycle
+MoneyService ..> TransactionBoundary : one RC transaction
+note bottom of MoneyCore
+  Lock account, root and cycle first.
+  Sample fresh DB time immediately before writes.
+  Balance + ledger + terminal result commit together.
+  No fallback; FAILED is final; unknown COMMIT requires lookup.
+end note
+legend bottom
+  Focused view: selected classes from backend-design-class.puml.
+  Cross-cutting access checks / operation coordination remain in full overview.
+  Methods show responsibilities and ports, not JPA entities.
+endlegend
+@enduml

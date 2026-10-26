@@ -1,0 +1,34 @@
+@startuml
+title UC04 - credit the specified account (REVIEW)
+autonumber
+actor "Authorized CSKH" as C
+participant "Credit service" as S
+participant "Operation outcomes" as O
+participant "Specified account" as A
+participant "Financial history" as L
+C -> S : requestId, subscriberId, accountId, amountVND
+S -> O : caller + UC04 + ID / canonical target and amount
+alt replay / content conflict / PROCESSING
+ O --> S : original outcome / conflict / in progress
+ S --> C : no second monetary effect
+else new operation
+ group atomic business effect
+  S -> A : verify owner/type/CREDIT permission and ACTIVE
+  S -> A : check DB time under account coordination immediately before update
+  alt expired / amount invalid / new balance exceeds configured cap
+   A --> S : business rejection
+   S -> O : FAILED, unchanged balance
+  else eligible and within cap
+   S -> A : add exact integer amount to this account
+   S -> L : CREDIT_TOPUP, recordedAt, eligibilityCheckedAt, balances
+   S -> O : SUCCEEDED linked to ledger
+  end
+ end
+ S --> C : outcome only after commit
+end
+note over S,A
+ No fallback to MAIN or another subsidiary.
+ checkedAt before expiry can commit after expiry.
+ credit does not reactivate an expired account or failed renewal.
+end note
+@enduml

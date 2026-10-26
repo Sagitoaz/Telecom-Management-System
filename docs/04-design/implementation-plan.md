@@ -1,22 +1,16 @@
-# Kế hoạch triển khai theo vertical slice
+# Kế hoạch triển khai sau duyệt — tài liệu REVIEW 26/10/2026
 
-**DRAFT 0.2, 18/10/2026 — kế hoạch trước code; không cấp phép vượt checkpoint.**
-Nguồn: ROADMAP M0–M8, SRS, UC01.
+Lượt này chỉ tài liệu/UML/OpenAPI; không Java, migration, Compose, runtime, branch/commit/deploy. [Checklist](m4-review-checklist.md) là gate; M4 lịch sử UC01 không tự duyệt delta MySQL. Dùng [schema](database-schema.md), [transaction](concurrency-and-jobs.md), [API](api-contract.md) thay hướng PostgreSQL cũ.
 
-| Thứ tự | Công việc | Bằng chứng hoàn tất |
+| Thứ tự | Phần việc sau khi được giao | Điều kiện và bằng chứng cần có |
 |---|---|---|
-| 1 | Chốt phần yêu cầu UC01, duyệt M1 | Quyết định người/ngày, SRS/UC01 version, OQ được hoãn |
-| 2 | Rà soát P2.1 → P2.2 → P2.4, M2 | UML render + domain/flows được duyệt |
-| 3 | Chốt stack/module/JWT, M3 | ADR được duyệt, C4 nhất quán |
-| 4 | Hoàn tất schema/API/design class/concurrency UC01, M4 | Migration design, OpenAPI validate, thuật toán race/expiry/retry và test matrix |
-| 5 | P5.1 nền backend, P5.2 UC01 | Build + DB migration + API/test nghiệp vụ trên PostgreSQL |
-| 6 | M5 UC01 hoàn thiện | Toàn bộ AC-SUB được test, lỗi/timeout/recovery/race có bằng chứng |
-| 7 | UC02 → UC03 → UC04 → UC05 → UC06 và hai job | Mỗi vòng bổ sung yêu cầu/thiết kế → code/test → docs |
-| 8 | M6 đầy đủ nghiệp vụ → M7 test hệ thống/tải → M8 bàn giao | Log đo, đối soát, chạy từ môi trường sạch |
+|1|Chốt delta MySQL UC01|owner duyệt schema UUID/collation/index và contract/khóa/recovery; không cần đóng toàn bộ UC sau |
+|2|P5.1 khởi tạo môi trường home/office|Java21/Maven; home MySQL8.0.46/RabbitMQ/Redis/Keycloak; office đọc/code/unit không DB. build/migration/healthcheck thực, không dùng starterPG |
+|3|UC01 vertical slice|migration nền, JWT/caller/evidence, claim/idempotency, allocation/FIFO/wait/recovery; test stock race, retry/crosscaller, timeout and rollback; M5 chỉ bằng API chạy thật |
+|4|UC02 + UC04/05|review chi tiết trước code; account→root→cycle, onefee/version/target, immutable ledger; cap/expiry under lock; failure/replay and contention tests |
+|5|UC03/renewal/JOB-01|review protocol CR-CAN-003 receipt sau confirmed intent commit và mấtACK trước code liên quan; prepaid cancel/no refund, durable coordination, worker shared core and late singlecycle; crash and boundary test |
+|6|UC06/JOB-02|persist first query/period cutoff, one statement membership underRC, cursor and immutable finalized summary/source uniqueness; latecommit adjustment tests |
+|7|P6 hệ thống/hiệu năng|seed>=500K tổng trước đo; warmup2min/measure10min, simultaneous fresh success30+30TPS;10hotpairs=50% debit attempts inclretry; p95<=500ms/p99<=1s/error<=0.1%; unresolved0 và đối soát từng request/ledger/balance |
+|8|P7 bàn giao|packaging/seed/config/runbook và chạy tái lập trên máy khác; báo cáo runtime thực tách báo cáo nghiệp vụ trước code |
 
-Các lần kiểm thử UC01 phải gồm: số chọn đua, tự cấp, consent/no-consent, deadline, retry cùng/khác payload, crash/timeout, JWT, hồ sơ và recovery.
-Không tạo skeleton rồi coi P5.x xong; không yêu cầu hoàn tất API/sequence mọi UC trước UC01.
-Chưa viết lệnh chạy backend/test mới vì phần triển khai chưa tồn tại.
-
-
-Stack/công cụ đã chọn: Spring Boot/Java21/PostgreSQL/JPA-JDBC/Flyway/RabbitMQ/Redis; IdP local JWKS bên ngoài. P5/P7 cần dependency/config thực tế và failure tests broker/cache, không tự coi tài liệu là đã code. Kịch bản tải k6 và đối soát riêng theo DEC-PRE-24.
+Mỗi slice code chỉ sau đủ gate theo phạm vi; cùng requestID nội dung khác409, committed-but-ACK-lost lookup; FAILED thiếu tiền không hồi sinh. Kiểm thử bắt buộc và expected outcome ở transaction/API/SRS/test matrix; chỉ ghi kết quả khi đã chạy. Không tick migration/test/TPS bằng việc viết file. Cần cập nhật Roadmap/DEC bởi lượt điều phối khi owner xác nhận, không tự thay baseline approved.

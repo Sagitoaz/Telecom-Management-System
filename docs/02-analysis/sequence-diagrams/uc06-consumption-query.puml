@@ -1,0 +1,39 @@
+@startuml
+title UC06 - immutable result membership and cursor (REVIEW)
+autonumber
+actor "Reporting application" as C
+participant "Report query service" as S
+participant "Committed financial history" as L
+participant "Query / snapshot members" as Q
+C -> S : queryRequestId, X,Y, packageIds, OR/AND, includeFee, pageSize
+S -> S : verify scope/caller/filters, default50 max200
+S -> Q : resolve caller + queryRequestId / canonical filters
+Q --> S : existing fixed query or new claim; different filters conflict
+alt READY query already exists
+ Q --> S : reuse original membership, totals and cutoff
+else BUILDING query needs first successful freeze
+ S -> Q : get or persist original cutoff, preserve on retry
+ S -> L : one consistent source selection by recordedAt in [X,Y)\nusing original cutoff
+ L --> S : committed qualifying ledger / subscriber membership
+ S -> Q : persist fixed members + derived subscriber totals atomically
+ Q --> S : durable READY query, caller/filter/version unchanged
+end
+S -> Q : first page ordered by subscriber
+S --> C : queryId, fixed page, protected cursor
+... new ledger becomes visible ...
+C -> S : next cursor
+S -> S : verify integrity/caller/filter/query/version
+alt valid retained snapshot
+ S -> Q : page from SAME persisted membership
+ Q --> S : next members, no live membership changes
+ S --> C : fixed next page / final page
+else invalid/expired snapshot
+ S --> C : reject / request new query, never substitute live result
+end
+note over L,Q
+ recordedAt is business timestamp in ultimately committed tx.
+ It is not physical COMMIT completion time.
+ Page processing never holds an open DB transaction while user reads.
+ OR: any selected package; AND: every selected package per subscriber.
+end note
+@enduml

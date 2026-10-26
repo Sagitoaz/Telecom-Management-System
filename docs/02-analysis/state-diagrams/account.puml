@@ -1,0 +1,18 @@
+@startuml
+title Account - expiry and monetary effects (REVIEW)
+[*] --> ACTIVE : MAIN created by UC01\nor configured subsidiary seed
+ACTIVE --> ACTIVE : valid credit/debit committed\npreserve ledger consistency
+ACTIVE --> EXPIRED : expiry timestamp reached\nJOB-01 synchronizes state
+note right of ACTIVE
+ MAIN has no default expiry.
+ Subsidiary type / permissions / expiry explicit before seed.
+ Check DB clock under account row lock before updates.
+ checkedAt >= expiresAt rejects; commit may occur later.
+ No fallback/pooling; no negative balance.
+end note
+note right of EXPIRED
+ Keep balance and history.
+ Timestamp rejects new effects even before state sync.
+ No automatic credit/reactivation/refund policy invented.
+end note
+@enduml

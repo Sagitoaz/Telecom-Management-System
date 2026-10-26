@@ -1,0 +1,41 @@
+@startuml
+title JOB-02 - daily00:30 fixed source set and late adjustments (REVIEW)
+autonumber
+participant "Daily runner / authorized admin" as W
+participant "Report period / run" as P
+participant "Committed financial history" as L
+participant "Source memberships / contributions" as C
+participant "Daily summary" as S
+participant "Optional CSV export" as E
+W -> P : claim original day / missing backlog day
+W -> P : get or durably record FIRST cutoff before source work
+P --> W : original cutoff, unchanged on all retries
+alt first durable source freeze absent
+ W -> L : one consistent selection for recordedAt local day\nusing original cutoff
+ L --> W : committed qualifying sources
+ W -> C : persist fixed source members / immutable amounts
+ W -> P : persist snapshot identity / SNAPSHOTTED with members
+else retry existing fixed period
+ P --> W : reuse SAME cutoff / membership
+end
+W -> C : claim each source globally once as BASE
+W -> S : aggregate only persisted contributions
+W -> P : reconcile then publish FINALIZED
+... committed old-day source discovered after finalization ...
+W -> L : detect eligible unrepresented source
+W -> C : unique source => ADJUSTMENT in later period\nretain original local day
+W -> S : include once in later period, never mutate finalized original
+W -> E : export immutable finalized version if requested
+alt export fails
+ E --> W : retry export only, no reaggregation
+else complete
+ E --> W : publish complete file/count/sum/checksum
+end
+note over P,S
+ recordedAt can precede physical commit/midnight crossing.
+ A source contributes BASE OR ADJUSTMENT, never both.
+ Retry after snapshot commit preserves source set even if aggregation failed.
+ Failure before source freeze still preserves the original durable cutoff.
+ Missing days recovered in order; no client-supplied backdating.
+end note
+@enduml

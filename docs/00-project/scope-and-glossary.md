@@ -1,343 +1,155 @@
-# Phạm vi hệ thống và thuật ngữ – Telecom Subscription Management System
+# Phạm vi hệ thống và thuật ngữ
 
-**Tên dự án:** Telecom Subscription Management System
+**Dự án:** Telecom Subscription Management System
+**Mã tài liệu:** DOC-PROJ-002 · **Phiên bản:** 1.2 · **Cập nhật:** 26/10/2026.
 
-**Mã tài liệu:** DOC-PROJ-002
+Tài liệu xác định phạm vi và cách hiểu thuật ngữ hiện hành sau các quyết định của chủ dự án ngày 26/10. Quyết định nghiệp vụ được ghi tại [sổ quyết định](clarification-log.md), [biên nhận](decision-receipt-20261026.md) và các CR; thiết kế kỹ thuật mới vẫn REVIEW. Trạng thái checkpoint lấy từ [ROADMAP](../ROADMAP.md), không suy từ việc đã có tài liệu.
 
-**Phiên bản:** 1.1
+## 1. Ranh giới và trách nhiệm
 
-**Trạng thái:** Baseline Phase 0 được chủ dự án có quyền nghiệm thu duyệt ngày 14/10/2026
+TelecomManagement là backend xử lý và lưu dữ liệu khách hàng, thuê bao, kho số, gói cước, tài khoản, giao dịch và báo cáo. CSKH là ứng dụng bên ngoài, nhận yêu cầu của khách hàng và gọi REST API; backend không cung cấp giao diện khách hàng/CSKH hoàn chỉnh.
 
-**Giai đoạn:** Phase 0 – Project Definition & Scope
-
----
-
-## 1. Mục đích tài liệu (Document Purpose)
-
-Tài liệu này xác định phạm vi, ranh giới và các thuật ngữ nghiệp vụ được sử dụng trong dự án Telecom Subscription Management System.
-
-Tài liệu đóng vai trò làm cơ sở cho việc:
-
-- Xác định những chức năng thuộc trách nhiệm của hệ thống.
-- Phân biệt trách nhiệm giữa TelecomManagement và các hệ thống bên ngoài.
-- Xác định các chức năng nằm ngoài phạm vi triển khai hiện tại.
-- Thống nhất cách hiểu những thuật ngữ nghiệp vụ.
-- Hỗ trợ xây dựng Software Requirements Specification (SRS), Use Case Specification, Domain Model và thiết kế hệ thống ở các giai đoạn tiếp theo.
-
-Tài liệu tập trung vào phạm vi nghiệp vụ và ranh giới trách nhiệm, không mô tả chi tiết thuật toán, cấu trúc cơ sở dữ liệu hoặc giao diện REST API.
-
-## 2. Ranh giới hệ thống (System Boundary)
-
-### 2.1. Hệ thống được xem xét (System of Interest)
-
-TelecomManagement là hệ thống backend chịu trách nhiệm quản lý dữ liệu và xử lý các nghiệp vụ liên quan đến khách hàng, thuê bao, gói cước, tài khoản dịch vụ và giao dịch.
-
-Hệ thống cung cấp REST API cho các hệ thống bên ngoài gọi đến và có các tác vụ xử lý nội bộ được kích hoạt tự động theo lịch trình.
-
-TelecomManagement không trực tiếp cung cấp giao diện cho khách hàng cuối mà xử lý những yêu cầu nghiệp vụ được gửi từ các hệ thống tích hợp.
-
-### 2.2. Các thành phần liên quan
-
-| Thành phần | Vai trò | Ranh giới trách nhiệm |
-|---|---|---|
-| Khách hàng | Người đăng ký và sử dụng dịch vụ viễn thông | Cung cấp thông tin và thực hiện yêu cầu thông qua hệ thống CSKH |
-| Hệ thống CSKH | Hệ thống bên ngoài gọi REST API | Tiếp nhận yêu cầu từ khách hàng, gửi dữ liệu nghiệp vụ và nhận kết quả |
-| TelecomManagement | Hệ thống backend đang phát triển | Kiểm tra, xử lý nghiệp vụ, quản lý trạng thái và dữ liệu |
-| Cơ sở dữ liệu | Thành phần lưu trữ của TelecomManagement | Lưu dữ liệu khách hàng, thuê bao, gói cước, tài khoản và giao dịch |
-| Bộ phận/hệ thống báo cáo | Bên sử dụng thông tin báo cáo | Yêu cầu hoặc khai thác kết quả truy vấn theo phương thức tích hợp sẽ được xác định |
-| Scheduler | Thành phần xử lý nội bộ | Kích hoạt các công việc xử lý dữ liệu định kỳ |
-| Công cụ kiểm thử | Thành phần phục vụ phát triển và đánh giá | Sinh dữ liệu, gửi yêu cầu kiểm thử và kiểm chứng kết quả |
-
-Scheduler và cơ sở dữ liệu thuộc phạm vi kỹ thuật nội bộ của hệ thống, không được xem là những hệ thống nghiệp vụ bên ngoài.
-
-### 2.3. Nguyên tắc phân chia trách nhiệm
-
-**Hệ thống CSKH chịu trách nhiệm:**
-
-- Tiếp nhận thông tin và yêu cầu từ khách hàng.
-- Gửi yêu cầu đấu nối thuê bao.
-- Hiển thị hoặc cung cấp danh sách số thuê bao còn khả dụng để khách hàng lựa chọn.
-- Gửi yêu cầu đăng ký hoặc hủy gói cước.
-- Gửi các yêu cầu cộng tiền, trừ tiền theo nghiệp vụ.
-- Tiếp nhận và hiển thị kết quả xử lý.
-
-**TelecomManagement chịu trách nhiệm:**
-
-- Tiếp nhận và kiểm tra các yêu cầu nghiệp vụ được gửi đến.
-- Quản lý thông tin khách hàng và thuê bao trong phạm vi hệ thống.
-- Quản lý tình trạng khả dụng và cấp phát số thuê bao.
-- Quản lý thông tin đăng ký gói cước và thời hạn sử dụng.
-- Quản lý các tài khoản dịch vụ và số dư.
-- Thực hiện các giao dịch cộng tiền, trừ tiền.
-- Bảo đảm tính nhất quán dữ liệu và xử lý an toàn các yêu cầu đồng thời.
-- Cung cấp dữ liệu phục vụ tra cứu và báo cáo.
-- Tự động xử lý dữ liệu hết hạn theo lịch trình.
-
-Các quy tắc xác thực, phân quyền và phương thức tích hợp cụ thể sẽ được đặc tả ở những giai đoạn tiếp theo.
-
-## 3. Phạm vi chức năng (Functional Scope)
-
-### 3.1. Các chức năng nằm trong phạm vi (In Scope)
-
-#### SC-01. Quản lý khách hàng và thuê bao
-
-Hệ thống hỗ trợ tiếp nhận thông tin khách hàng và đấu nối thuê bao mới.
-
-Các khả năng thuộc phạm vi:
-
-- Tiếp nhận thông tin đăng ký khách hàng.
-- Quản lý quan hệ giữa khách hàng và thuê bao.
-- Cho phép một khách hàng sở hữu nhiều thuê bao.
-- Hỗ trợ cấp số thuê bao tự động.
-- Cung cấp khả năng tra cứu số thuê bao còn khả dụng để hệ thống CSKH cho khách hàng lựa chọn.
-- Tiếp nhận số thuê bao được lựa chọn để thực hiện đấu nối.
-- Kiểm tra tính khả dụng của số thuê bao khi cấp phát.
-- Lưu thông tin khách hàng và thuê bao.
-- Trả kết quả xử lý cho hệ thống CSKH.
-
-Tra cứu không giữ số. Tại lúc đấu nối, cấp phát phải không trùng; số được chọn đã bị cấp thì trả lỗi để chọn lại (DEC-02). Quy tắc tái sử dụng số, trạng thái và cơ chế nguyên tử chi tiết chốt tại OQ-05 trước code UC01.
-
-#### SC-02. Quản lý đăng ký gói cước
-
-Hệ thống hỗ trợ đăng ký gói cước cho thuê bao.
-
-Các khả năng thuộc phạm vi:
-
-- Tiếp nhận yêu cầu đăng ký gói cước.
-- Xác định thuê bao và gói cước cần đăng ký.
-- Kiểm tra điều kiện đăng ký.
-- Ghi nhận thông tin đăng ký gói cước.
-- Quản lý thời điểm bắt đầu và kết thúc chu kỳ sử dụng.
-- Theo dõi trạng thái đăng ký gói cước.
-- Trả kết quả xử lý cho hệ thống CSKH.
-
-Đăng ký gói cước và trừ tiền là các chức năng riêng. Backend điều phối thu phí khi đăng ký; gói chỉ có hiệu lực khi thu phí thành công (DEC-03).
-
-Nếu một bước lỗi, không để lại gói đang hoạt động hoặc khoản trừ tiền thành công một phần. Mức phí, tài khoản thu phí, retry và cơ chế transaction chốt ở SRS/thiết kế trước code đăng ký (OQ-06).
-
-#### SC-03. Hủy đăng ký gói cước
-
-Hệ thống hỗ trợ tiếp nhận và xử lý yêu cầu hủy gói cước của thuê bao.
-
-Các khả năng thuộc phạm vi:
-
-- Tiếp nhận yêu cầu hủy gói cước.
-- Xác định thông tin đăng ký cần hủy.
-- Ghi nhận yêu cầu hủy.
-- Duy trì hiệu lực gói cước đến hết chu kỳ sử dụng hiện tại.
-- Cập nhật trạng thái khi đến thời điểm hủy có hiệu lực.
-- Trả kết quả xử lý cho hệ thống CSKH.
-
-Việc hủy gói cước không có hiệu lực ngay tại thời điểm gửi yêu cầu mà có hiệu lực khi kết thúc chu kỳ sử dụng hiện tại.
-
-#### SC-04. Quản lý tài khoản và giao dịch
-
-Hệ thống quản lý các tài khoản phục vụ sử dụng dịch vụ và những giao dịch làm thay đổi số dư tài khoản.
-
-Các khả năng thuộc phạm vi:
-
-- Quản lý thông tin tài khoản liên kết với thuê bao.
-- Theo dõi số dư và thời hạn sử dụng tài khoản.
-- Tiếp nhận và xử lý yêu cầu cộng tiền.
-- Tiếp nhận và xử lý yêu cầu trừ tiền.
-- Kiểm tra số dư trước khi trừ tiền.
-- Hủy bỏ transaction và trả lỗi nếu số dư không đủ.
-- Ghi nhận các giao dịch phát sinh.
-- Bảo đảm dữ liệu số dư và giao dịch nhất quán.
-- Hỗ trợ xử lý các yêu cầu đồng thời trên cùng một tài khoản.
-
-Phân loại tài khoản, quy tắc khởi tạo và cơ chế xử lý yêu cầu giao dịch trùng lặp sẽ được làm rõ tại những giai đoạn tiếp theo.
-
-#### SC-05. Tra cứu và báo cáo
-
-Hệ thống cung cấp khả năng tra cứu dữ liệu sử dụng dịch vụ theo điều kiện được yêu cầu.
-
-Các khả năng thuộc phạm vi:
-
-- Tiếp nhận khoảng thời gian tra cứu từ X đến Y.
-- Tiếp nhận danh sách gói cước cần tra cứu.
-- Xác định các giao dịch tiêu dùng thuộc phạm vi truy vấn.
-- Xác định các thuê bao liên quan.
-- Trả danh sách thuê bao đáp ứng điều kiện tra cứu.
-
-Quy tắc kết hợp điều kiện khi truy vấn nhiều gói cước và định nghĩa chi tiết của giao dịch tiêu dùng sẽ được làm rõ trong SRS (OQ-03). Chưa mặc định phí đăng ký là tiêu dùng dịch vụ.
-
-Phạm vi có thêm **job tổng hợp tiêu dùng hàng ngày riêng** (DEC-07), ngoài API truy vấn và job hết hạn. Chỉ tiêu, đầu ra, kỳ dữ liệu, lịch chạy và cách chạy lại chốt trong SRS (OQ-13).
-
-#### SC-06. Xử lý dữ liệu hết hạn định kỳ
-
-Hệ thống thực hiện các tác vụ kiểm tra và xử lý dữ liệu hết hạn theo lịch trình hàng ngày.
-
-Các khả năng thuộc phạm vi:
-
-- Tự động kích hoạt job định kỳ.
-- Kiểm tra thời hạn sử dụng của các đăng ký gói cước và tài khoản.
-- Xác định dữ liệu đã hết hiệu lực.
-- Cập nhật trạng thái hoặc thực hiện soft delete theo quy tắc nghiệp vụ.
-- Giữ lại thông tin lịch sử cần thiết cho việc tra cứu và đối soát.
-- Ghi nhận kết quả thực hiện job phục vụ kiểm tra và xử lý lỗi.
-
-Việc xử lý dữ liệu hết hạn không đồng nghĩa với xóa định nghĩa gói cước trong danh mục gói cước.
-
-Trạng thái dữ liệu và quy tắc xử lý cụ thể sẽ được đặc tả sau.
-
-### 3.2. Các chức năng nằm ngoài phạm vi (Out of Scope)
-
-Trong phạm vi triển khai ban đầu, hệ thống không bao gồm:
-
-| Mã | Nội dung ngoài phạm vi | Giải thích |
-|---|---|---|
-| EX-01 | Xây dựng giao diện CSKH hoàn chỉnh | CSKH được xem là hệ thống bên ngoài sử dụng REST API |
-| EX-02 | Xây dựng ứng dụng di động cho khách hàng | Không thuộc yêu cầu hiện tại |
-| EX-03 | Tích hợp trực tiếp với thiết bị và hạ tầng mạng viễn thông thực tế | Nghiệp vụ đấu nối được mô hình hóa trong backend; việc kích hoạt trên mạng thực chưa nằm trong đề bài |
-| EX-04 | Tích hợp cổng thanh toán hoặc ngân hàng thực tế | Phạm vi hiện tại tập trung vào xử lý giao dịch cộng/trừ tiền nội bộ |
-| EX-05 | Xây dựng hệ thống tính cước viễn thông hoàn chỉnh | Chưa bao gồm tính giá cước theo lưu lượng, thời lượng cuộc gọi hay dữ liệu mạng thực tế |
-| EX-06 | Xây dựng nền tảng Business Intelligence hoàn chỉnh | Chỉ triển khai các khả năng truy vấn và báo cáo được yêu cầu |
-
-Các chức năng ngoài phạm vi có thể được xem xét mở rộng trong tương lai nếu có yêu cầu mới.
-
-Việc chưa xác định chi tiết một chức năng thuộc phạm vi không có nghĩa chức năng đó bị loại bỏ.
-
-## 4. Phạm vi dữ liệu (Data Scope)
-
-### 4.1. Các nhóm dữ liệu được quản lý
-
-| Nhóm dữ liệu | Nội dung chính |
+| Thành phần | Trách nhiệm trong phạm vi |
 |---|---|
-| Customer | Thông tin cá nhân của khách hàng |
-| Subscriber | Thông tin số thuê bao và quan hệ sở hữu |
-| Service Package | Danh mục và thông tin gói cước |
-| Package Subscription | Thông tin đăng ký, chu kỳ và trạng thái sử dụng gói cước |
-| Account | Thông tin tài khoản, số dư và thời hạn sử dụng |
-| Transaction | Thông tin giao dịch cộng/trừ tiền và lịch sử biến động tài khoản |
+| Khách hàng | Cung cấp hồ sơ, chọn số/chờ khi thiếu số, yêu cầu đăng ký/hủy dịch vụ qua CSKH |
+| CSKH | Gửi dữ liệu và lựa chọn rõ ràng, quản lý requestId, lấy version hiện hành, tra và hiển thị kết quả |
+| Bên khai thác báo cáo | Gửi bộ lọc, dùng cursor đúng lượt xem, khai thác dữ liệu theo quyền |
+| IdP / Keycloak | Cấp JWT, quản lý khóa xác minh; nằm ngoài backend Telecom |
+| Backend Telecom | Kiểm token/quyền/dữ liệu, điều phối nghiệp vụ nguyên tử, chống lặp và lưu lịch sử |
+| Scheduler và worker | Thành phần nội bộ kích hoạt xử lý định kỳ/khôi phục, không phải actor ngoài |
+| Người vận hành | Chạy/tra job bằng quyền riêng, theo dõi, phục hồi và đối soát |
 
-Ngoài các nhóm dữ liệu trên, hệ thống cần có khả năng quản lý trạng thái khả dụng của số thuê bao để hỗ trợ cấp số tự động và cho khách hàng lựa chọn số.
+MySQL, RabbitMQ và Redis là hạ tầng của giải pháp. MySQL giữ dữ liệu có thẩm quyền; RabbitMQ cung cấp tín hiệu bổ sung kho; Redis cache danh mục đọc. Chúng không thay đổi ranh giới trách nhiệm nghiệp vụ hoặc tạo thêm API quản trị chưa được duyệt.
 
-Việc mô hình hóa dữ liệu số thuê bao thành bảng độc lập hay kết hợp với cấu trúc khác sẽ được quyết định khi thiết kế cơ sở dữ liệu.
+## 2. Phạm vi chức năng
 
-### 4.2. Quan hệ nghiệp vụ cơ bản
+### SC-01 — Khách hàng, thuê bao và cấp số (UC01)
 
-- Một khách hàng có thể sở hữu nhiều thuê bao.
-- Một thuê bao thuộc về một khách hàng tại một thời điểm.
-- Một thuê bao có thể đăng ký nhiều gói cước.
-- Một gói cước có thể được nhiều thuê bao đăng ký.
-- Quan hệ đăng ký gói cước được quản lý thông qua thông tin đăng ký riêng.
-- Một thuê bao có thể có nhiều tài khoản phục vụ các dịch vụ khác nhau.
-- Mỗi tài khoản thuộc về một thuê bao.
-- Một tài khoản có thể phát sinh nhiều giao dịch.
-- Mỗi giao dịch cộng hoặc trừ tiền tác động đến một tài khoản cụ thể.
-- Các giao dịch tiêu dùng có thể liên quan đến gói cước hoặc dịch vụ tương ứng.
+Một Customer có nhiều Subscriber; mỗi Subscriber thuộc một Customer tại một thời điểm. Customer có thể có nhiều giấy tờ đã xác minh. Backend đối chiếu loại/số giấy tờ và hồ sơ chuẩn hóa theo quyết định đã duyệt; không tự merge theo tên/ngày sinh, không tự sửa hồ sơ khác biệt hoặc thêm giấy tờ vào Customer cũ ngoài quy trình được xác nhận.
 
-### 4.3. Lưu trữ và vòng đời dữ liệu
+Hệ thống nhận số E.164 đã chuẩn hóa, hỗ trợ chọn số khả dụng hoặc tự cấp. Tra cứu không giữ chỗ; lúc cấp phải chống cấp trùng. UC01 trả kết quả cuối đồng bộ khi có thể. Chỉ AUTO hết kho và có sự đồng ý chờ mới vào WAITING tối đa 24 giờ, sau đó EXPIRED nếu chưa hoàn tất. Cơ chế thử lại khi bổ sung kho và quét khôi phục DB mỗi 60 giây không biến WAITING thành thành công.
 
-Hệ thống sử dụng cơ sở dữ liệu quan hệ để quản lý các đối tượng nghiệp vụ.
+Thành công tạo Subscriber, cấp một số và MAIN số dư 0 nhất quán. Việc này chỉ diễn ra trong backend, không kích hoạt mạng viễn thông thật. Tái cấp số đã từng sử dụng chưa có quy trình giải phóng/cách ly hoàn chỉnh, không được mặc định thực hiện.
 
-Những dữ liệu hết hạn cần được xử lý bằng cách cập nhật trạng thái hoặc cơ chế soft delete thay vì xóa vật lý những thông tin lịch sử cần thiết.
+### SC-02 — Đăng ký và gia hạn gói (UC02)
 
-Hệ thống phải bảo toàn dữ liệu giao dịch phục vụ việc kiểm tra, tra cứu và đối soát.
+Backend kiểm điều kiện, thu phí MAIN và tạo kỳ gói trong cùng nghiệp vụ nguyên tử. Phí, số dư, kỳ và kết quả request cùng thành công hoặc cùng rollback. API đăng ký không phải một lời gọi API trừ tiền độc lập có commit riêng.
 
-Các quy tắc chi tiết về thời gian lưu trữ, trạng thái dữ liệu, ràng buộc và chiến lược lưu trữ sẽ được xác định trong SRS và thiết kế cơ sở dữ liệu.
+Đăng ký gói là bản ghi ổn định của thuê bao–gói; mỗi lần mua hợp lệ tạo kỳ với giá/số ngày/phiên bản đã chốt cho kỳ đó. Thủ công dùng `expectedSubscriptionVersion`, tránh hai mã mới cùng kéo dài trên phiên bản cũ. Gia hạn thủ công và worker cùng kỳ chỉ được thu một phí; phát hiện bên kia đã tạo kỳ không tự nối thêm kỳ khác.
 
-## 5. Phạm vi chất lượng và hiệu năng (Quality & Performance Scope)
+Khi còn thời gian đã trả, kỳ mới nối từ coverageEnd. Sau gián đoạn, kỳ mới bắt đầu tại lúc xử lý hợp lệ, chỉ một kỳ, không truy thu nhiều kỳ hoặc hồi tố quyền dùng. Ngừng bán mới không tự cấm gia hạn khách cũ; cần kiểm chính sách cấu hình và giá áp dụng cho kỳ mới.
 
-Hệ thống phải đáp ứng các yêu cầu phi chức năng trọng tâm sau:
+### SC-03 — Hủy đăng ký gói (UC03)
 
-| Mã | Nhóm yêu cầu | Phạm vi |
+Hủy có hiệu lực cuối tất cả thời gian đã trả, không hoàn phí ([CR-CAN-002](CR-CAN-002-prepaid-cancellation.md)). Nhận hủy hợp lệ chặn mua thêm/tự gia hạn, giữ quyền tới coverageEnd; tới hạn chuyển CANCELLED. Đây khác hết hạn thông thường EXPIRED.
+
+Mốc nhận hủy theo [CR-CAN-003](CR-CAN-003-cancellation-receipt.md): sau khi biết ý định hủy đã commit, backend kiểm giờ DB mới. Mốc này phải nhỏ hơn coverageEnd đang nhắm tới và version vẫn hợp lệ. Đúng/sau hạn thì FAILED `CANCELLATION_RECEIVED_TOO_LATE`, giải phóng chặn tạm, không tự hủy kỳ mới. Intent PENDING chưa phải accepted nhưng chặn cả mua thêm và gia hạn trong lúc phân giải.
+
+Commit chưa rõ kết quả phải lookup; không dùng giờ HTTP hoặc timestamp trước commit để lùi mốc nhận. Accepted đã được chốt nhưng mất phản hồi được replay kết quả cũ dù đã qua hạn. Hai transaction là thiết kế thực hiện cần review/test; quy tắc receipt đã được chủ dự án duyệt.
+
+### SC-04 — Tài khoản và giao dịch (UC04/UC05)
+
+Các tài khoản có số dư riêng. Cộng/trừ tiền thao tác đúng accountId, đúng quyền của loại tài khoản và hạn dùng; không gộp hoặc lấy bù tài khoản khác. Phí gói luôn MAIN. MAIN không có hạn mặc định; tài khoản phụ demo chỉ được tạo khi loại/quyền/hạn đã khai báo rõ. Không có API mở tài khoản phụ trong phạm vi này.
+
+Tiền là số nguyên VND; lệnh phải dương, tối đa 10 triệu, số dư tối đa 100 triệu và cấu hình được. Không số dư âm. Thiếu tiền không đổi số dư và không tạo giao dịch tài chính thành công. Tiêu dùng cần kỳ gói đang hiệu lực thuộc đúng thuê bao; không có gói, hết hạn hoặc sai gói thì từ chối.
+
+Kiểm hạn bằng giờ DB dưới khóa tài khoản ngay trước cập nhật theo [CR-TIME-002](CR-TIME-002-account-expiry.md). Đã tới hạn thì từ chối; kiểm trước hạn có thể commit sau hạn. Phạm vi không yêu cầu đo hoặc bảo đảm commit vật lý trước thời điểm hết hạn.
+
+### SC-05 — Tra cứu và báo cáo (UC06/JOB-02)
+
+API trả danh sách thuê bao không trùng có tiêu dùng trong `[X,Y)`, theo bộ gói. OR chọn ít nhất một gói, AND yêu cầu từng gói được chọn đều có giao dịch. `includeFee` phân biệt chỉ tiêu dùng với có thêm phí đăng ký/gia hạn; CREDIT bị loại khỏi tiêu dùng. Trang mặc định 50, tối đa 200 thuê bao.
+
+Các trang của cùng lượt xem dựa trên tập kết quả cố định, cursor gắn caller/bộ lọc/snapshot và được bảo vệ toàn vẹn. Không giữ transaction DB mở trong lúc bên gọi đọc các trang. Muốn dữ liệu mới phải mở lượt xem mới.
+
+Theo [CR-TIME-001](CR-TIME-001-reporting-time.md), nguồn thời gian là recordedAt của giao dịch cuối cùng đã commit. Ngày đã chốt bất biến; giao dịch phát hiện muộn thuộc ngày cũ tạo một điều chỉnh ở kỳ sau, truy nguồn và không cộng hai lần. JOB-02 giữ cutoff/tập nguồn bền vững đầu tiên qua retry dù lần trước chưa hoàn tất; không lấy mốc mới làm đổi kết quả tùy lần chạy.
+
+### SC-06 — Vòng đời và tác vụ nền
+
+Worker gia hạn kiểm tra thường xuyên. JOB-01 lúc 00:05 hằng ngày xử lý hết hạn tài khoản/gói, hoàn tất hủy và rà soát phần bỏ sót; JOB-02 riêng lúc 00:30 tổng hợp tiêu dùng. Lịch theo Asia/Ho_Chi_Minh. Worker và JOB-01 dùng chung lõi/khóa kỳ, không thu lại phí. Khoảng chạy worker chưa được chốt; 60 giây chỉ là nhịp khôi phục UC01 đã chọn.
+
+Hết hạn dùng trạng thái/soft delete và giữ lịch sử, không xóa định nghĩa gói. API vẫn kiểm thời hạn ngay khi xử lý, không đợi job cập nhật trạng thái mới mất quyền. Chạy tay có quyền vận hành riêng và cùng cơ chế chống trùng như lịch tự động.
+
+## 3. Ngoài phạm vi
+
+| Mã | Nội dung | Ranh giới |
 |---|---|---|
-| QS-01 | Quy mô dữ liệu | Tổng các bảng dữ liệu nghiệp vụ có tối thiểu 500.000 bản ghi trước đo tải, thống kê từng bảng (DEC-08) |
-| QS-02 | Hiệu năng đăng ký gói cước | Đạt ít nhất 30 nghiệp vụ mới thành công/giây trong cùng bài tải hỗn hợp với nghiệp vụ còn lại; tổng ít nhất 60 TPS (DEC-09) |
-| QS-03 | Hiệu năng trừ tiền | Đạt ít nhất 30 nghiệp vụ mới thành công/giây trong cùng bài tải hỗn hợp với nghiệp vụ còn lại; tổng ít nhất 60 TPS (DEC-09) |
-| QS-04 | Xử lý đồng thời | 50% tổng request trừ tiền chia vào nhiều nhóm cặp thuê bao–tài khoản có tranh chấp và thực sự chồng lấn (DEC-10) |
-| QS-05 | Tính chính xác dữ liệu | Tool đối soát từng mã yêu cầu/giao dịch và số dư; một tác động khi retry, đủ/thiếu tiền và timeout phải xác định kết quả (DEC-11) |
-| QS-06 | Tính toàn vẹn giao dịch | Ngăn ngừa việc cập nhật sai số dư hoặc ghi nhận thiếu giao dịch thành công |
-| QS-07 | Xử lý định kỳ | Job hết hạn hàng ngày theo DEC-06 và job tổng hợp tiêu dùng hàng ngày theo DEC-07 |
+| EX-01 | Giao diện CSKH hoàn chỉnh | CSKH là hệ thống ngoài gọi API |
+| EX-02 | Ứng dụng di động khách hàng | Không thuộc sản phẩm backend hiện tại |
+| EX-03 | Tích hợp thiết bị/mạng viễn thông thật | Đấu nối là nghiệp vụ dữ liệu nội bộ |
+| EX-04 | Ngân hàng/cổng thanh toán thật | Cộng/trừ là giao dịch nội bộ theo yêu cầu đã được cấp quyền |
+| EX-05 | Billing engine viễn thông hoàn chỉnh | Không tính cước từ lưu lượng/cuộc gọi/dữ liệu mạng thật |
+| EX-06 | Nền tảng BI hoàn chỉnh | Chỉ truy vấn/tổng hợp đã được yêu cầu |
 
-Các thông số về môi trường, thời gian kiểm thử, đặc điểm tải và điều kiện nghiệm thu sẽ được đặc tả chi tiết trong tài liệu yêu cầu phi chức năng và kế hoạch kiểm thử.
+Cũng không tự thêm KYC nội bộ, hệ thống đa tenant/grant, API mở ví phụ, quy trình merge Customer, hoàn tiền hoặc tái cấp số đã dùng. Muốn mở rộng phải có quyết định phạm vi và truy vết riêng. Một chi tiết kỹ thuật đang REVIEW không có nghĩa bỏ chức năng nghiệp vụ thuộc phạm vi.
 
-## 6. Thuật ngữ nghiệp vụ (Business Glossary)
+## 4. Quyền gọi, chống lặp và lưu lịch sử
 
-| Thuật ngữ | Tên tiếng Anh | Định nghĩa |
+JWT do IdP ngoài Telecom cấp. Backend kiểm danh tính ứng dụng và scope theo thao tác; chỉ caller tin cậy có quyền chứng cứ mới gửi tham chiếu xác minh. Demo dùng dữ liệu giả chung nhưng kết quả request và snapshot vẫn thuộc caller tạo; ứng dụng khác không được đọc theo cùng mã.
+
+Cùng caller/thao tác/requestId và cùng nội dung trả trạng thái/kết quả cũ, không tác động lại. Cùng mã khác nội dung là `IDEMPOTENCY_CONFLICT`. Timeout là chưa biết kết quả: tra hoặc retry cùng mã, không đoán thất bại rồi tạo mã mới. FAILED đã chốt không tự hồi sinh chỉ vì tài khoản được nạp thêm tiền.
+
+Giữ đầy đủ phản hồi UC01/03 7 ngày, UC02/04/05 30 ngày sau trạng thái cuối, rồi giữ tombstone. Không dọn PROCESSING/WAITING. Lịch sử nghiệp vụ có thời gian giữ 5 năm cấu hình được và demo không purge. Thời gian giữ phản hồi, tombstone, snapshot và lịch sử là các chính sách riêng.
+
+## 5. Thuật ngữ thống nhất
+
+| Thuật ngữ | Định nghĩa hiện hành |
+|---|---|
+| Customer | Hồ sơ khách hàng, có thể sở hữu nhiều thuê bao và nhiều giấy tờ đã xác minh |
+| Subscriber | Thuê bao thuộc một Customer tại một thời điểm; được đấu nối trong backend |
+| Verified Document / Evidence Reference | Giấy tờ đã xác minh và tham chiếu chứng cứ từ nguồn/caller tin cậy; không phải lời tự khai tùy ý |
+| PhoneNumberInventory | Kho số E.164, quản lý khả dụng và cấp phát; danh sách đọc không giữ chỗ |
+| ServicePackage | Định nghĩa gói; khác một lần đăng ký và khác kỳ đã trả |
+| PackageSubscription / root | Đăng ký ổn định của thuê bao–gói, giữ version, trạng thái, coverage và ý định hủy |
+| SubscriptionCycle | Một kỳ đã mua, có start/end, giá/số ngày/phiên bản và phí được giữ bất biến |
+| Current cycle | Kỳ có hiệu lực tại thời điểm kiểm; không đồng nhất với mọi kỳ tương lai đã trả |
+| coverageEnd | Cuối toàn bộ thời gian đã trả; là mốc hiệu lực hủy theo CR-CAN-002 |
+| expectedSubscriptionVersion | Phiên bản bên gọi đã đọc, dùng phát hiện lệnh dựa trên dữ liệu cũ; không tự đoán version |
+| MAIN | Tài khoản chính, được tạo số dư 0 sau đấu nối, không hạn mặc định, dùng thu phí gói |
+| Tài khoản phụ | Tài khoản có loại, quyền cộng/trừ và hạn được cấu hình rõ; không dùng tiền MAIN để bù |
+| FinancialTransaction / ledger | Lịch sử tài chính đã commit, ghi số tiền/tài khoản/nguồn và dữ liệu phục vụ đối soát |
+| recordedAt | Mốc ghi nhận nghiệp vụ trong transaction cuối cùng đã commit; không phải giờ hoàn tất commit |
+| Eligibility check time | Giờ DB kiểm điều kiện dưới khóa trước cập nhật tiền; có thể trước lúc commit |
+| receiptCheckedAt | Giờ DB kiểm sau khi đã xác nhận commit ý định hủy; chỉ trước observedCoverageEnd mới đủ điều kiện nhận |
+| PENDING intent | Ý định hủy đang phân giải; chặn mua thêm/gia hạn nhưng chưa phải accepted |
+| PENDING_CANCEL | Hủy đã được nhận hợp lệ; còn quyền trong thời gian đã trả và chặn mở rộng |
+| CANCELLED / EXPIRED | Hết quyền vì hủy có hiệu lực / hết hạn theo vòng đời; giữ hai lý do riêng |
+| WAITING | Chỉ UC01 AUTO hết kho, có đồng ý chờ, tối đa 24 giờ; chưa thành công |
+| PROCESSING | Request chưa có kết quả cuối đã xác định; không tương đương WAITING hoặc thành công |
+| SUCCEEDED / FAILED | Kết quả cuối của request; UC03 SUCCEEDED là nhận hủy, không nhất thiết đã mất quyền dùng |
+| Caller | Ứng dụng đã xác minh từ JWT; không phải dữ liệu callerId tự khai hoặc JWT token cụ thể |
+| Idempotency / replay | Một mã nội dung không tạo lại hiệu ứng; trả kết quả/trạng thái đã lưu |
+| Tombstone | Dữ liệu tối thiểu giữ khóa/fingerprint/tóm tắt sau khi hết thời gian phản hồi đầy đủ, chặn tái sử dụng mã |
+| UNKNOWN | Nhận định phía quan sát chưa biết kết quả, không phải trạng thái thành công DB |
+| Report snapshot / cursor | Tập kết quả cố định và dấu chuyển trang được bảo vệ, gắn caller/bộ lọc/lượt xem |
+| BASE / ADJUSTMENT | Đóng góp vào ngày nguồn chưa chốt / điều chỉnh kỳ sau cho nguồn muộn; một nguồn không được cộng hai lần |
+| Worker / job run | Thành phần xử lý nền / một lần thử chạy có runId; retry run không tạo nghiệp vụ mới |
+| Soft delete | Giữ bản ghi/lịch sử và đổi trạng thái, không xóa vật lý hoặc xóa định nghĩa gói do một đăng ký hết hạn |
+| TPS thành công mới | Số nghiệp vụ mới thực sự thành công mỗi giây, không tính replay và không tính phí nội bộ thành UC05 độc lập |
+
+## 6. Ba mốc thời gian cần phân biệt
+
+Dữ liệu lưu UTC; ngày lịch dùng Asia/Ho_Chi_Minh. Ngày đăng ký là ngày đầu: gói 30 ngày từ `2026-10-01T10:15:00+07:00` kết thúc `2026-10-31T00:00:00+07:00`. Khoảng `[start,end)` gồm start, không gồm end. Kỳ mới sau gián đoạn bắt đầu tại lúc xử lý hợp lệ, không tạo quyền ngược khoảng gián đoạn.
+
+| Mốc | Ví dụ | Kết luận |
 |---|---|---|
-| Khách hàng | Customer | Cá nhân đăng ký sử dụng dịch vụ viễn thông, có thể sở hữu nhiều thuê bao |
-| Thuê bao | Subscriber | Đối tượng đại diện cho một thuê bao viễn thông đã được đăng ký trong hệ thống |
-| Số thuê bao | Subscriber Number / MSISDN | Số định danh dùng để nhận diện thuê bao; phải được kiểm soát để tránh cấp trùng |
-| Đấu nối thuê bao | Subscriber Activation / Provisioning | Nghiệp vụ tạo và kích hoạt thông tin thuê bao trong phạm vi hệ thống quản lý |
-| Kho số | Number Inventory | Tập hợp các số thuê bao và thông tin trạng thái khả dụng phục vụ cấp phát |
-| Số thuê bao khả dụng | Available Number | Số thuê bao đáp ứng điều kiện để được cấp cho thuê bao mới |
-| Gói cước | Service Package | Gói dịch vụ có các đặc điểm và thời hạn sử dụng được quy định |
-| Đăng ký gói cước | Package Subscription | Việc một thuê bao đăng ký sử dụng một gói cước cụ thể |
-| Chu kỳ sử dụng | Subscription Period | Khoảng thời gian một lần đăng ký gói cước có hiệu lực |
-| Hủy gói cước | Package Cancellation | Nghiệp vụ yêu cầu kết thúc hiệu lực đăng ký gói cước theo quy tắc đã xác định |
-| Tài khoản dịch vụ | Service Account | Đối tượng quản lý tiền và thông tin liên quan đến việc sử dụng dịch vụ của một thuê bao |
-| Số dư | Balance | Số tiền được hệ thống ghi nhận trên tài khoản tại một thời điểm |
-| Giao dịch | Business Transaction | Bản ghi thể hiện một nghiệp vụ cộng tiền hoặc trừ tiền đối với tài khoản |
-| Cộng tiền | Credit | Nghiệp vụ làm tăng số dư tài khoản |
-| Trừ tiền | Debit | Nghiệp vụ làm giảm số dư tài khoản |
-| Giao dịch cơ sở dữ liệu | Database Transaction | Đơn vị thực thi các thao tác dữ liệu theo cơ chế giao dịch của hệ quản trị CSDL |
-| Rollback | Transaction Rollback | Hủy bỏ các thay đổi chưa được commit trong một database transaction |
-| Dữ liệu hết hạn | Expired Data | Dữ liệu có thời điểm hết hiệu lực theo quy tắc nghiệp vụ |
-| Soft Delete | Logical Deletion | Đánh dấu dữ liệu không còn hiệu lực hoặc bị xóa về mặt logic mà không xóa bản ghi vật lý |
-| Scheduler | Task Scheduler | Thành phần kích hoạt các công việc tự động theo lịch |
-| Job định kỳ | Scheduled Job | Tác vụ được thực hiện tự động theo thời điểm hoặc chu kỳ quy định |
-| Job tổng hợp tiêu dùng | Daily Consumption Aggregation Job | Tác vụ tổng hợp tiêu dùng hàng ngày riêng, khác API truy vấn và job hết hạn; chỉ tiêu/đầu ra chốt trong SRS |
-| REST API | REST Application Programming Interface | Giao diện tích hợp cho phép các hệ thống trao đổi yêu cầu và kết quả thông qua HTTP |
-| TPS | Transactions Per Second | Số nghiệp vụ mới hoàn tất thành công trong một giây; retry trả lại kết quả cũ không được tính thành nghiệp vụ mới; công bố riêng lỗi và timeout |
-| Xử lý đồng thời | Concurrent Processing | Việc nhiều yêu cầu được thực hiện trong các khoảng thời gian chồng lấn nhau |
-| Tính nhất quán | Data Consistency | Tính chất bảo đảm dữ liệu tuân thủ các ràng buộc và quy tắc nghiệp vụ sau những thao tác xử lý |
-| Đối soát giao dịch | Transaction Reconciliation | Quá trình so sánh giao dịch và số dư để phát hiện chênh lệch hoặc sai sót |
+| recordedAt cho báo cáo | Ghi nhận 23:59:59 ngày 20, commit 00:00:01 ngày 21 | Thuộc ngày 20, chỉ đọc được sau commit; muộn sau bản chốt thì điều chỉnh |
+| Kiểm hạn tài khoản | Dưới khóa kiểm 23:59:59, hạn 00:00, commit 00:00:01 | Có thể thành công theo CR-TIME-002 vì kiểm khi còn hạn |
+| Receipt hủy | Đã biết intent commit, kiểm giờ mới lúc 00:00:02 trong khi coverageEnd 00:00 | Từ chối trễ nếu chưa có kết quả accepted đã chốt; không dùng giờ cũ của intent |
 
-**Lưu ý về thuật ngữ:**
+Nếu accepted đã commit nhưng chỉ mất HTTP, replay trả accepted cũ dù tra sau hạn. Không dùng một cột timestamp thay cả ba ý nghĩa trên hoặc gọi mọi mốc là committedAt.
 
-- Tài khoản dịch vụ (Service Account) không đồng nghĩa với tài khoản đăng nhập người dùng.
-- Gói cước (Service Package) là định nghĩa một sản phẩm dịch vụ; đăng ký gói cước (Package Subscription) là thông tin sử dụng sản phẩm đó của một thuê bao cụ thể.
-- Giao dịch nghiệp vụ (Business Transaction) khác với database transaction dùng để bảo đảm tính nguyên tử và nhất quán dữ liệu.
-- Đấu nối thuê bao trong phạm vi dự án hiện tại được hiểu là xử lý và quản lý thuê bao ở cấp ứng dụng, chưa bao gồm thao tác trực tiếp trên hạ tầng mạng viễn thông thực.
+## 7. Quy mô, kỹ thuật và trạng thái tài liệu
 
-## 7. Quyết định và chi tiết được hoãn
+Tổng dữ liệu nghiệp vụ trước đo ≥ 500.000 bản ghi. Bài tải hỗn hợp yêu cầu đồng thời ≥ 30 TPS đăng ký gói và ≥ 30 TPS trừ tiền độc lập thành công mới; 50% số lần gọi trừ tiền kể cả retry vào 10 cặp nóng. Q32 quy định warm-up 2 phút, đo 10 phút, p95 ≤ 500 ms, p99 ≤ 1 giây, lỗi ≤ 0,1% và đối soát không còn request chưa rõ kết quả. Xem [kế hoạch kiểm thử](../05-testing/test-plan.md) để áp dụng đúng công thức, không suy đạt từ mục tiêu.
 
-### 7.1. Baseline đã được duyệt
+MySQL 8.0.46/InnoDB, READ COMMITTED cho đường ghi, utf8mb4, UTC DATETIME(6), bộ service tại nhà và IdP ngoài backend đã được chọn. Cách lưu UUID CHAR(36) là đề xuất theo Q14=C; schema/index/DTO/HTTP/scope/cấu hình và nhịp worker mới vẫn REVIEW. M1–M4 UC01 lịch sử không tự nghiệm thu delta MySQL hoặc UC02–UC06. Chưa có runtime/test/tải mới từ việc hợp nhất tài liệu.
 
-Chủ dự án, người dùng có quyền quyết định nghiệm thu cuối cùng, xác nhận ngày 14/10/2026 qua 14 đáp án. Danh mục đầy đủ DEC-01–DEC-11 và nội dung từng đáp án nằm trong [clarification log](clarification-log.md); các quyết định quan trọng:
+## 8. Truy vết và lịch sử
 
-- Customer–Subscriber là 1–N; cấp số tự động/chọn số, không giữ số khi xem và không cấp trùng.
-- Đăng ký có thu phí do backend điều phối, không thành công một phần; hủy cuối chu kỳ.
-- Không thấu chi; thiếu tiền không thay đổi số dư hay tạo giao dịch tài chính thành công.
-- Soft delete/trạng thái lần đăng ký và tài khoản hết hạn, giữ lịch sử/danh mục; thời gian giữ và số dư còn lại vẫn cần chốt.
-- Có API báo cáo, job tổng hợp tiêu dùng hàng ngày và job hết hạn hàng ngày.
-- Dữ liệu tối thiểu 500.000 bản ghi tính tổng các bảng nghiệp vụ trước đo; cùng chạy ≥30 TPS mỗi nghiệp vụ, tổng ≥60 TPS. Retry không được đếm như nghiệp vụ mới.
-- 50% tổng request trừ tiền chia vào nhiều nhóm tranh chấp đồng thời; có tool đối soát từng yêu cầu/giao dịch và số dư.
+- [Đề bài gốc](../requirement.md): giữ nguyên văn.
+- [Overview](overview.md): mục tiêu, nghiệp vụ và tiêu chí tổng quan.
+- [Sổ quyết định](clarification-log.md) và [biên nhận ngày 26/10](decision-receipt-20261026.md): lựa chọn, CR và phần còn mở.
+- [SRS](../01-requirements/SRS.md), [UC01](../01-requirements/use-cases/UC01-Subscriber-Activation.md), [kiến trúc](../03-architecture/architecture.md): yêu cầu và mô hình chi tiết hơn.
+- [Bản lưu trước đồng bộ](history/2026-10-26-before-sync.zip): bảo toàn tài liệu lịch sử đã được thay bằng nội dung hiện hành nhất quán.
 
-Phạm vi loại trừ EX-01–EX-06 giữ nguyên theo Q01=A. Các cách diễn giải quan hệ khách hàng, “xóa”, tải hỗn hợp và nhóm tranh chấp đã được người có quyền nghiệm thu chấp nhận; [đề bài gốc](../requirement.md) giữ nguyên để đối chiếu.
-
-### 7.2. Chi tiết còn mở
-
-OQ-08 đã Resolved; các OQ còn lại vẫn Open ở phần chi tiết. Chủ dự án chịu trách nhiệm chốt, trợ lý tổng hợp/đề xuất; mốc đầy đủ tại [clarification log, mục 6](clarification-log.md#6-trạng-thái-và-kế-hoạch-xử-lý-oq).
-
-| Nhóm | Chi tiết cần chốt | Mốc |
-|---|---|---|
-| OQ-05, OQ-12, OQ-15 | Tái sử dụng/cấp số nguyên tử, hồ sơ khách hàng, hợp đồng và quyền gọi API | SRS UC01 trước thiết kế/code đấu nối |
-| OQ-01, OQ-02, OQ-06, OQ-09, OQ-10 | Tài khoản, chống trùng, mức phí/tài khoản thu, chu kỳ/gia hạn, đơn vị tiền/hạn mức | SRS và thiết kế trước code gói/tài khoản/giao dịch |
-| OQ-07, OQ-11 | Trạng thái, hiệu lực, chạy lại job, thời gian giữ lịch sử, số dư hết hạn | SRS trước thiết kế gói/tài khoản/job |
-| OQ-03, OQ-13 | OR/AND gói, định nghĩa tiêu dùng/phí, thời gian lọc, đầu ra/chỉ tiêu/lịch báo cáo | SRS trước thiết kế báo cáo |
-| OQ-04, OQ-14 | Môi trường, thời lượng, ngưỡng lỗi/độ trễ, phân bố dữ liệu/nhóm, mẫu số request trong tải hỗn hợp và bằng chứng đồng thời | NFR/Test Plan trước chạy tải; tính đúng trước thiết kế giao dịch |
-
-Hoãn chi tiết không có nghĩa bỏ yêu cầu hoặc chấp nhận một đề xuất chưa duyệt. Không đánh dấu đã nghiệm thu hiệu năng ở Phase 0.
-
-## 8. Tài liệu liên quan và trạng thái giai đoạn
-
-- [Overview](overview.md): mục tiêu, bối cảnh và danh mục quyết định.
-- [Clarification log](clarification-log.md): bản ghi duyệt, truy vết yêu cầu và danh sách còn mở.
-- [Roadmap](../ROADMAP.md): Phase 0 hoàn thành, Phase 1 chưa bắt đầu.
-- SRS, Use Case, Domain Model, kiến trúc, CSDL và API sẽ tạo ở các giai đoạn tương ứng; chưa có liên kết tới file chưa tồn tại.
-
-## 9. Lịch sử cập nhật
-
-| Phiên bản | Ngày | Nội dung |
-|---|---|---|
-| 1.0 | Trước duyệt Phase 0 | Phạm vi và thuật ngữ ban đầu. |
-| 1.1 | 14/10/2026 | Đồng bộ các lựa chọn đã duyệt, bổ sung thu phí đăng ký/job báo cáo, cập nhật quy mô/tải và trách nhiệm xử lý chi tiết; đóng Phase 0. |
-
-
-## Bổ sung hiện hành ngày 18/10/2026
-
-Baseline phạm vi Phase0 giữ nguyên; các định hướng chi tiết tại DEC-PRE-01–24 trong [clarification log](clarification-log.md) đã được tiếp nhận. Hồ sơ so mọi trường gửi/chứng cứ ngoài; UC01 caller-scoped ID/replay7 ngày+tombstone/FIFO/recovery 60s. Gói giá snapshot/chu kỳ ngày/hủy theo mốc nhận, lịch job00:05/00:30 Asia/Ho_Chi_Minh, lịch sử 5 năm không purge demo. Báo cáo [X,Y) theo commit/cursor; kiểm thử k6 với các ngưỡng bổ sung. RabbitMQ/Redis theo CR-ARCH-001, không mở rộng mạng thật/ngân hàng/UI. Các trạng thái “còn chờ chọn” trong phần baseline lịch sử phải đối chiếu bảng OQ hiện hành; retention tiền/hạn mức phụ còn đề xuất. M1 vẫn chờ chủ dự án đọc SRS0.6/UC01 0.5 và trả lời Q25. [Thứ tự đọc](review-guide.md).
+Phiên bản 1.2 ngày 26/10 hợp nhất các quy tắc có hiệu lực, thay các đoạn cũ “M1 chờ duyệt”, “hủy cuối kỳ hiện tại” hoặc “báo cáo theo giờ commit” đã lỗi thời. Việc hợp nhất không xóa lịch sử quyết định và không tự nâng checkpoint.

@@ -1,0 +1,1690 @@
+openapi: 3.0.3
+info:
+  title: Telecom Management Backend API
+  version: 0.2.0-review
+  description: REVIEW 26/10/2026. MySQL8.0.46 design, not implemented/runtime tested. UC01 historical contract retained;
+    UC02–06/jobs/support reads are proposed detailed contracts based on approved choices. CR-TIME-001 recordedAt
+    is DB event time in ultimately committed transaction; CR-TIME-002 eligibility under lock before money update.
+    CR-CAN-003 uses DB receipt after confirmed intent commit; late receipt fails, accepted lost ACK replays. Protocol
+    implementation REVIEW; see concurrency-and-jobs.md.
+servers:
+- url: http://localhost:8080
+  description: Local development (backend runs from IDE or Docker published port)
+tags:
+- name: Activation
+- name: PhoneInventory
+- name: Packages
+- name: Subscriptions
+- name: Money
+- name: Operations
+- name: Reports
+- name: InternalJobs
+security:
+- bearerAuth: []
+paths:
+  /api/v1/activations:
+    post:
+      tags:
+      - Activation
+      summary: Submit activation synchronously or accept bounded WAITING
+      operationId: submitActivation
+      description: "First successful activation returns 201, WAITING/in-progress returns 202.\nA failed validation/business\
+        \ outcome returns an error response without\ncreating a subscriber. Identical retry replays same persisted\
+        \ outcome\nwhere full result is retained (7 days after terminal outcome).\nSame idempotency key with different\
+        \ canonical payload returns 409.\n JWT requires telecom:activation:write. Trusted evidence reference submission\
+        \ additionally requires telecom:evidence:submit. Caller never supplied in body."
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationCreateRequest'
+            examples:
+              automaticWithWait:
+                value:
+                  requestId: ACT-20261019-001
+                  mode: AUTO
+                  allowWaitForNumber: true
+                  customer:
+                    fullName: Nguyen Van An
+                    birthDate: '2000-01-01'
+                    documentType: CCCD
+                    documentNumber: 012345678901
+                    verificationReference: KYCDOC-1234
+              selected:
+                value:
+                  requestId: ACT-20261019-002
+                  mode: SELECTED
+                  selectedNumber: '+84901234567'
+                  allowWaitForNumber: false
+                  customer:
+                    fullName: Nguyen Van An
+                    birthDate: '2000-01-01'
+                    documentType: PASSPORT
+                    documentNumber: B01234567
+                    verificationReference: KYCDOC-5678
+      responses:
+        '201':
+          description: Newly completed activation (persistent SUCCEEDED)
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationResult'
+        '200':
+          description: Replay of stored terminal SUCCEEDED outcome (M4 proposal)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationResult'
+        '202':
+          description: WAITING (explicit consent) or still PROCESSING; not activated
+          headers:
+            Retry-After:
+              description: Suggested polling interval in seconds (not a completion guarantee)
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      x-required-scopes:
+      - telecom:activation:write
+      - telecom:evidence:submit
+  /api/v1/activations/{requestId}:
+    get:
+      tags:
+      - Activation
+      summary: Get activation status by caller-scoped request ID
+      operationId: getActivation
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Existing active/full terminal outcome visible to owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationResult'
+        '202':
+          description: Still processing or waiting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '410':
+          description: Full replay result expired; idempotency tombstone still prevents ID reuse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      x-required-scopes:
+      - telecom:activation:read
+      description: ' JWT requires telecom:activation:read.'
+  /api/v1/phone-numbers:
+    get:
+      tags:
+      - PhoneInventory
+      summary: List AVAILABLE phone numbers; listing does not reserve numbers
+      operationId: listAvailableNumbers
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 512
+      - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Available inventory snapshot at query time, not a hold
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableNumberPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      x-required-scopes:
+      - telecom:inventory:read
+      description: ' JWT requires telecom:inventory:read.'
+  /api/v1/package-subscriptions:
+    post:
+      tags:
+      - Subscriptions
+      operationId: registerPackage
+      summary: registerPackage
+      description: 'Atomic MAIN fee + cycle + rights + result. expectedSubscriptionVersion conflict charges nothing.
+        REGISTER_PACKAGE operation. Required JWT scope: telecom:subscription:write. Ownership/filter restrictions
+        enforced server side. MAIN expiry is rechecked using fresh DB time after all required locks immediately
+        before balance/ledger/result writes.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:subscription:write
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '201':
+          description: New operation committed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '202':
+          description: Accepted PROCESSING/PENDING; not business success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageRegistrationRequest'
+  /api/v1/package-subscriptions/{subscriptionId}/cancellations:
+    post:
+      tags:
+      - Subscriptions
+      operationId: cancelPackage
+      summary: cancelPackage
+      description: 'CANCEL_PACKAGE. CR-CAN-003 approved: confirmed intentTxA commit then TxB locked DBreceipt. Receipt
+        before paid coverage end and same version accepts; TxB may commit after end. Receipt at/after end without
+        prior accepted outcome fails422 CANCELLATION_RECEIVED_TOO_LATE, no refund/new target. Pending intent blocks
+        extensions. Accepted lost reply replays unchanged; unknown COMMIT lookup before action. Required scope telecom:subscription:cancel.
+        Protocol/artifact REVIEW.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:subscription:cancel
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '202':
+          description: Accepted PROCESSING/PENDING; not business success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/SubscriptionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancellationRequest'
+  /api/v1/accounts/{accountId}/credits:
+    post:
+      tags:
+      - Money
+      operationId: creditsAccount
+      summary: creditsAccount
+      description: 'DB clock under account lock immediately before update; equality expiry rejects. Before-expiry
+        check permits later commit. Failed business result is replayed without new balance effect. Required JWT
+        scope: telecom:account:credit. Ownership/filter restrictions enforced server side.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:account:credit
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '201':
+          description: New operation committed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '202':
+          description: Accepted PROCESSING/PENDING; not business success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+  /api/v1/accounts/{accountId}/debits:
+    post:
+      tags:
+      - Money
+      operationId: debitsAccount
+      summary: debitsAccount
+      description: 'DB clock under account lock immediately before update; equality expiry rejects. Before-expiry
+        check permits later commit. Failed business result is replayed without new balance effect. Required JWT
+        scope: telecom:account:debit. Ownership/filter restrictions enforced server side.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:account:debit
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '201':
+          description: New operation committed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '202':
+          description: Accepted PROCESSING/PENDING; not business success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitRequest'
+  /api/v1/operations/{operation}/{requestId}:
+    get:
+      tags:
+      - Operations
+      operationId: getOperation
+      summary: getOperation
+      description: 'Caller-scoped UC02/03/04/05 lookup; PROCESSING202, terminal200, tombstone410. Authorization
+        also requires original operation scope; no cross-caller disclosure. Required JWT scope: telecom:operation:read.
+        Ownership/filter restrictions enforced server side.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:operation:read
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '202':
+          description: Accepted PROCESSING/PENDING; not business success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/Operation'
+      - $ref: '#/components/parameters/RequestId'
+      x-required-scopes-by-operation:
+        REGISTER_PACKAGE:
+        - telecom:operation:read
+        - telecom:subscription:write
+        CANCEL_PACKAGE:
+        - telecom:operation:read
+        - telecom:subscription:cancel
+        CREDIT:
+        - telecom:operation:read
+        - telecom:account:credit
+        DEBIT:
+        - telecom:operation:read
+        - telecom:account:debit
+  /api/v1/packages:
+    get:
+      tags:
+      - Packages
+      operationId: listPackages
+      summary: listPackages
+      description: 'Support read includes discontinued entries with grandfatherRenewal policy; does not grant sale
+        permission. Required JWT scope: telecom:package:read. Ownership/filter restrictions enforced server side.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:package:read
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackagePage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+  /api/v1/subscribers/{subscriberId}/package-subscriptions:
+    get:
+      tags:
+      - Subscriptions
+      operationId: listSubscriptions
+      summary: listSubscriptions
+      description: 'Current version read for expectedSubscriptionVersion. No root for package means version0; concurrent
+        writes can stale read and yield409. Required JWT scope: telecom:subscription:read. Ownership/filter restrictions
+        enforced server side.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:subscription:read
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/SubscriberId'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+  /api/v1/reports/consumption/subscribers:
+    get:
+      tags:
+      - Reports
+      operationId: getConsumptionReport
+      summary: getConsumptionReport
+      description: 'UC06: required first-call queryRequestId,x,y,packageIds,matchMode,includeFee. Freeze committed
+        ledger source membership in one statement under RC; derive subscriber OR/AND and sums only from persisted
+        set. Persist derived member list before READY, page subscriberId distinct. Offset timestamps [x,y), recordedAt
+        semantics CR-TIME-001. Retry original key/cutoff, cursor binds caller/filter/version. Required JWT scope
+        telecom:report:read.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:report:read
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumptionPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '202':
+          description: First query cutoff durable; materialization in progress, retry queryId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportPending'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+      - name: queryId
+        in: query
+        schema:
+          type: string
+          format: uuid
+        description: Retry unfinished first materialization with original durable cutoff.
+      - name: queryRequestId
+        in: query
+        schema:
+          $ref: '#/components/schemas/RequestId'
+        description: Required on initial query without cursor/queryId. Caller-scoped durable first-cutoff idempotency;
+          same key different filters409. Retry same key after lost first response.
+      - name: x
+        in: query
+        schema:
+          type: string
+          format: date-time
+        description: Required on first call; offset timestamp; x<y, [x,y) recordedAt.
+      - name: y
+        in: query
+        schema:
+          type: string
+          format: date-time
+        description: Required on first call; offset timestamp; x<y, [x,y) recordedAt.
+      - name: packageIds
+        in: query
+        style: form
+        explode: false
+        schema:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        description: Required on first call; comma-separated UUIDs; fixed selected package set.
+      - name: matchMode
+        in: query
+        schema:
+          type: string
+          enum:
+          - OR
+          - AND
+        description: Required explicit on first call.
+      - name: includeFee
+        in: query
+        schema:
+          type: boolean
+        description: Required explicit on first call. false SERVICE_CONSUMPTION only; true adds PACKAGE_FEE/AUTO_RENEWAL_FEE,
+          never CREDIT.
+  /api/v1/internal/jobs/{jobCode}/runs:
+    post:
+      tags:
+      - InternalJobs
+      operationId: triggerJob
+      summary: triggerJob
+      description: 'Internal admin only. Durable logical run; repeated key replays. Separate trigger permission
+        from business users. Required JWT scope: telecom:job:run. Ownership/filter restrictions enforced server
+        side.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:job:run
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+        '202':
+          description: Accepted PROCESSING/PENDING; not business success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/JobCode'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobTriggerRequest'
+  /api/v1/internal/jobs/{jobCode}/runs/{runId}:
+    get:
+      tags:
+      - InternalJobs
+      operationId: getJobRun
+      summary: getJobRun
+      description: 'Internal operational status; no financial mutation. Required JWT scope: telecom:job:read. Ownership/filter
+        restrictions enforced server side.'
+      security:
+      - bearerAuth: []
+      x-required-scopes:
+      - telecom:job:read
+      responses:
+        '200':
+          description: Committed result or replay / stable read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '410':
+          $ref: '#/components/responses/Gone'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+      - $ref: '#/components/parameters/JobCode'
+      - $ref: '#/components/parameters/RunId'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'External JWT only: verify asymmetric signature/JWKS allowlist algorithm, issuer, audience, exp/nbf,
+        operation scope and trusted caller client_id/azp mapping. x-required-scopes states enforced scopes because
+        HTTP bearer security scheme cannot encode OAuth scopes. No local JWT issuance.'
+  parameters:
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 128
+      description: Observability only; excluded from the idempotency fingerprint.
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 2048
+      description: Opaque integrity-protected cursor binding caller, filter, query version and snapshot. Do not
+        modify.
+    SubscriberId:
+      name: subscriberId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    SubscriptionId:
+      name: subscriptionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RunId:
+      name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    JobCode:
+      name: jobCode
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - JOB-01
+        - JOB-02
+    Operation:
+      name: operation
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/OperationName'
+  headers:
+    CorrelationId:
+      description: Correlation ID assigned or propagated by server
+      schema:
+        type: string
+  schemas:
+    ActivationCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - requestId
+      - mode
+      - customer
+      properties:
+        requestId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        mode:
+          type: string
+          enum:
+          - AUTO
+          - SELECTED
+        selectedNumber:
+          type: string
+          maxLength: 16
+          description: Mandatory for SELECTED; forbidden for AUTO (validated by application).
+          pattern: ^\+[1-9][0-9]{1,14}$
+        allowWaitForNumber:
+          type: boolean
+          default: false
+          description: Only meaningful for AUTO; waiting allowed only when stock exhausted.
+        customer:
+          $ref: '#/components/schemas/CustomerProfile'
+      description: AUTO forbids selectedNumber. SELECTED requires selectedNumber and forbids allowWaitForNumber=true.
+        Optional customer fields if present must be nonempty/non-null. E164 strict; no automatic 0-to-+84 conversion.
+    CustomerProfile:
+      type: object
+      additionalProperties: false
+      required:
+      - fullName
+      - birthDate
+      - documentType
+      - documentNumber
+      - verificationReference
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        birthDate:
+          type: string
+          format: date
+        documentType:
+          type: string
+          enum:
+          - CCCD
+          - CMND
+          - PASSPORT
+        documentNumber:
+          type: string
+          minLength: 1
+          maxLength: 64
+        verificationReference:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: External CSKH verification evidence reference, NOT self-issued by TelecomManagement.
+        address:
+          type: string
+          maxLength: 2000
+          minLength: 1
+        occupation:
+          type: string
+          maxLength: 120
+          minLength: 1
+        contact:
+          type: string
+          maxLength: 120
+          minLength: 1
+    ActivationResult:
+      type: object
+      additionalProperties: false
+      required:
+      - requestId
+      - correlationId
+      - status
+      - code
+      - message
+      properties:
+        requestId:
+          type: string
+        correlationId:
+          type: string
+        status:
+          type: string
+          enum:
+          - PROCESSING
+          - WAITING
+          - SUCCEEDED
+          - FAILED
+          - EXPIRED
+        code:
+          type: string
+        message:
+          type: string
+        msisdn:
+          type: string
+          description: Present only on SUCCEEDED; no phone number allocated for WAITING.
+        subscriberId:
+          type: string
+          format: uuid
+          description: Present only on SUCCEEDED.
+        waitingSince:
+          type: string
+          format: date-time
+        waitDeadline:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - correlationId
+      - code
+      - message
+      properties:
+        requestId:
+          type: string
+        correlationId:
+          type: string
+        code:
+          $ref: '#/components/schemas/BusinessErrorCode'
+        message:
+          type: string
+        status:
+          type: string
+          enum:
+          - FAILED
+          - EXPIRED
+          - PROCESSING
+        details:
+          type: object
+          additionalProperties:
+            type: string
+          description: Field-level errors; values are safe strings, no token or full identity evidence.
+    AvailableNumberPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - limit
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - msisdn
+            properties:
+              msisdn:
+                type: string
+                pattern: ^\+[1-9][0-9]{1,14}$
+        limit:
+          type: integer
+        nextCursor:
+          type: string
+          nullable: true
+    Uuid:
+      type: string
+      format: uuid
+    Timestamp:
+      type: string
+      format: date-time
+    RequestId:
+      type: string
+      minLength: 1
+      maxLength: 128
+    MoneyAmount:
+      type: integer
+      format: int64
+      minimum: 1
+      maximum: 10000000
+    ExpectedVersion:
+      type: integer
+      format: int64
+      minimum: 0
+    OperationName:
+      type: string
+      enum:
+      - REGISTER_PACKAGE
+      - CANCEL_PACKAGE
+      - CREDIT
+      - DEBIT
+    PackageRegistrationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        subscriberId:
+          type: string
+          format: uuid
+        packageId:
+          type: string
+          format: uuid
+        expectedSubscriptionVersion:
+          $ref: '#/components/schemas/ExpectedVersion'
+      required:
+      - requestId
+      - subscriberId
+      - packageId
+      - expectedSubscriptionVersion
+      description: Expected version0 is first registration against EMPTY guard; payment always MAIN and current
+        catalog snapshot. No client price/account/autoRenew override. Auto renewal follows existing baseline sufficient-funds/no-cancellation
+        policy.
+    CancellationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        expectedSubscriptionVersion:
+          $ref: '#/components/schemas/ExpectedVersion'
+      required:
+      - requestId
+      - expectedSubscriptionVersion
+      description: 'CR-CAN-003 Approved26/10: no refund; effective after all paid coverage. Backend persists intent
+        TxA then after confirmed commit locks root/request in TxB and samples DB receipt. Only receipt<observedCoverageEnd
+        with matching version accepts; late/equal receipt fails terminal, never silently targets new cycle. PENDING
+        blocks manual/auto extension. Accepted result committed before HTTPack, lost ACK retry replays accepted
+        even after end.'
+    CreditRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        subscriberId:
+          type: string
+          format: uuid
+        amountVnd:
+          $ref: '#/components/schemas/MoneyAmount'
+      required:
+      - requestId
+      - subscriberId
+      - amountVnd
+      description: Exact path account must belong to subscriber and permit CREDIT; integer VND. No fallback account.
+    DebitRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        subscriberId:
+          type: string
+          format: uuid
+        amountVnd:
+          $ref: '#/components/schemas/MoneyAmount'
+        subscriptionId:
+          type: string
+          format: uuid
+        cycleId:
+          type: string
+          format: uuid
+        serviceReference:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+      - requestId
+      - subscriberId
+      - amountVnd
+      - subscriptionId
+      - cycleId
+      - serviceReference
+      description: Independent SERVICE_CONSUMPTION. Cycle must belong to subscriber and be effective at DB eligibility
+        check. No package means reject. Does not register/renew a package. DB eligibility clock is sampled after
+        all account/root/cycle locks, immediately before money/result updates, and rechecks account expiry.
+    Cycle:
+      type: object
+      additionalProperties: false
+      properties:
+        cycleId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        priceVnd:
+          type: integer
+          format: int64
+          minimum: 1
+        durationDays:
+          type: integer
+          format: int64
+          minimum: 1
+        catalogVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        feeTransactionId:
+          type: string
+          format: uuid
+      required:
+      - cycleId
+      - startsAt
+      - endsAt
+      - priceVnd
+      - durationDays
+      - catalogVersion
+      - feeTransactionId
+      description: Immutable [start,end). First calendar registration day counts as day1 in Asia/Ho_Chi_Minh.
+    Subscription:
+      type: object
+      additionalProperties: false
+      properties:
+        subscriptionId:
+          type: string
+          format: uuid
+        subscriberId:
+          type: string
+          format: uuid
+        packageId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+          minimum: 0
+        state:
+          type: string
+          enum:
+          - EMPTY
+          - ACTIVE
+          - PENDING_CANCEL
+          - CANCELLED
+          - EXPIRED
+        autoRenew:
+          type: boolean
+        coverageEnd:
+          type: string
+          format: date-time
+          nullable: true
+        cancelEffectiveAt:
+          type: string
+          format: date-time
+          nullable: true
+        currentCycle:
+          allOf:
+          - $ref: '#/components/schemas/Cycle'
+          nullable: true
+      required:
+      - subscriptionId
+      - subscriberId
+      - packageId
+      - version
+      - state
+      - autoRenew
+      - coverageEnd
+      - currentCycle
+      description: EMPTY version0 is technical guard, not active rights. coverageEnd includes all paid future cycles;
+        currentCycle resolved at server time.
+    Package:
+      type: object
+      additionalProperties: false
+      properties:
+        packageId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        catalogVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        priceVnd:
+          type: integer
+          format: int64
+          minimum: 1
+        durationDays:
+          type: integer
+          format: int64
+          minimum: 1
+        saleStatus:
+          type: string
+          enum:
+          - ON_SALE
+          - DISCONTINUED
+        grandfatherRenewal:
+          type: boolean
+      required:
+      - packageId
+      - code
+      - name
+      - catalogVersion
+      - priceVnd
+      - durationDays
+      - saleStatus
+      - grandfatherRenewal
+    FinancialResult:
+      type: object
+      additionalProperties: false
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        subscriberId:
+          type: string
+          format: uuid
+        sourceType:
+          type: string
+          enum:
+          - CREDIT_TOPUP
+          - SERVICE_CONSUMPTION
+          - PACKAGE_FEE
+          - AUTO_RENEWAL_FEE
+        amountVnd:
+          type: integer
+          format: int64
+          minimum: 1
+        balanceBeforeVnd:
+          type: integer
+          format: int64
+          minimum: 0
+        balanceAfterVnd:
+          type: integer
+          format: int64
+          minimum: 0
+        recordedAt:
+          type: string
+          format: date-time
+        eligibilityCheckedAt:
+          type: string
+          format: date-time
+      required:
+      - transactionId
+      - accountId
+      - subscriberId
+      - sourceType
+      - amountVnd
+      - balanceBeforeVnd
+      - balanceAfterVnd
+      - recordedAt
+      - eligibilityCheckedAt
+      description: recordedAt is DB business timestamp inside ultimately committed tx, not physical durability timestamp.
+        Exactly one successful financial effect per request.
+    OperationResult:
+      type: object
+      additionalProperties: false
+      properties:
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        operation:
+          $ref: '#/components/schemas/OperationName'
+        correlationId:
+          type: string
+        status:
+          type: string
+          enum:
+          - PROCESSING
+          - SUCCEEDED
+          - FAILED
+        code:
+          type: string
+        message:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+        financial:
+          $ref: '#/components/schemas/FinancialResult'
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+        cancelAcceptedAt:
+          type: string
+          format: date-time
+        cancelEffectiveAt:
+          type: string
+          format: date-time
+        receiptCheckedAt:
+          type: string
+          format: date-time
+          description: CR-CAN-003 cancellation DB receipt sampled after confirmed durable intent; not physical commit
+            timestamp. Accepted replay returns persisted value.
+      required:
+      - requestId
+      - operation
+      - correlationId
+      - status
+      - code
+      - message
+      description: PROCESSING202 has no success payload. SUCCEEDED includes financial for REGISTER_PACKAGE/CREDIT/DEBIT
+        and subscription for registration/cancellation; cancellation has no financial. FAILED has stable code. Omitted
+        payload properties mean not applicable; never infer success from timeout.
+    PackagePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Package'
+        limit:
+          type: integer
+        nextCursor:
+          type: string
+          nullable: true
+      required:
+      - items
+      - limit
+      - nextCursor
+    SubscriptionPage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscription'
+        limit:
+          type: integer
+        nextCursor:
+          type: string
+          nullable: true
+        observedAt:
+          type: string
+          format: date-time
+      required:
+      - items
+      - limit
+      - nextCursor
+      - observedAt
+    ConsumptionRow:
+      type: object
+      additionalProperties: false
+      required:
+      - subscriberId
+      - amountVnd
+      - transactionCount
+      - packages
+      properties:
+        subscriberId:
+          type: string
+          format: uuid
+        amountVnd:
+          type: integer
+          format: int64
+          minimum: 0
+        transactionCount:
+          type: integer
+          format: int64
+          minimum: 0
+        packages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageConsumption'
+      description: One subscriber exactly once per fixed query. Totals only from selected snapshot sources; one
+        ledger amount attributed to one package, never duplicated across requested packages.
+    ConsumptionPage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsumptionRow'
+        limit:
+          type: integer
+        nextCursor:
+          type: string
+          nullable: true
+        queryId:
+          type: string
+          format: uuid
+        snapshotCutoff:
+          type: string
+          format: date-time
+        totalAmountVnd:
+          type: integer
+          format: int64
+          minimum: 0
+        memberCount:
+          type: integer
+          format: int64
+          minimum: 0
+        snapshotVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        filters:
+          $ref: '#/components/schemas/ReportFilters'
+        hasMore:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - items
+      - limit
+      - nextCursor
+      - queryId
+      - snapshotCutoff
+      - totalAmountVnd
+      - memberCount
+      - snapshotVersion
+      - filters
+      - hasMore
+      - createdAt
+    JobTriggerRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        runKey:
+          type: string
+          minLength: 1
+          maxLength: 128
+        businessDate:
+          type: string
+          format: date
+      required:
+      - runKey
+      description: JOB-02 businessDate required, JOB-01 optional. runKey binds caller-independent logical job run
+        and date; same key different date conflicts. Default JOB-01 scheduled run date server local business date.
+    JobRun:
+      type: object
+      additionalProperties: false
+      properties:
+        runId:
+          type: string
+          format: uuid
+        jobCode:
+          type: string
+          enum:
+          - JOB-01
+          - JOB-02
+        runKey:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING
+          - RUNNING
+          - SUCCEEDED
+          - FAILED
+        businessDate:
+          type: string
+          format: date
+        cutoffAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+        counters:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+            minimum: 0
+        errorCode:
+          type: string
+      required:
+      - runId
+      - jobCode
+      - runKey
+      - status
+      description: Scheduled runs and admin triggers share core/unique runKey. No guarantee of completion from202.
+    ReportPending:
+      type: object
+      additionalProperties: false
+      properties:
+        queryId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - BUILDING
+        snapshotCutoff:
+          type: string
+          format: date-time
+        retryAfterSeconds:
+          type: integer
+          format: int64
+          minimum: 1
+      required:
+      - queryId
+      - status
+      - snapshotCutoff
+      - retryAfterSeconds
+    PackageConsumption:
+      type: object
+      additionalProperties: false
+      required:
+      - packageId
+      - amountVnd
+      - transactionCount
+      properties:
+        packageId:
+          type: string
+          format: uuid
+        amountVnd:
+          type: integer
+          format: int64
+          minimum: 0
+        transactionCount:
+          type: integer
+          format: int64
+          minimum: 0
+    ReportFilters:
+      type: object
+      additionalProperties: false
+      required:
+      - x
+      - y
+      - packageIds
+      - matchMode
+      - includeFee
+      properties:
+        x:
+          type: string
+          format: date-time
+        y:
+          type: string
+          format: date-time
+        packageIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        matchMode:
+          type: string
+          enum:
+          - OR
+          - AND
+        includeFee:
+          type: boolean
+      description: '[x,y), timestamps with offset, x<y. Required explicit OR/AND and includeFee. OR any package;
+        AND subscriber has at least one qualifying transaction for EACH package.'
+    BusinessErrorCode:
+      type: string
+      enum:
+      - VALIDATION_ERROR
+      - UNAUTHORIZED
+      - FORBIDDEN
+      - NOT_FOUND
+      - IDEMPOTENCY_CONFLICT
+      - REQUEST_ID_RETIRED
+      - NUMBER_NOT_AVAILABLE
+      - NO_AVAILABLE_NUMBER
+      - ALLOCATION_BACKLOG
+      - STALE_SUBSCRIPTION_VERSION
+      - CYCLE_ALREADY_CREATED
+      - CANCELLATION_PENDING
+      - CANCELLATION_RECEIVED_TOO_LATE
+      - PACKAGE_NOT_FOR_SALE
+      - INSUFFICIENT_BALANCE
+      - BALANCE_LIMIT_EXCEEDED
+      - ACCOUNT_EXPIRED
+      - ACCOUNT_NOT_ELIGIBLE
+      - NO_EFFECTIVE_CYCLE
+      - CUSTOMER_PROFILE_MISMATCH
+      - VERIFICATION_REQUIRED
+      - UNTRUSTED_EVIDENCE
+      - INVALID_CURSOR
+      - INVALID_DATE_RANGE
+      - REPLAY_EXPIRED
+      - SNAPSHOT_EXPIRED
+      - RATE_LIMITED
+      - TEMPORARILY_UNAVAILABLE
+      - OUTCOME_UNKNOWN
+  responses:
+    BadRequest:
+      description: Invalid format / illegal mode and selectedNumber combination
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing, malformed or invalid JWT
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Missing operation scope or caller lacks ownership
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource absent or request/query not owned by caller; do not disclose other callers.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Idempotency conflict/retired key, stale subscription version, same cycle already created, cancellation
+        pending, or stock/catalog business conflict. No extra fee.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unprocessable:
+      description: 'Business eligibility failure: insufficient balance, balance cap, expired/ineligible account,
+        no effective cycle, or verified profile/evidence mismatch. No partial financial effect. Cancellation late/equal
+        receipt: CANCELLATION_RECEIVED_TOO_LATE, terminal FAILED and pending guard released.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:
+      description: Transient system failure, state may need GET lookup/retry with same requestId
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Gone:
+      description: Replay payload or report snapshot expired; tombstone still prevents request ID reuse
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Unexpected technical failure; use same request ID and lookup
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit; do not generate new request ID
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

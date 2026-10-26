@@ -1,43 +1,45 @@
 @startuml
 !pragma layout smetana
-title DRAFT - C4 System Context (ADR-001)
-rectangle "CSKH\nExternal system" as CSKH
-rectangle "Reporting Consumer\nScoped external caller" as R
-rectangle "Local Identity Provider\nOutside Telecom; JWT + JWKS" as IdP
-rectangle "TelecomManagement\nSubscriber and financial backend" as T
-CSKH --> T : business REST + JWT
-R --> T : scoped consumption query
-IdP ..> T : JWKS; issuer/audience verification
+title REVIEW 2026-10-26 - System Context
+rectangle "Customer" as Customer
+rectangle "CSKH application\nExternal caller" as C
+rectangle "Reporting consumer\nExternal caller" as R
+rectangle "Keycloak / external IdP\nJWT + JWKS" as I
+rectangle "TelecomManagement backend\nUC01-UC06 + internal workers/jobs" as T
+Customer --> C : customer request
+C --> T : authenticated REST commands/status
+R --> T : authorized consumption report
+I ..> T : validate signature / issuer / audience
 note bottom of T
-  No real telecom network or payment integration.
-  Database, broker, cache and scheduler are internal.
+No real network activation, bank integration or full CSKH UI.
+Scheduler, DB, broker and cache belong to the system boundary.
+New detailed design is REVIEW, not deployed evidence.
 end note
 @enduml
 
 @startuml
 !pragma layout smetana
-title DRAFT - C4 Containers (accepted technology choices; M3 pending)
-rectangle "External CSKH / Reporting" as Clients
-rectangle "Local external Identity Provider" as IdP
-rectangle "TelecomManagement boundary" {
-  rectangle "Spring Boot / Java21 backend\nAPI + internal jobs + UC01 recovery" as API
-  database "PostgreSQL\nAuthoritative business state" as DB
-  queue "RabbitMQ\nNumber-pool wake-up signal" as MQ
-  database "Redis\nPackage catalog read cache; TTL60s" as Cache
+title REVIEW 2026-10-26 - Containers (MySQL 8.0.46)
+rectangle "External CSKH / Report clients" as C
+rectangle "External Keycloak IdP" as I
+rectangle "TelecomManagement system" {
+ rectangle "Spring Boot / Java 21\nModular monolith API\nRenewal worker + JOB01/JOB02 + activation recovery" as A
+ database "MySQL 8.0.46 / InnoDB\nAuthoritative business data\nREAD COMMITTED writes / UTC" as D
+ queue "RabbitMQ\nInventory wakeup only" as M
+ database "Redis\nCatalog read cache" as K
 }
-rectangle "k6 load / reconciliation tools" as Tools
-Clients --> API : REST / JWT
-IdP ..> API : JWKS verification
-API --> DB : JPA CRUD / JDBC with reason\ntransaction + uniqueness
-API --> MQ : publish after stock commit
-MQ --> API : idempotent consumer wake-up
-API --> Cache : cache-aside / invalidate\nfallback to DB
-Tools --> API : independent business test requests
-Tools --> DB : controlled seed / reconciliation read
-note bottom of API
-  Recovery scans DB every60s if signal is lost.
-  DB enforces FIFO, request ownership and expiry.
-  No cache authority for balance, number or request IDs.
-  Exact module/transaction/config review remains M3/M4.
+rectangle "k6 + independent reconciler" as X
+C --> A : REST / verified JWT
+I ..> A : JWKS / issuer / audience / scopes
+A --> D : transaction / locks / constraints
+A --> M : publish after stock commit
+M --> A : duplicate-safe wakeup
+A --> K : cache-aside / invalidate / fallback DB
+X --> A : mixed external logical requests
+X --> D : controlled seed / read reconciliation
+note bottom of A
+RecordedAt is business time in a committed transaction.
+Renewal cadence is reviewed separately from UC01 recovery.
+MySQL owns money, allocation, lifecycle and request outcomes.
 end note
 @enduml

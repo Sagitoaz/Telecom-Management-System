@@ -1,0 +1,44 @@
+@startuml
+title UC02 - one paid cycle per intent (REVIEW)
+autonumber
+actor "CSKH application" as C
+participant "Subscription service" as S
+participant "Operation outcomes" as O
+participant "Package catalog / policy" as P
+participant "MAIN account" as A
+participant "Subscription root / cycles" as R
+participant "Financial history" as L
+C -> S : read catalog and current subscription
+S -> R : version / coverageEnd / currentCycle
+S --> C : current terms + expectedVersion
+C -> S : purchase(requestId, subscriber, package, expectedVersion)
+S -> O : authorize caller; resolve key + canonical content
+alt replay / conflict / still processing
+ O --> S : saved outcome / conflict / PROCESSING
+ S --> C : no new fee
+else new operation
+ S -> P : authoritative current terms + sales/grandfather eligibility
+ group atomic purchase responsibility
+  S -> A : coordinate MAIN, verify owner (eligibility rechecked after all locks)
+  S -> R : serialize subscriber/package intent, compare expectedVersion
+  alt stale version / pending cancellation / invalid policy
+   R --> S : conflict, no fee/cycle
+   S -> O : terminal failure
+  else valid state
+   S -> A : fresh DB eligibility AFTER all root/cycle coordination; recheck expiry/funds
+   S -> R : start=coverageEnd if continuous, else this valid processing instant
+   S -> R : end=localDate(start)+durationDays at midnight
+   S -> A : deduct one MAIN fee
+   S -> L : PACKAGE_FEE + recordedAt + balanceBefore/After
+   S -> R : immutable paid cycle; advance coverageEnd/version
+   S -> O : SUCCEEDED linked to cycle and fee
+  end
+ end
+ S --> C : committed outcome
+end
+note over S,R
+ Manual/worker targeting same next cycle: one fee only.
+ Losing request re-evaluates/conflicts, never silently buys another cycle.
+ Any failure rolls back fee/cycle/root/outcome effects consistently.
+end note
+@enduml

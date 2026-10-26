@@ -1,16 +1,18 @@
+> **Hiệu lực hiện hành ngày 26/10/2026:** Phiếu 16 đã được chủ dự án điền. Đọc [bản tiếp nhận quyết định](decision-receipt-20261026.md) và mục 19 cuối file để áp dụng quyết định mới nhất; các bảng “chờ phiếu” phía dưới là lịch sử trước đợt tiếp nhận. SRS/UML/API đã được đồng bộ thành bản REVIEW. Mục D nghiệm thu toàn bộ thiết kế chưa được điền; delta MySQL vẫn cần duyệt.
+
 # Nhật ký làm rõ yêu cầu – Telecom Subscription Management System
 
 **Mã tài liệu:** DOC-PROJ-003
 
-**Phiên bản:** 1.5 – Tiếp nhận 24 lựa chọn, chờ duyệt tài liệu
+**Phiên bản:** 1.6 – bổ sung phê duyệt M4 và vận hành hai môi trường
 
 **Ngày xác nhận:** 14/10/2026 (Phase 0); cập nhật lựa chọn SRS 15/10/2026
 
-**Trạng thái:** Phase 0 baseline giữ nguyên; REV-SRS-001 và REV-UC01-002 đã ghi nhận; **quyết định Hybrid UC01 được duyệt 15/10/2026**; các OQ kỹ thuật và M1 vẫn Open
+**Trạng thái:** M0–M4 (riêng UC01) đã được chủ dự án duyệt; OQ các nghiệp vụ sau và kiểm chứng kỹ thuật P5 vẫn theo dõi riêng; CR-UC01-001 Hybrid giữ nguyên.
 
 **Người xác nhận:** Chủ dự án – người dùng, có quyền quyết định nghiệm thu cuối cùng
 
-**Giai đoạn:** M0 đã duyệt; Phase 1 đang rà soát SRS 0.6/UC01 0.5, M1 chờ duyệt; khung Phase 2–4 DRAFT theo CR-DOC-001.
+**Giai đoạn:** M0–M4 duyệt theo phạm vi UC01; bước tiếp theo P5.1 khởi tạo backend, kiểm chứng DB/migration/health; P5.2 code nghiệp vụ UC01.
 
 ## 1. Căn cứ và thẩm quyền
 
@@ -90,20 +92,20 @@ Các mã REQ chỉ dùng trong nhật ký, giữ liên tục từ bản 0.1.
 | Mã | Trạng thái | Đã chốt | Còn cần quyết định / thiết kế | Hạn chốt |
 |---|---|---|---|---|
 | OQ-01 | Open — chốt một phần | Chính0 không hạn; phụ theo cấu hình/seed (DEC-PRE-16). | Hạn mức/hạn phụ và danh mục mẫu: đề xuất R3 chưa duyệt. | Trước UC02/04/05 |
-| OQ-02 | Open — chốt một phần | Scope caller+nghiệp vụ; canonical; UC01 replay7 ngày+tombstone, không dọn đang xử lý/chờ (05–07/15). | Normalize/absent/null, HTTP tombstone/in-progress; retention tiền đề xuất R2. | P4 UC01; trước UC tiền |
+| OQ-02 | Open — chốt một phần | Scope/canonical UC01, replay7 ngày+tombstone; normalization/replay/HTTP T1–T3 đã duyệt M4 lịch sử. | Delta MySQL/cấu hình và kiểm chứng; retention UC02–05/registry UC03 theo Q01/Q30 phiếu 16. | Delta UC01; trước UC liên quan |
 | OQ-03 | Open — chốt một phần | [X,Y) commit, OR/AND/includeFee rõ; cursor, scope riêng, attribution gói/ngữ cảnh (17/18). | Schema attribution/page size/claims và dữ liệu không ánh xạ. | Trước UC06 |
 | OQ-04 | Open — chốt một phần | warm-up2/đo10, p95≤500ms/p99≤1s, lỗi hệ thống≤0,1%, k6 (22/24). | Máy/config, tập latency/mẫu số lỗi/rate, không có số đo. | Trước đo tải |
-| OQ-05 | Open — chốt một phần | FIFO ưu tiên WAITING khi nạp kho; recovery60s, hướng row lock+unique, kiểm hạn hoàn tất (08–10). | Chuẩn số/nạp, tie-break, lock order/retry/deadlock; cách ly số ngoài UC01 đầu. | P4; tái cấp trước ngừng thuê bao |
+| OQ-05 | Open — chốt một phần | FIFO/recovery60s/kiểm hạn; T4–T6 lock order/tie-break/clock đã duyệt ý tưởng M4 lịch sử. | Q33 chuẩn số và delta InnoDB/retry/test thực; nạp kho/cách ly/tái cấp chưa có quy trình đủ. | Delta UC01; tái cấp trước ngừng thuê bao |
 | OQ-06 | Open — chốt một phần | Snapshot giá mỗi đăng ký/gia hạn, phí tài khoản chính nguyên tử (12, DEC-03). | Giá mẫu/schema snapshot và lỗi/retry rollback. | Trước UC02 |
 | OQ-07 | Open — chốt một phần | Hủy trước cuối kỳ ngăn gia hạn; hủy mới lặp lỗi, retry cùng ID kết quả cũ (13/14). | Mốc nhận hợp lệ bền vững, exact boundary, hủy sau gia hạn, job idempotency. | Trước UC03/job |
 | OQ-08 | Resolved | Customer–Subscriber 1–N, DEC-01. | Không còn. | Resolved 14/10/2026 |
 | OQ-09 | Open — chốt một phần | Chu kỳ số ngày, nối từ hạn cũ; chờ hủy chặn nối/gia hạn; thiếu tiền hết hiệu lực không grace (13). | Ngày tuyệt đối/lịch, đã hết hạn đăng ký lại, lỗi kỹ thuật cuối kỳ. | Trước UC02/03 |
 | OQ-10 | Open — chốt một phần | VND nguyên dương, kiểm tràn, không âm; hết hạn giữ số dư/chặn giao dịch (16). | Hạn mức cụ thể R3, không tự mở rộng API hoàn tiền. | Trước UC04/05 |
 | OQ-11 | Open — chốt một phần | 5 năm cấu hình, demo không purge, giữ lịch sử (21). | Archive/purge sau demo; không có vòng đời tái cấp. | Trước job/deployment |
-| OQ-12 | Open — chốt một phần | So mọi trường gửi sau chuẩn hóa, chứng cứ xác minh ngoài; loại+số vẫn bắt buộc (01/02). | Rà soát cách hiểu ghi chú R1 trước M1; normalize/absent/null/evidence cụ thể P4. | M1 nghiệp vụ, P4 chi tiết |
+| OQ-12 | Open — chốt một phần | M1 đã duyệt so mọi trường gửi, loại+số/chứng cứ ngoài; normalization/absent/null/evidence fingerprint T1/T2 đã duyệt lịch sử. | Q31 phạm vi tin cậy caller/chứng cứ ngoài, cấu hình và kiểm chứng trước API thật; không hỏi lại R1/M1. | Trước API UC01 thật |
 | OQ-13 | Open — chốt một phần | Asia/Ho_Chi_Minh00:05/00:30, riêng cấu hình/chạy tay; ngày trước, count/tổngVND theo chiều, CSV, điều chỉnh kỳ sau (19/20). | Transaction chốt kỳ/cutoff/late adjustment/batch/gia hạn đúng biên. | Trước job |
 | OQ-14 | Open — chốt một phần | 10 cặp chia đều50% debit attempt kể cả retry; phí nội bộ ngoài mẫu số; k6/unresolved không đạt (23/24). | Bằng chứng overlap phía xử lý, điều phối retry giữ tỷ lệ; logical success tách attempt. | Trước thiết kế tiền/đo tải |
-| OQ-15 | Open — chốt một phần | JWKS/IdP local ngoài Telecom, issuer/audience/scope/ownership; hướng API201/202/409 (04/11). | URL/claims/rotation, HTTP replay/lỗi/in-progress/tombstone, polling/timeout. | M3–M4 |
+| OQ-15 | Open — chốt một phần | JWKS/IdP ngoài backend, HTTP/replay/in-progress/tombstone T3/T7 đã duyệt ý tưởng M4 lịch sử. | URL/claims/caller/scope/key rotation/polling/timeout cấu hình thực; Q31 quyền dữ liệu/evidence, Q30 UC02–05. | Trước API thật từng UC |
 
 ### Các ràng buộc cần giữ khi đặc tả chi tiết
 
@@ -327,3 +329,189 @@ Q15 chỉ giao đề xuất retention tiền; Q16 chưa điền hạn mức/hạ
 ## 14. Xóa phiếu cũ theo yêu cầu chủ dự án
 
 Hai phiếu lịch sử REV-SRS-001 và REV-UC01-002 đã xóa ngày18/10/2026 theo CR-DOC-003. Bảng31 quyết định yêu cầu và5 quyết định UC01 ở mục12 được giữ nguyên; mục8–10 còn ghi lịch sử đáp án/thay thế Hybrid. Không yêu cầu mở file đã xóa để hiểu SRS/UC01. Phiếu hiện tại DECISION-PRECODE-001 giữ lại để trả lời Q25.
+
+
+## 14. Xác nhận nghiệm thu tài liệu ngày 19/10/2026
+
+**Nguồn xác nhận:** Chủ dự án gửi ảnh cho thấy `decision-questionnaire.md` có **Q25=A**, đồng thời nêu rõ “các file khác tôi cũng chốt”. Người duyệt: chủ dự án; ngày: 19/10/2026. Đây là xác nhận từ người dùng, **không** phải bằng chứng chạy code hay commit Git.
+
+| Mốc | Phạm vi được xác nhận | Kết quả | Giới hạn |
+|---|---|---|---|
+| **M1** | SRS v0.6, UC01 v0.5, 27 AC, DEC-PRE-01–24/Q25=A | **Approved** | Chưa duyệt thiết kế DB/API/SQL của Phase 4 |
+| **M2** | Use Case, Domain Model và Sequence UC01 hiện có trong `docs/02-analysis/` cùng `analysis.md` | **Approved** theo xác nhận “các file khác ... chốt” | State và Sequence của UC02–06 cập nhật khi đến lượt |
+| **M3** | Architecture v0.2, C4, module structure, ADR-001 (stack/RabbitMQ/Redis/JWKS) | **Approved** theo xác nhận “các file khác ... chốt” | Không tự coi Keycloak hay Docker runtime là đã được cài và kiểm tra |
+| **M4** | ERD/OpenAPI/Design Class/concurrency UC01; T1–T7 đã duyệt ngày 19/10 | **Đã duyệt thiết kế UC01** | Mọi bằng chứng build/migration/race test chuyển P5; các UC khác thiết kế theo vòng |
+
+**Nguyên tắc bất biến:** Không thay nguyên văn câu trả lời Q01–Q24, không làm hiệu lực lại DEC-REQ-10/11 đã bị CR-UC01-001 thay thế. `Q25=A` duyệt yêu cầu M1, không duyệt những quyết định SQL/API/P4 chưa tồn tại lúc người dùng chọn Q25. Các OQ liên quan UC02–UC06/lệnh tiền không bị tự đóng.
+
+**Hạng mục kỹ thuật M4 được trình riêng:** canonical normalization (Unicode/absent/null); HTTP status cho replay/in-progress/tombstone; JWT caller mapping và mock IdP local; khóa/cấp phát FIFO+random/expiry/claim/recovery. Nội dung là đề xuất P4, không ghi thành DEC-PRE hoặc quyết định nghiệp vụ mới cho đến khi chủ dự án duyệt.
+
+
+## Phụ lục quyết định 19/10/2026 – M4 và môi trường triển khai
+
+| Mã | Phạm vi | Nội dung / người duyệt |
+|---|---|---|
+| DEC-M4-001 | UC01 P4.1–P4.5 | Chủ dự án duyệt các đề xuất T1–T7 tại `04-design/m4-review-checklist.md` ngày 19/10/2026. Không suy diễn là đã build/test hoặc có migration hoạt động. |
+| DEC-ENV-001 | Môi trường phát triển | Máy công ty không cài Docker, dùng Spring Boot JVM + PostgreSQL Supabase. Máy nhà có Docker Compose; cùng codebase dùng cấu hình `office`/`home`, không đưa host/secret vào Java. |
+| DEC-ENV-002 | Broker/cache | ADR-001 RabbitMQ và Redis vẫn hiệu lực. Ở office không có broker/cache thì recovery bằng DB là đường vận hành dev được phép, Redis fallback DB; **không nghiệm thu full broker/cache từ office mode**. Không tự bỏ MQ/Redis khỏi kiến trúc. |
+| DEC-ENV-003 | IdP | JWT issuer ngoài backend vẫn bắt buộc cho các API bảo vệ. Keycloak có thể chạy ở nhà bằng Docker; môi trường office phải cấu hình IdP/JWKS tiếp cận được để test API. Không tắt xác thực tự động vì công ty không cài Docker. |
+
+OQ-04/OQ-14, các nghiệp vụ UC02–06 và công việc xác minh runtime vẫn Open theo mốc cũ. Không ghi credential Supabase vào tài liệu hoặc Git.
+
+
+## Bổ sung thay đổi 19/10/2026 – CR-DB-001
+
+Chủ dự án xác nhận **chuyển DBMS PostgreSQL sang MySQL** và môi trường công ty không chạy được/cài được dịch vụ database theo giới hạn hiện tại; phần thực thi sẽ chạy ở nhà. Trạng thái: **DBMS MySQL đã chốt**, version/DDL/isolation/UUID/Java-JDBC và các đề xuất nghiệp vụ UC02–06 của bộ `07-business-review/` **chưa duyệt**. Chi tiết tại `CR-DB-001-mysql.md`, ADR-003 và `07-business-review/16-PHIEU-DUYET-TONG-HOP.md`.
+
+Không thay ngược nội dung đã chọn trong DEC-PRE-03; chỉ ghi lựa chọn PostgreSQL **superseded ở thành phần DBMS**. M4 UC01 được duyệt lịch sử nhưng không đồng nghĩa MySQL migration/locking đã được duyệt hoặc test.
+
+## 15. Đợt rà soát tài liệu ngày 24/10/2026
+
+**Nguồn chỉ đạo:** chủ dự án yêu cầu đối chiếu requirement.md, rà soát độ đầy đủ/chi tiết/ngoại lệ, hoàn thiện tài liệu có căn cứ, tạo phiếu trắc nghiệm Markdown dễ hiểu cho các điểm cần quyết định. Đây là **ủy quyền rà soát/biên soạn tài liệu**, không phải phê duyệt đáp án nghiệp vụ mới, không duyệt checkpoint hoặc cho phép commit/push/code.
+
+**Đã làm trong phạm vi tài liệu:** đồng bộ trạng thái hiện hành MySQL/M1–M4 lịch sử, sửa hướng runtime/implementation/deployment bị lệch, ghi [báo cáo chất lượng](../07-business-review/18-RA-SOAT-CHAT-LUONG.md), [64 kịch bản](../07-business-review/19-MA-TRAN-TRUY-VET-VA-NGOAI-LE.md), [đặc tả chung DRAFT](../07-business-review/20-QUY-TAC-CHUNG-VA-BIEN-NGHIEP-VU_DRAFT.md). [Phiếu 16 v0.2](../07-business-review/16-PHIEU-DUYET-TONG-HOP.md) bổ sung ví dụ/hệ quả/Q21–34; không chọn đáp án thay người dùng.
+
+### 15.1. Theo dõi phần Open bổ sung – không đóng OQ cũ
+
+| OQ hiện có | Chi tiết phát hiện / câu hỏi phiếu 16 | Mốc cần giải quyết |
+|---|---|---|
+| OQ-01/02/10 | Q01/Q02/Q09/Q34: registry/replay UC03, tiền phụ, hạn mức và mốc kiểm hạn đang chờ lock | Trước UC02–05 liên quan |
+| OQ-06/07/09 | Q04–07/Q21–25/Q29: ngày chu kỳ, click đôi khác ID, kỳ trả trước/hủy, tiếp nhận bền vững và downtime/giá/ngừng bán | Trước UC02/03/JOB-01 |
+| OQ-03/13 | Q10–12/Q26–28: attribution, commit timestamp chưa có thiết kế đủ, snapshot/cutoff/late contribution | Trước UC06/JOB-02 |
+| OQ-05/12/15 | Q13–16/Q18/Q33: delta MySQL và chuẩn số; Q31 trust evidence/caller; cấu hình/runtime chưa kiểm | Delta M4 UC01, trước API thật |
+| OQ-04/14 | Q32: mẫu số latency/lỗi, success window/timeout/attempt contention | Trước thực thi P6 |
+| OQ-11 | Archive/purge sau demo và backup/restore thực tế vẫn Open; demo không purge giữ quyết định cũ | Trước deployment thực |
+
+**Các thay đổi có thể cần CR nếu được chọn:** Q22=A thay nghĩa “cuối chu kỳ hiện tại”; Q22=B mở hoàn tiền; Q26=A thay mốc lọc commit; Q27=B giảm đảm bảo snapshot/AC; Q28=B đổi ngày báo cáo theo service time. Hiện chưa có lựa chọn, chưa lập chúng thành CR Approved. Q03/Q08/Q17/Q20 không hỏi lại phần đã có căn cứ.
+
+Không tạo mã CR-ENV-002 riêng vì không có bản ghi phê duyệt độc lập; môi trường đổi cùng CR-DB-001/ADR-003. Giữ nguyên đáp án lịch sử DEC-PRE và phiếu decision-questionnaire, requirement.md cùng mã FR/BR/NFR/27 AC. Trạng thái OQ cũ chỉ đóng phần thật sự có đáp án và bằng chứng sau này.
+
+## 16. Rà soát lại Q07 – 25/10/2026
+
+**Ủy quyền:** Chủ dự án yêu cầu sửa phiếu 16, suy xét lại và giải thích phương án phù hợp nhất sau khi chỉ ra sự chồng lấn hai tác vụ. Đây là duyệt phạm vi biên soạn đề xuất, **không tự coi là duyệt lịch JOB-01 mới**. Q01/Q02/Q04/Q05/Q06 đã được người dùng đánh dấu trong file nhưng chưa tổng hợp/đóng các OQ trong nhiệm vụ riêng này.
+
+### 16.1. Bảo toàn lựa chọn Q07 trước khi sửa
+
+Snapshot file trước sửa cho thấy Q07=A cũ được đánh dấu. Lưu nguyên nội dung và dấu chọn dưới đây; không dùng đáp án này làm xác nhận A mới có ý nghĩa khác. Việc bỏ dấu ở **câu Q07 đang hoạt động** chỉ nhằm chờ xác nhận lại đề xuất đã đổi, không xóa lịch sử đáp án. Các câu khác ngoài Q25 dẫn chiếu giữ nguyên byte nội dung sau giải mã UTF-8.
+
+#### Q07 – Gia hạn lúc nào nếu kỳ kết thúc trước job hàng ngày?
+**Tình huống:** Gói hết 00:00, JOB-01 chạy 00:05. Không được tự cho dùng thêm 5 phút khi chưa thu phí; lịch 00:05/00:30 đã chốt, không cần chọn lại giờ.
+- [x] **A – Khuyến nghị:** Có worker gia hạn sát thời điểm từng kỳ; JOB-01 vẫn 00:05 để rà soát/khôi phục. Chỉ có quyền kỳ mới sau gia hạn commit; nếu xử lý đã qua hạn, áp đúng Q25, không cam kết tuyệt đối không gián đoạn.
+- [ ] **B:** Chỉ gia hạn trong JOB-01; các kỳ hết trước giờ job đều là gia hạn muộn theo Q25. Nếu chọn Q25=A, những kỳ đó sẽ hết hiệu lực và không tự gia hạn, kể cả đủ tiền.
+- [ ] **C:** Cách khác; mô tả mốc thu phí và mốc bắt đầu quyền kỳ mới.
+**Tôi chọn / ghi chú:**
+
+### 16.2. CR-JOB-001 – Đề xuất hợp nhất tác vụ vòng đời
+
+| Thuộc tính | Nội dung |
+|---|---|
+| Trạng thái | **NOT ADOPTED – KHÔNG ĐƯỢC CHỌN ngày 25/10/2026** theo DEC-JOB-001 tại mục17; giữ nguyên đề xuất bên dưới để truy vết, không đổi DEC-PRE-19 |
+| Quyết định cũ có hiệu lực | DEC-PRE-19: JOB-01 mặc định 00:05 hằng ngày, JOB-02 00:30; cấu hình/chạy tay; không kéo dài quyền vì job trễ |
+| Đề xuất Q07 cũ bị rút khuyến nghị | Worker gia hạn thường xuyên + JOB-01 hằng ngày rà soát/bù, chưa tách được trách nhiệm đủ rõ |
+| Đề xuất thay thế | Một JOB-01 định kỳ thường xuyên sở hữu gia hạn/hủy/hết hạn gói+tài khoản và khôi phục cùng luồng từ DB. Không thêm worker gia hạn riêng hoặc lượt quét bù 00:05; JOB-02/recovery UC01 giữ nhiệm vụ riêng |
+| Khoảng chạy đề xuất | Ban đầu chờ 60 giây sau kết thúc lượt rồi chạy lại, cấu hình được, không phải SLA tối đa60s; kiểm thời gian chạy/backlog/khóa/lỗi trước chỉnh |
+| Nguyên tắc tải/đồng thời | Lấy bản ghi đến hạn qua index, lô/budget hữu hạn; kiểm lại trạng thái/cycle, fee nguyên tử, chống retry trùng; phối hợp chạy tay/nhiều instance; không hứa đã tối ưu/đo tải |
+| Gia hạn muộn | Q25 phải được chọn riêng; Q07 không tự cho phép thu muộn/thu bù nhiều kỳ, không cấp quyền trong khoảng chưa có kỳ hợp lệ |
+| Lý do | Giảm chồng lấn xử lý và số thành phần, giữ mô hình đơn giản phù hợp dự án; đổi tần suất thay vì thêm một tác vụ để giữ nguyên lịch cũ |
+| Người đề xuất / ngày | Agent, 25/10/2026 theo yêu cầu rà soát của chủ dự án |
+| Người duyệt / ngày duyệt | **Chưa có** cho phương án mới; yêu cầu sửa phiếu không là phê duyệt nghiệp vụ mới |
+| Ảnh hưởng sau khi duyệt | SRS FR-JOB-03/BR-23/NFR-10/mục6.3; scheduled-jobs; review09/20; transaction/design/tests/config/roadmap. Đề bài gốc giữ nguyên; xác nhận cách đáp ứng job hằng ngày khi chạy nhiều lượt mỗi ngày |
+
+### 16.3. Kiểm tra cần có khi hiện thực
+
+Không có một timer cho từng thuê bao; không full-scan mặc định; không ghi ledger chỉ vì thấy candidate ở truy vấn trước lock. Kiểm EXPLAIN trên dữ liệu đại diện, số lượt/lô/lag và tác động mixed30+30TPS. Test hết hạn API đúng mốc dù JOB-01 chưa chạy, restart/bù việc quá hạn, một bản ghi lỗi không chặn cả hàng đợi, tranh chấp hủy/manual renewal, chạy tay/nhiều instance và không thu lại cùng cycleKey. Chưa có implementation/runtime test trong lần sửa tài liệu.
+
+
+## 17. DEC-JOB-001 – Chốt phương án worker gia hạn và JOB-01 hằng ngày
+
+**Trạng thái:** APPROVED về cách tổ chức tác vụ. **Người duyệt:** Chủ dự án. **Ngày:** 25/10/2026. **Nguồn xác nhận trong phiên:** “nếu thế chốt phương án như ban đầu đi vậy”. Ngữ cảnh ngay trước đó đã phân biệt worker kiểm tra gia hạn thường xuyên với JOB-01 lịch cố định00:05 và phương án hẹn deadline riêng.
+
+| Phạm vi | Quyết định có hiệu lực |
+|---|---|
+| Worker gia hạn | Kiểm tra thường xuyên gói đến hạn cần tự gia hạn, là tác vụ hỗ trợ nội bộ; không đặt một lịch riêng cho từng gói |
+| JOB-01 | Giữ lịch00:05 hằng ngày theo DEC-PRE-19; xử lý hết hạn gói/tài khoản, hủy đến hạn và rà soát/bù phần bỏ sót theo cùng quy tắc |
+| Phối hợp | Dùng chung logic kiểm điều kiện/cycle và thu phí nguyên tử; cùng kỳ chỉ một phí, retry/chạy tay/nhiều instance không tạo tác động trùng; JOB-01 không thu lại kỳ worker đã hoàn tất |
+| JOB-02 / UC01 | JOB-02 vẫn00:30 tổng hợp tiêu dùng; recovery UC01 giữ nhiệm vụ WAITING, không gộp với worker gia hạn gói |
+| Không chọn | CR-JOB-001 hợp nhất thành một JOB-01 thường xuyên; phương án hẹn theo deadline từng gói/đầu việc chưa chọn |
+| Chưa chốt | Khoảng chạy worker (không mặc định60s), batch/index/retry/concurrency cụ thể; chính sách thu muộn Q25, mốc hủy Q24 và kỳ trả trước Q22 vẫn theo đáp án riêng |
+| Giới hạn quyền | Không grace ngầm, không quyền dùng kỳ mới trước commit hợp lệ; không reset/thu lại nghiệp vụ FAILED thiếu tiền khi điều kiện thay đổi |
+| Ảnh hưởng | Phiếu16 Q07/Q25 dẫn chiếu; SRS và scheduled-jobs phần tổ chức tác vụ; review09/quy tắc20; roadmap. Không đổi lịch baseline, không tự đóng OQ hoặc checkpoint |
+
+CR-JOB-001 giữ lịch sử với trạng thái NOT ADOPTED. Đây là chốt phương án gốc sau trao đổi, không phê duyệt đề xuất hợp nhất và không duyệt toàn bộ nội dung phiếu16. Các đáp án khác giữ nguyên; Q25 chưa được chọn thay người dùng.
+
+### 17.1. Lưu nguyên bản Q07 v0.3 trước xác nhận
+
+#### Q07 – Chọn một cách duy nhất để xử lý gia hạn và hết hạn
+**Cập nhật 25/10/2026:** A cũ gồm worker gia hạn thường xuyên và JOB-01 lúc 00:05 rà soát lại. Cách mô tả đó chồng lấn trách nhiệm, agent rút khuyến nghị cũ. Bản này thay bằng phương án một JOB-01 duy nhất.
+
+**Bảo toàn đáp án của bạn:** Trước lần sửa này, bạn đã đánh dấu **A của nội dung cũ**. Lựa chọn/nội dung gốc được lưu tại [sổ quyết định, mục 16](../00-project/clarification-log.md). A mới có ý nghĩa khác nên để trống chờ bạn xác nhận; không tự chuyển dấu chọn cũ sang phương án mới. Các câu khác giữ nguyên đáp án đã điền.
+
+**Tình huống giữ nguyên một mốc:** Gói hết lúc **00:00**. Nếu chỉ đợi JOB-01 lúc **00:05**, hệ thống xử lý chậm ít nhất tới lượt đó. Mục đích là xử lý gần hạn hơn mà không có hai tác vụ cùng quét và thu phí gia hạn.
+
+- [ ] **A – Khuyến nghị cho dự án này:** Chỉ có **một JOB-01 xử lý vòng đời**, chạy định kỳ thường xuyên ngay trong backend: gia hạn khi hợp lệ, hoàn tất hủy đến hạn, xử lý gói/tài khoản hết hạn. Không thêm worker gia hạn riêng, không thêm lượt rà soát/gia hạn hằng ngày lúc 00:05. Đề xuất khởi điểm chờ **60 giây sau khi lượt trước kết thúc** rồi chạy lượt tiếp, cấu hình được; mỗi lượt lấy các bản ghi đến hạn theo chỉ mục, chia lô và giới hạn công việc. Khôi phục sau lỗi vẫn dùng chính JOB-01 đọc việc còn tồn trong DB. Đây là đề xuất đổi lịch JOB-01 theo **CR-JOB-001**, chưa tự thay DEC-PRE-19.
+- [ ] **B – Giữ lịch đã chốt:** Một JOB-01 chỉ chạy hằng ngày lúc **00:05**, xử lý cùng các nghiệp vụ trên; không có worker gia hạn riêng. Ít lượt kiểm tra DB hơn nhưng nhiều gói sẽ được xử lý trễ hơn. Gia hạn sau hạn vẫn theo Q25, không tự cho dùng thêm trong thời gian chờ.
+- [ ] **C – Phương án khác:** Ghi yêu cầu về độ trễ/cách chạy. Nếu muốn hẹn riêng đúng deadline từng gói, cần thiết kế lưu lịch bền vững, thay lịch khi nối/hủy và khôi phục khi mất lịch; chưa khuyến nghị độ phức tạp này cho bản đầu.
+
+**A hoạt động như thế nào?**
+
+| Việc JOB-01 tìm được | Xử lý trong cùng tác vụ |
+|---|---|
+| Đăng ký gói đến hạn, có yêu cầu hủy hợp lệ | Hoàn tất hủy theo Q22/Q24; không tự thu phí gia hạn |
+| Đến hạn gia hạn, còn đủ điều kiện | Kiểm lại tiền/quyền/cycle dưới transaction, thu phí + ghi kỳ + kết quả nguyên tử; nếu đã trễ thì theo Q25 |
+| Đến hạn nhưng không đủ tiền/không được gia hạn | Hết hiệu lực theo quy tắc; không trừ tiền thành công, không ngầm thử lại nghiệp vụ đã FAILED |
+| Tài khoản đến hạn | Chặn giao dịch theo mốc hạn, cập nhật trạng thái và giữ tiền/lịch sử |
+| Backend từng ngừng hoặc lượt trước lỗi | Đọc lại bản ghi còn cần xử lý; không cần tạo một tác vụ thứ hai để quét bù |
+
+**Ví dụ về độ trễ:** Gói hết **00:00**, JOB-01 xử lý được lúc **00:00:20**. Trong khoảng trống gói không có quyền dùng kỳ mới. Nếu chọn Q25=B và đủ điều kiện, thu một kỳ mới từ mốc xử lý hợp lệ; nếu chọn Q25=A thì không được tự thu sau hạn. Mốc 00:00:20 chỉ minh họa, không phải lịch cố định. Chờ 60 giây giữa lượt **không bảo đảm** mọi gói được xử lý trong 60 giây: còn thời gian chạy, backlog, khóa DB và sự cố. Nếu bạn đòi không gián đoạn, A chưa đáp ứng và cần thiết kế/chốt nghiệp vụ riêng.
+
+**Kết hợp Q25:** Vì cách A lấy gói **đã đến hạn** rồi mới xử lý, không thể vừa dùng cách này vừa kỳ vọng tự gia hạn thành công khi Q25=A cấm mọi khoản thu sau hạn. Nếu muốn tự gia hạn bằng JOB-01 định kỳ, khuyến nghị đọc/chọn riêng Q25=B hiện có, hoặc ghi cửa sổ cho phép xử lý muộn tại Q25=C. Chọn Q07=A cùng Q25=A vẫn có ý nghĩa xử lý hết hạn/hủy, nhưng không đáp ứng mong muốn tự gia hạn các kỳ đã qua hạn; agent phải báo tổ hợp đó khi tổng hợp đáp án, không tự sửa chính sách.
+
+**Chi phí và cách giới hạn:** A có thêm các lượt truy vấn so với B, không phải miễn phí. Thiết kế phải lấy việc đến hạn qua chỉ mục thay vì mặc định quét cả bảng, giới hạn lô/thời gian mỗi lượt, tránh lỗi một bản ghi chặn các bản ghi khác và phân lượt cho cả gói lẫn tài khoản. Cột/index cụ thể và khoảng chạy phải được kiểm EXPLAIN/test tải trước khi gọi là tối ưu về hiệu năng. Không tạo một thread/timer cho mỗi thuê bao, không đưa việc gia hạn lên RabbitMQ/Redis chỉ để thay bộ lịch đơn giản.
+
+**Chống làm hai lần:** Trong một instance không để các lượt JOB-01 chồng nhau; nếu chạy nhiều instance hoặc có chạy tay, phải phối hợp quyền xử lý và kiểm lại trạng thái/cycle trong DB. Dùng lại khóa nghiệp vụ của cùng kỳ khi retry; mất phản hồi sau commit phải tra kết quả trước thử lại, không thu phí hai lần. Gói/tài khoản đã hết hạn phải bị kiểm quyền bằng timestamp ngay ở đường API, không đợi JOB-01 đổi trạng thái.
+
+**Tại sao khuyến nghị A mới?** Một nơi sở hữu toàn bộ vòng đời và đường khôi phục, phù hợp các gói hết hạn ở nhiều thời điểm, ít thành phần hơn cách cũ. Đây là lựa chọn cân bằng độ đơn giản và độ trễ cho phạm vi hiện tại, chưa phải kết luận đã benchmark tốt nhất. **JOB-02 tổng hợp báo cáo vẫn riêng lúc 00:30; recovery UC01 vẫn phục vụ WAITING, không phải tác vụ gia hạn gói.**
+
+**Phạm vi cần duyệt:** Chọn A mới là đồng ý đề xuất đổi JOB-01 từ một lần/ngày lúc 00:05 sang lịch định kỳ thường xuyên, thực hiện mỗi ngày nhiều lượt; không phải giữ lịch cũ rồi bổ sung một job mới. Sau xác nhận sẽ ghi CR và đồng bộ SRS FR-JOB-03/BR-23/NFR-10, đặc tả job/design/test. Q25 vẫn cần chọn riêng để xác định cách xử lý muộn; không đổi nội dung đề bài gốc.
+
+**Tôi chọn / ghi chú:**
+
+
+## 18. Viết lại câu hỏi Q09–Q34 dễ hiểu – 25/10/2026
+
+**Yêu cầu chủ dự án:** “viết lại mấy câu từ q09 trở xuống ... khó hiểu cả câu hỏi lẫn các phương án”. Phạm vi là biên tập lại cách diễn đạt, không phải phê duyệt thay đổi nghiệp vụ. Phiếu16 v0.5 thêm giải thích MAIN/tài khoản phụ/bên gửi lệnh, viết lại26 câu theo tình huống → lựa chọn → kết quả; giữ mã câu và ý nghĩa A/B/C, toàn bộ dấu chọn/ghi chú đã có, Q01–Q08 và bảng xác nhận không đổi.
+
+**Điểm giữ rõ:** Q09=A nhận lệnh cộng/trừ trên MAIN hoặc tài khoản phụ hợp lệ nhưng chỉ tác động đúng account được chỉ rõ; không tự chuyển GAME sang MAIN hoặc gộp tiền. Phí đăng ký gói vẫn thu MAIN. Cách “ưu tiên GAME, thiếu thì lấy toàn bộ MAIN” người dùng đã nêu đang là nội dung cần xác định phạm vi/chọn riêng tại Q09=C; chưa có xác nhận áp dụng, không tạo DEC/CR Approved cho cách đó.
+
+Q07 vẫn theo DEC-JOB-001 đã duyệt: worker gia hạn thường xuyên + JOB-01 hằng ngày00:05. Q12 giữ mốc/tập chốt đã lưu bền vững khi retry dù lượt trước lỗi; Q24/Q34 vẫn dùng giờ từ DB. Các phương án làm thay đổi baseline ở Q22/Q26/Q27/Q28 được ghi rõ cần CR nếu chọn. Các câu chưa chọn vẫn Open, không tự đóng OQ/checkpoint và không sửa SRS/đề bài/code trong lượt biên tập này.
+
+## 19. Tiếp nhận phiếu 16 và xác nhận bổ sung — 26/10/2026
+
+**Người quyết định:** Chủ dự án. **Căn cứ:** các dấu chọn/ghi chú trong phiếu 16 và trả lời trực tiếp trong phiên. Phiếu được giữ nguyên, kể cả Q26/Q34=B đã được thay bằng CR trong chat. [Bản tiếp nhận](decision-receipt-20261026.md) lưu từng câu, lựa chọn và hiệu lực; không coi phương án khuyến nghị chưa được chọn là quyết định.
+
+Các lựa chọn có hiệu lực: Q01=A, Q02=A, Q04=A, Q05=A, Q06=A, Q07=A (DEC-JOB-001), Q09=A, Q10=A, Q11=A, Q12=A, Q13=B, Q14=C, Q15=A, Q16=A, Q18=A, Q19=A, Q21=B kèm xác nhận lịch ngày, Q22=A, Q23=A, Q24=A kèm CR-CAN-003, Q25=B, Q27=A, Q28=A, Q29=B, Q30=A, Q31=A, Q32=A, Q33=A. Q03/Q08/Q17/Q20 là mục tham chiếu. Q26/Q34=B trong phiếu là lịch sử, hiệu lực mới theo CR-TIME-001/002.
+
+| Mã | Quyết định mới | Trạng thái / nguồn |
+|---|---|---|
+| DEC-BE-21 | Ngày đăng ký là ngày đầu; gói 30 ngày từ 10:15 ngày 01/10 hết đúng 00:00 ngày 31/10, giờ Việt Nam | Approved, chủ dự án xác nhận trong chat |
+| CR-CAN-002 | Hủy cuối toàn bộ thời gian đã trả, không hoàn phí; thay chi tiết “cuối chu kỳ hiện tại” của DEC-04 | Approved theo Q22=A; [CR chi tiết](CR-CAN-002-prepaid-cancellation.md) |
+| CR-CAN-003 | Sau xác nhận commit ý định hủy, kiểm giờ DB; receipt trước hạn mới được nhận hủy; mất phản hồi tra lại, kết quả đã chốt được replay | Approved, trả lời “Đồng ý mốc xác nhận sau commit; ghi rõ quy tắc và xử lý mất phản hồi”; [CR chi tiết](CR-CAN-003-cancellation-receipt.md) |
+| CR-TIME-001 | Báo cáo dùng mốc ghi nhận nghiệp vụ trong transaction cuối cùng đã commit; không đòi timestamp hoàn tất commit vật lý | Approved, “Đổi sang mốc ghi nhận nghiệp vụ của transaction đã commit; lập CR”; [CR chi tiết](CR-TIME-001-reporting-time.md) |
+| CR-TIME-002 | Kiểm giờ DB dưới khóa ngay trước cập nhật tiền; còn hạn lúc kiểm có thể commit qua hạn | Approved, “Đổi sang kiểm giờ DB dưới khóa trước cập nhật; lập CR”; [CR chi tiết](CR-TIME-002-account-expiry.md) |
+
+### Phần OQ được chốt và phần thực thi còn mở
+
+| OQ | Nội dung đã giải quyết bằng phiếu/CR | Phần còn mở và mốc xử lý |
+|---|---|---|
+| OQ-01/10 | MAIN/phụ tách biệt, đúng accountId; không fallback/gộp; 10 triệu/lệnh, 100 triệu/số dư; kiểm hạn theo CR-TIME-002 | Danh mục seed phụ, migration và test giới hạn/hạn trước UC tiền |
+| OQ-02 | Replay 30 ngày UC02/04/05, 7 ngày UC03; tombstone, registry và caller ownership | Review vật lý MySQL; test crash/retry/purge trước implementation UC tương ứng |
+| OQ-03 | Attribution bắt buộc, page 50/max 200, fixed membership, recordedAt, OR/AND/includeFee | Test materialization/cursor/phân quyền và tài nguyên trước UC06 |
+| OQ-04/14 | Q32 chốt cửa sổ đo, mẫu số lỗi/latency, logical success, 10 cặp nóng chiếm 50% debit attempts | Cấu hình máy và bằng chứng chạy tải/overlap/đối soát thực tế trước M7 |
+| OQ-05 | Số vào chuẩn E.164; delta MySQL 8.0.46/InnoDB và READ COMMITTED được chọn | Review khóa/FIFO/index; test runtime; tái sử dụng số vẫn ngoài phạm vi hiện tại |
+| OQ-06/09 | Snapshot giá, version mục tiêu; ngày lịch; nối thời gian đã trả; gia hạn muộn một kỳ, không hồi tố; khách cũ được gia hạn gói ngừng bán | Dữ liệu giá mẫu/cấu hình và test cạnh tranh trước UC02/worker |
+| OQ-07 | Hủy cuối thời gian đã trả; receipt sau xác nhận commit; đúng/sau hạn từ chối; accepted mất HTTP replay | Review giao thức hai transaction và fault injection trước UC03; không còn câu nghiệp vụ chặn |
+| OQ-11 | Demo không purge; lịch sử tài chính được giữ | Archive/purge sau demo, backup/restore thực tế trước triển khai thật |
+| OQ-12/15 | Dữ liệu demo chung; scope theo thao tác; caller chỉ xem request của mình; evidence chỉ từ caller được tin cậy | Issuer/audience/JWKS/claim mapping/secret và rotation cụ thể trước runtime |
+| OQ-13 | Worker gia hạn thường xuyên + JOB-01 00:05 + JOB-02 00:30; cutoff bất biến; contribution duy nhất; điều chỉnh muộn | Duyệt cadence/lô/lease đề xuất, EXPLAIN, recovery/đối soát trước jobs |
+
+Không đóng toàn bộ OQ chỉ vì phần lựa chọn đã được giải quyết. UUID representation, cột/index/DTO/mã HTTP, mặc định cấu hình và phương án kỹ thuật mới vẫn REVIEW. M0–M4 UC01 lịch sử giữ nguyên; mục D phiếu chưa nghiệm thu toàn bộ bản mới. Không có bằng chứng runtime hoặc tải phát sinh từ việc viết tài liệu.

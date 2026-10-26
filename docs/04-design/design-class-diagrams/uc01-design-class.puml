@@ -1,0 +1,83 @@
+@startuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+title UC01 design classes - MySQL8.0.46 REVIEW 2026-10-26
+class ActivationController {
+ +submit(dto: ActivationCreateRequest, jwt: VerifiedJwt): HttpResponse
+ +lookup(requestId: String, jwt: VerifiedJwt): HttpResponse
+}
+class NumberInventoryController {
+ +list(cursor: String, limit: int, jwt: VerifiedJwt): AvailableNumberPage
+}
+class JwtCallerResolver {
+ +requireCaller(jwt: VerifiedJwt, scopes: Set): Caller
+ +requireEvidenceScope(caller: Caller): void
+}
+class ActivationService {
+ +submit(caller: Caller, dto: ActivationCreateRequest): ActivationResult
+ +lookup(caller: Caller, requestId: String): ActivationResult
+ +finalize(requestId: UUID, fence: long): ActivationResult
+}
+class RequestFingerprint {
+ +canonicalize(dto: ActivationCreateRequest): Bytes
+ +sha256(payload: Bytes): String
+}
+class ActivationRequestStore {
+ +claim(caller: Caller, key: String, hash: String, payload: Json): Claim
+ +lock(id: UUID): ActivationRequest
+ +complete(id: UUID, fence: long, result: ActivationResult): void
+ +retirePayloads(before: Instant): int
+}
+class AllocationGate {
+ +lockDefault(): void
+}
+class NumberAllocator {
+ +lockSelected(msisdn: String): AvailableNumber
+ +lockRandom(pivot: double): AvailableNumber
+ +assign(number: AvailableNumber, at: Instant): void
+}
+class CustomerResolution {
+ +resolveVerified(profile: CustomerProfile, caller: Caller): Customer
+ +assertMatchingProfile(existing: Customer, submitted: CustomerProfile): void
+}
+class SubscriberAccountStore {
+ +createActivated(customerId: UUID, numberId: UUID, at: Instant): Subscriber
+ +createMain(subscriberId: UUID, balanceVnd: long): ServiceAccount
+}
+class DbClock {
+ +nowUtcAfterLock(): Instant
+}
+class ActivationWorker {
+ +recoverProcessing(batch: int): int
+ +drainWaitingFifo(batch: int): int
+ +expireWaiting(batch: int): int
+}
+class InventorySignalAdapter {
+ +afterInventoryCommit(eventId: UUID): void
+ +onWakeup(eventId: UUID): void
+}
+class WaitingRecoveryScheduler {
+ +every60Seconds(): void
+}
+ActivationController --> ActivationService
+ActivationController --> JwtCallerResolver
+NumberInventoryController --> NumberAllocator
+NumberInventoryController --> JwtCallerResolver
+ActivationService --> RequestFingerprint
+ActivationService --> ActivationRequestStore
+ActivationService --> AllocationGate
+ActivationService --> NumberAllocator
+ActivationService --> CustomerResolution
+ActivationService --> SubscriberAccountStore
+ActivationService --> DbClock
+ActivationWorker --> ActivationService : same atomic finalizer
+ActivationWorker --> ActivationRequestStore
+InventorySignalAdapter --> ActivationWorker
+WaitingRecoveryScheduler --> ActivationWorker
+note bottom of ActivationService
+  Claim transaction separately. Finalizer:
+  gate -> request -> number -> document/customer -> subscriber/MAIN -> result.
+  Commit atomically; response success only after commit.
+  WAITING creates no subscriber/account. Broker is a hint, DB recovery authoritative.
+end note
+@enduml

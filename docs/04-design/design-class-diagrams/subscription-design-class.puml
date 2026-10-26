@@ -1,0 +1,74 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam classAttributeIconSize 0
+skinparam nodesep 24
+skinparam ranksep 40
+title Subscription and cancellation - focused design - REVIEW
+class SubscriptionController {
+  +register(dto: RegistrationRequest, caller: Caller): OperationResult
+  +cancel(id: UUID, dto: CancellationRequest, caller: Caller): OperationResult
+  +listVersions(subscriber: UUID, cursor: String): SubscriptionPage
+ }
+class SubscriptionService {
+  +register(claim: Claim, root: UUID, expectedVersion: long): SubscriptionResult
+  +renew(target: RenewalTarget): RenewalResult
+ }
+class CancellationService {
+  +persistIntent(claim: Claim, root: UUID, expectedVersion: long): PendingIntent
+  +confirmAfterCommit(intent: UUID): CancellationResult
+  +resolvePending(intent: UUID): CancellationResult
+ }
+class PaidCycleCore {
+  +extendLocked(root: Subscription, target: CycleKey, quote: PriceSnapshot): PaidCycle
+  +assertVersion(root: Subscription, expected: long): void
+  +assertNoAcceptedOrPendingCancellation(root: Subscription): void
+ }
+interface SubscriptionStore {
+  +ensureEmptyGuard(subscriber: UUID, packageId: UUID): UUID
+  +lock(root: UUID): Subscription
+  +insertCycle(cycle: PaidCycle): void
+  +incrementVersion(root: Subscription): void
+ }
+interface IntentStore {
+  +insertPending(intent: PendingIntent): UUID
+  +lockPending(id: UUID): PendingIntent
+  +recordReceipt(id: UUID, dbNow: Instant): void
+ }
+interface CatalogStore {
+  +loadCurrentQuote(packageId: UUID, existingSubscriber: boolean): PriceSnapshot
+ }
+class MoneyCore {
+  +checkEligibilityLocked(account: Account, now: Instant): Eligibility
+  +applyLocked(account: Account, delta: long, eligibility: Eligibility): BalanceChange
+ }
+class CalendarPolicy {
+  +firstCycle(start: Instant, durationDays: int): TimeRange
+  +continuousCycle(previousEnd: Instant, days: int): TimeRange
+  +businessDate(recordedAt: Instant): LocalDate
+ }
+interface DbClock {
+  +nowUtcAfterLock(): Instant
+ }
+SubscriptionController --> SubscriptionService
+SubscriptionController --> CancellationService
+SubscriptionService --> PaidCycleCore
+SubscriptionService --> CatalogStore
+PaidCycleCore --> SubscriptionStore
+PaidCycleCore --> MoneyCore : atomic MAIN fee
+PaidCycleCore --> CalendarPolicy
+CancellationService --> IntentStore
+CancellationService --> SubscriptionStore
+CancellationService --> DbClock
+note bottom of CancellationService
+  CR-CAN-003: TxA pending intent commit confirmed,
+  then TxB locked DB receipt; before end accepts.
+  Late receipt fails; accepted lost ACK replays.
+  PENDING blocks manual and automatic extensions.
+end note
+legend bottom
+  Focused view: selected classes from backend-design-class.puml.
+  Cross-cutting access checks / operation coordination remain in full overview.
+  Methods show responsibilities and ports, not JPA entities.
+endlegend
+@enduml

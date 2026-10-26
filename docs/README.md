@@ -1,21 +1,21 @@
-# Chỉ mục bộ tài liệu
+# Chỉ mục bộ thiết kế backend
 
-**Cập nhật:** 18/10/2026 — đã đồng bộ DEC-PRE-01–24; Q25 chờ chủ dự án duyệt. Vị trí thực tế: docs/. M0 đã duyệt; M1 chờ duyệt; các phần tiếp theo là DRAFT/kế hoạch theo CR-DOC-001.
+**Cập nhật 26/10/2026.** Đã tiếp nhận phiếu 16 và các xác nhận bổ sung; tài liệu được đồng bộ thành bản **REVIEW**. Nghiệp vụ đã chọn có hiệu lực, còn schema/API/transaction mới cần nghiệm thu. Chưa có backend nghiệp vụ chạy được hoặc kết quả đo tải.
 
-Đọc [đề bài](requirement.md) → [roadmap](ROADMAP.md) → [sổ quyết định](00-project/clarification-log.md) → [SRS](01-requirements/SRS.md). SRS/UC01 và sổ quyết định có đủ nội dung áp dụng, không cần mở phiếu review cũ.
+## Thứ tự đọc đề xuất
 
-| Nhóm | Tài liệu chính | Vai trò / điều kiện |
-|---|---|---|
-| Quyết định | [Phiếu còn thiếu](00-project/decision-questionnaire.md) | Đầu vào cho chủ dự án; ô trống không có hiệu lực |
-| Yêu cầu | [UC01](01-requirements/use-cases/UC01-Subscriber-Activation.md), [UC02–06](01-requirements/use-cases/UC02-UC06.md), [hai job](01-requirements/scheduled-jobs.md) | M1 ưu tiên UC01; phần còn lại chốt trước UC tương ứng |
-| Phân tích | [Thuyết minh UML](02-analysis/analysis.md) | P2.1/P2.2/P2.4; mô hình nghiệp vụ, chưa phải DB |
-| Kiến trúc | [Kiến trúc](03-architecture/architecture.md), [module](03-architecture/module-structure.md) | Đề xuất Phase 3, chờ quyết định stack/ranh giới |
-| Thiết kế | [DB](04-design/database-schema.md), [hợp đồng UC01](04-design/api-contract-uc01.md), [đồng thời](04-design/concurrency-and-jobs.md) | Chưa có schema/OpenAPI triển khai chính thức |
-| Triển khai | [Kế hoạch vertical slice](04-design/implementation-plan.md) | Chỉ bắt đầu UC01 sau M4 |
-| Kiểm thử | [Test plan](05-testing/test-plan.md), [hiệu năng](05-testing/performance-test.md) | Kế hoạch; chưa có kết quả đo |
-| Bàn giao | [Hướng dẫn triển khai](06-deployment/deployment-guide.md) | Các bước nghiệm thu dự kiến; chưa phải runbook đã chạy |
+1. [Báo cáo nghiệp vụ tổng thể](07-business-review/17-BAO-CAO-NGHIEP-VU-TONG-THE_DRAFT.md): hệ thống làm gì, luồng chính và các biên quan trọng.
+2. [Bản tiếp nhận quyết định](00-project/decision-receipt-20261026.md) và [clarification log](00-project/clarification-log.md): lựa chọn của chủ dự án, CR và phần còn mở.
+3. [SRS](01-requirements/SRS.md), [UC01–UC06](01-requirements/use-cases/UC02-UC06.md), [jobs](01-requirements/scheduled-jobs.md): tiền/hậu điều kiện, dữ liệu, luồng chính/nhánh/lỗi và tiêu chí nghiệm thu.
+4. [Toàn bộ hình UML/SVG](UML-INDEX.md) và [UML phân tích](02-analysis/analysis.md): Use Case, Domain, State, Sequence; nguồn PlantUML đi kèm SVG.
+5. [Kiến trúc](03-architecture/architecture.md), [module](03-architecture/module-structure.md), [bảo mật](03-architecture/security-and-integration.md), [runtime](03-architecture/runtime-profiles.md).
+6. [Schema/ERD](04-design/database-schema.md), [API](04-design/api-contract.md), [OpenAPI](04-design/openapi.yaml), [transaction/jobs](04-design/concurrency-and-jobs.md), [Design Class](04-design/design-class-diagrams/README.md).
+7. [Kế hoạch test](05-testing/test-plan.md), [protocol tải](05-testing/performance-test.md), [64 kịch bản ngoại lệ](07-business-review/19-MA-TRAN-TRUY-VET-VA-NGOAI-LE.md), [bằng chứng kiểm tra tài liệu](verification.md).
 
-Mỗi tài liệu mới ghi nguồn, phần đã chốt, phần Open và điều kiện hoàn tất. DRAFT không phải baseline được duyệt. Các file .puml là nguồn UML; báo cáo kiểm chứng ghi riêng trong [verification.md](verification.md). Hai phiếu review cũ đã xóa theo yêu cầu; lịch sử/hiệu lực lựa chọn nằm đầy đủ trong clarification log, không sửa ngược quyết định.
+## Trạng thái và bước tiếp theo
 
+M0–M4 lịch sử đã duyệt trong phạm vi UC01. DB hiện hành **MySQL 8.0.46/InnoDB**; delta MySQL và nội dung thiết kế mới vẫn REVIEW. [Checklist M4](04-design/m4-review-checklist.md) xác định chính xác phần cần nghiệm thu trước triển khai. [ROADMAP](ROADMAP.md) là nguồn trạng thái; [implementation plan](04-design/implementation-plan.md) triển khai từng UC, bắt đầu UC01.
 
-**Bắt đầu đọc tại [review-guide.md](00-project/review-guide.md):** SRS0.6 → UC01 0.5 → ý kiến R1/R2/R3/R4 → Q25. Chưa cần duyệt hết UML/DB/API trước M1. Quyết định RabbitMQ/Redis ở [ADR-001](03-architecture/adr/ADR-001-foundation.md), kiểm thử tải dùng k6 theo DEC-PRE-24.
+[Phiếu 16](07-business-review/16-PHIEU-DUYET-TONG-HOP.md) đã điền và được giữ nguyên để lưu lịch sử; không yêu cầu điền lại. Các trang review 01–15/20 hiện đóng vai trò chỉ dẫn đến tài liệu chuẩn để tránh duy trì hai bộ quy tắc mâu thuẫn. [Ảnh chụp trước đồng bộ](00-project/history/2026-10-26-before-sync.zip) giữ nội dung cũ và manifest.
+
+[Đề bài gốc](requirement.md) giữ nguyên byte. Tài liệu thiết kế, kết quả kiểm tra tĩnh và kết quả runtime là ba loại bằng chứng khác nhau. Chưa có bằng chứng M5–M8.

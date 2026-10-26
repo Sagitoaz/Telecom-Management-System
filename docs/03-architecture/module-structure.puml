@@ -1,0 +1,42 @@
+@startuml
+!pragma layout smetana
+title REVIEW - Backend module dependencies
+component "API / Security" as API
+component "Activation" as Act
+component "Customer" as C
+component "Inventory" as I
+component "Operation Registry" as O
+component "Subscription / Catalog" as S
+component "Account / Ledger" as A
+component "Reporting" as R
+component "Scheduling" as J
+component "Integration Adapters" as E
+database "MySQL" as DB
+API --> Act
+API --> S
+API --> A
+API --> R
+API --> O
+J --> Act
+J --> S
+J --> R
+Act --> C
+Act --> I
+Act --> A : create MAIN
+S --> A : same-tx fee capability
+S --> O
+A --> O
+R --> DB : immutable source / snapshots
+C --> DB
+I --> DB
+O --> DB
+S --> DB
+A --> DB
+E --> Act : inventory wakeup
+S --> E : read-cache port only
+note bottom of S
+Cancellation and renewal share subscription coordination.
+No HTTP call back to UC05 for package fee.
+No inverse subscription lock -> account lock path.
+end note
+@enduml

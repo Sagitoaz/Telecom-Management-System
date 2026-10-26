@@ -1,0 +1,63 @@
+@startuml
+title UC03 - confirmed-commit receipt / CR-CAN-003 (REVIEW implementation)
+autonumber
+actor "CSKH application" as C
+participant "Cancellation service" as S
+participant "Operation / durable intent" as O
+participant "Subscription root / slot" as R
+participant "DB clock" as T
+participant "Renewal / manual purchase" as W
+C -> S : cancel(requestId, subscription, expectedVersion)
+S -> O : authenticate caller; resolve key + canonical content
+alt prior accepted / rejected outcome
+ O --> S : saved terminal outcome
+ S --> C : replay same outcome even after deadline
+else different content / new ID when pending
+ S --> C : conflict, no charge or refund
+else new eligible request
+ group TxA - persist pending intent
+  S -> R : coordinate root, check expectedVersion / paid coverage
+  S -> O : PENDING intent + observedVersion / observedCoverageEnd
+  S -> R : pending intent guard blocks renewal AND extension
+ end
+ O --> S : TxA durable commit confirmed
+ note over S,O
+  If TxA commit unknown: lookup/recover same key first.
+  Never infer rollback or invent receipt from HTTP/precommit time.
+ end note
+ group TxB - classify receipt after confirmed TxA
+  S -> R : coordinate same root / slot and request
+  S -> O : recheck already finalized outcome
+  S -> T : obtain DB receiptCheckedAt
+  T --> S : receiptCheckedAt
+  alt outcome already terminal
+   O --> S : preserve and replay original accepted / rejected outcome
+  else version changed
+   S -> O : REJECTED + FAILED version conflict
+   S -> R : release pending guard, no charge
+  else receiptCheckedAt < observedCoverageEnd
+   S -> O : ACCEPTED + SUCCEEDED / acceptedAt=receiptCheckedAt
+   S -> R : PENDING_CANCEL, cancelEffectiveAt=all coverageEnd
+  else receiptCheckedAt >= observedCoverageEnd and no accepted outcome
+   S -> O : REJECTED + FAILED CANCELLATION_RECEIVED_TOO_LATE
+   S -> R : release guard; no retargeting or refund
+  end
+ end
+ S --> C : HTTP only after TxB commit; lost response => lookup same ID
+end
+W -> R : check intent guard before renewal / extension
+alt pending intent
+ R --> W : temporary block; recover classification using current DB receipt
+else accepted cancellation
+ R --> W : no new renewal / extension
+else rejected intent
+ R --> W : normal eligibility re-evaluation, never retarget old cancellation
+end
+note over S,R
+ Acceptance receipt is sampled after confirmed TxA commit.
+ TxB commit may cross deadline without revoking an earlier valid receipt.
+ A previously committed accepted outcome always replays, even later.
+ Recovery after deadline without accepted outcome rejects as TOO_LATE.
+ Accepted differs from effective: preserve all paid cycles until coverageEnd.
+end note
+@enduml

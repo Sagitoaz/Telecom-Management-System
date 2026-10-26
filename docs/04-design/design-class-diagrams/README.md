@@ -1,20 +1,16 @@
-# Khung thiết kế lớp UC01
+# Design Class Diagrams — REVIEW 26/10/2026
 
-**DRAFT 0.2, 18/10/2026. P4.4 chưa hoàn tất.**
-Domain Model mô tả nghiệp vụ; file này liệt kê trách nhiệm kỹ thuật cần thiết kế sau M3, chưa tạo entity Java.
+Bắt đầu bằng các sơ đồ tập trung dưới đây để đọc signatures và trách nhiệm ở kích thước rõ ràng. Mỗi sơ đồ giữ tên lớp/phương thức từ overview, chỉ lược các trách nhiệm không thuộc luồng đang xem; authorization và operation registry dùng chung vẫn áp dụng. Đây là Design Class, không phải Domain Model/JPA Entity/ERD.
 
-| Vai trò dự kiến | Trách nhiệm | Hợp đồng phải chốt |
+| Góc nhìn | Nguồn sửa | Ảnh SVG sau render |
 |---|---|---|
-| Activation API adapter | Parse/validate request, trả kết quả/lỗi | Hướng API DEC-PRE-11, OpenAPI đầy đủ còn P4 |
-| Activation application service | Điều phối profile/cấp số/account/kết quả | Hướng row lock DEC-PRE-09, boundary cụ thể còn P4, failure/commit |
-| Profile resolver | Chuẩn hóa và dùng giấy tờ đã xác minh | DEC-PRE-01/02; canonical schema còn P4 |
-| Request registry | Claim/read kết quả, conflict | Scope/retention/canonical form DEC-PRE-05–07; HTTP tombstone còn P4 |
-| Number allocator | Chọn ngẫu nhiên/chọn số, không trùng | DEC-PRE-08/09; thuật toán khóa còn P4, chuẩn số |
-| Account creation capability | Một account chính 0 VND | Ràng buộc DB và retry |
-| Waiting recovery | Trigger/khôi phục/expiry | DEC-PRE-08/10; claim còn P4, transaction completion |
-| Query service | Tra cứu theo quyền caller | JWT/ownership DEC-PRE-04/11; claims/schema còn P4 |
+| UC01 — claim, allocation, customer, MAIN, WAITING/recovery | [uc01-design-class.puml](uc01-design-class.puml) | [UC01 SVG](uc01-design-class.svg) |
+| UC04/05 — tiền, eligibility dưới khóa, immutable ledger, idempotency | [money-design-class.puml](money-design-class.puml) | [Money SVG](money-design-class.svg) |
+| UC02/03 — kỳ/phí nguyên tử, version, CR-CAN-003 hai transaction | [subscription-design-class.puml](subscription-design-class.puml) | [Subscription SVG](subscription-design-class.svg) |
+| UC06/JOB-02 — một statement snapshot, DISTINCT subscriber, cursor và contribution | [report-design-class.puml](report-design-class.puml) | [Report SVG](report-design-class.svg) |
+| Worker/JOB-01/JOB-02 — phối hợp, renewal core, pending intent và recovery | [jobs-design-class.puml](jobs-design-class.puml) | [Jobs SVG](jobs-design-class.svg) |
+| Toàn backend — overview đầy đủ cần zoom SVG | [backend-design-class.puml](backend-design-class.puml) | [Overview SVG](backend-design-class.svg) |
 
-Hoàn tất P4.4 khi có class/interface Java dự kiến, method và kiểu dữ liệu từ schema/API đã chốt, sequence kỹ thuật gồm rollback/retry, mối phụ thuộc không vòng. Không đánh đồng danh sách trên với Design Class Diagram đã hoàn thành.
+Overview giữ đầy đủ liên hệ API/application/core/ports/jobs để truy vết; không dùng ảnh PNG thu nhỏ của overview thay các hình tập trung. SVG có thể zoom mà không mất chữ. Mỗi nguồn PlantUML tự chứa, smetana, không remote include; SVG phải được render lại sau sửa nguồn.
 
-
-Thêm adapter RabbitMQ tín hiệu kho số (sau commit, consumer idempotent) và Redis đọc danh mục gói theo ADR-001; không nhét hai adapter vào Domain Model. 27 AC UC01 cần truy vết đến trách nhiệm/method/test sau khi M4 đủ điều kiện.
+DbClock lấy giờ sau đủ khóa và ngay trước cập nhật tiền; broker/cache không làm source of truth. Q24 đã chốt CR-CAN-003: receipt sau confirmed intent commit, late receipt thất bại, accepted mất phản hồi replay; thiết kế hai transaction còn REVIEW/test dự kiến. Chi tiết [concurrency-and-jobs](../concurrency-and-jobs.md) và [OpenAPI](../openapi.yaml). Có UML/render không có nghĩa code chạy hay M4-DB được duyệt.

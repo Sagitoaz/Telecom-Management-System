@@ -1,13 +1,6 @@
-# Đặc tả Use Case – UC01: Đấu nối thuê bao mới
+# UC01 — Đấu nối thuê bao
 
-**Dự án:** Telecom Subscription Management System  
-**Mã tài liệu:** DOC-UC-001  
-**Phiên bản:** 0.5 – Đồng bộ quyết định trước code; chờ duyệt M1  
-**Ngày:** 15/10/2026; cập nhật 18/10/2026  
-**Trạng thái:** 🟡 Chủ dự án đã **chốt riêng mô hình Hybrid**; toàn bộ UC01 và checkpoint M1 **chưa nghiệm thu**  
-**Đường dẫn thực tế:** `docs/01-requirements/use-cases/UC01-Subscriber-Activation.md`
-
-> **Lịch sử quyết định:** DEC-REQ-11=B từng chọn bất đồng bộ cho mọi đấu nối; CR-UC01-001 ngày 15/10/2026 **thay thế** lựa chọn đó bằng Hybrid. DEC-REQ-10=B về chờ khi hết số được **điều chỉnh**: khách hàng có quyền chọn chờ hoặc không. Quyết định nằm đầy đủ trong [clarification log](../../00-project/clarification-log.md), mục 12; không cần đọc phiếu cũ.
+**DOC-UC-001 · v0.6 · 26/10/2026 · REVIEW delta.** Baseline UC01v0.5 và 27AC được duyệt19/10; giữ nguyên các AC bên dưới. CR-UC01-001 Hybrid vẫn hiệu lực. MySQL8.0.46/InnoDB, E.164 và caller/evidence quyền theo phiếu16 đã chọn; artifact mới chưa tự nghiệm thu.
 
 ## 1. Thông tin chung
 
@@ -26,11 +19,11 @@
 
 ## 2. Tiền điều kiện
 
-1. CSKH có Bearer JWT do hệ thống xác thực ngoài cấp; TelecomManagement kiểm tra chữ ký, issuer, thời hạn và quyền tương ứng. Đã chọn JWT bất đối xứng qua JWKS, IdP chạy local nhưng ngoài Telecom; kiểm issuer/audience/scope và ownership theo caller (DEC-PRE-04). URL/claim map cụ thể chốt Phase 3–4.
+1. CSKH có Bearer JWT do hệ thống xác thực ngoài cấp; TelecomManagement kiểm tra chữ ký, issuer, thời hạn và quyền tương ứng. Đã chọn JWT bất đối xứng qua JWKS, IdP chạy local nhưng ngoài Telecom; kiểm issuer/audience/scope và ownership theo caller (DEC-PRE-04). Claim/issuer/scope cụ thể là cấu hình phải kiểm chứng trước API thật; Q31=A dùng dữ liệu demo chung, evidence scope riêng.
 2. CSKH cung cấp `requestId`, họ tên, ngày sinh, loại giấy tờ, số giấy tờ; các trường khác tùy chọn. Nhận CCCD, CMND/CMT hoặc hộ chiếu. CSKH cung cấp tham chiếu chứng cứ xác minh từ quy trình ngoài. Ghi chú Q01 về ít nhất một trường giấy tờ không được tự hiểu là bỏ cặp loại+số đang bắt buộc.
 3. Đã có kho số AVAILABLE quản lý nội bộ, hoặc có cơ chế nạp/sinh số đã được xác nhận khả dụng.
 4. Chế độ **chọn số** phải có số muốn chọn; chế độ **tự cấp** không có số chỉ định.
-5. Khi cho phép chờ do kho tự cấp hết số, **khách hàng đã chọn đồng ý chờ** và CSKH chuyển lựa chọn ấy qua API (ký hiệu nghiệp vụ `allowWaitForNumber=true`; tên trường thực tế để Phase 4).
+5. Khi cho phép chờ do kho tự cấp hết số, **khách hàng đã chọn đồng ý chờ** và CSKH chuyển lựa chọn ấy qua API (ký hiệu nghiệp vụ `allowWaitForNumber=true`; schema hiện hành xem OpenAPI REVIEW).
 
 ## 3. Hậu điều kiện
 
@@ -56,7 +49,7 @@ Quy tắc tái cấp số từng dùng sau thời gian cách ly thuộc vòng đ
 | 6 | Backend cấp số không trùng, lưu Subscriber và tài khoản tiền chính số dư 0 trong một nghiệp vụ có tính nhất quán; chỉ công bố thành công sau khi dữ liệu đã commit nhất quán. |
 | 7 | API trả ngay kết quả cuối `SUCCEEDED`, requestId, correlationId, số thuê bao/thông tin kết quả. CSKH hiển thị thành công **không cần polling**. |
 
-**Đặc điểm:** Đồng bộ chỉ nghĩa là *lời gọi này trả kết quả cuối khi xử lý hoàn tất*; backend vẫn có thể phục vụ nhiều lời gọi đồng thời. Cơ chế khóa/cấp số nguyên tử, transaction và mã HTTP sẽ thiết kế ở Phase 4.
+**Đặc điểm:** Đồng bộ chỉ nghĩa là *lời gọi này trả kết quả cuối khi xử lý hoàn tất*; backend vẫn có thể phục vụ nhiều lời gọi đồng thời. Cơ chế khóa/cấp số nguyên tử và transaction xem thiết kế REVIEW delta MySQL; HTTP T3 có phê duyệt lịch sử.
 
 ## 5. Alternative Flows
 
@@ -73,7 +66,7 @@ Quy tắc tái cấp số từng dùng sau thời gian cách ly thuộc vòng đ
 
 **A3 – Customer đã có:** Chỉ sử dụng lại Customer khi giấy tờ đã được xác minh/liên kết và hồ sơ phù hợp; nếu giấy tờ chưa liên kết thì không tự hợp nhất hai hồ sơ theo tên/ngày sinh.
 
-**A4 – Retry cùng scope requestId/canonical payload:** Nếu yêu cầu gốc đã `SUCCEEDED`/`FAILED`/`EXPIRED`, trả lại kết quả đó; nếu `WAITING`, trả trạng thái hiện tại, không cấp số hoặc tạo hồ sơ lần nữa. Quyền tra cứu theo caller sở hữu request. Trong 7 ngày sau trạng thái cuối giữ đầy đủ kết quả; đang xử lý/WAITING không bị dọn. Sau 7 ngày giữ tombstone/fingerprint/kết quả tóm tắt để chống tái dùng; không hứa replay đầy đủ payload cũ. HTTP/kết quả tra cứu tombstone sẽ chốt tại P4.
+**A4 – Retry cùng scope requestId/canonical payload:** Nếu yêu cầu gốc đã `SUCCEEDED`/`FAILED`/`EXPIRED`, trả lại kết quả đó; nếu `WAITING`, trả trạng thái hiện tại, không cấp số hoặc tạo hồ sơ lần nữa. Quyền tra cứu theo caller sở hữu request. Trong 7 ngày sau trạng thái cuối giữ đầy đủ kết quả; đang xử lý/WAITING không bị dọn. Sau 7 ngày giữ tombstone/fingerprint/kết quả tóm tắt để chống tái dùng; không hứa replay đầy đủ payload cũ. T1–T7 đã duyệt lịch sử: replay POST thành công200; GET tombstone410, POST mã cũ409; PROCESSING/WAITING202. Delta MySQL/DTO mới REVIEW.
 
 **A5 – HTTP timeout:** Sau khi mất kết nối, kết quả có thể đã commit hoặc vẫn đang xử lý; CSKH tra cứu theo requestId hoặc retry cùng requestId/payload, **không** tự hiểu là đã rollback.
 
@@ -101,10 +94,10 @@ Quy tắc tái cấp số từng dùng sau thời gian cách ly thuộc vòng đ
 | `SUCCEEDED` | Đấu nối đã thành công và dữ liệu nhất quán |
 | `FAILED` | Có kết quả lỗi cuối cùng; ví dụ hồ sơ sai/số không khả dụng/hết số không chờ |
 | `WAITING` | Chỉ nhánh cấp tự động hết kho **có xác nhận đồng ý chờ**; không phải đấu nối thành công |
-| `PROCESSING` | Có thể cần biểu diễn nội bộ khi job đang thực hiện; **không tự coi là kết quả thành công** và chưa chốt là trạng thái API công khai |
+| `PROCESSING` | Có thể cần biểu diễn nội bộ khi job đang thực hiện; **không tự coi là kết quả thành công**; API phản hồi202 theo T3 đã duyệt lịch sử |
 | `EXPIRED` | Đã quá 24h chờ, không được thực hiện lại cùng yêu cầu |
 
-`AVAILABLE/ASSIGNED` là trạng thái số thuê bao trong kho, khác `WAITING/SUCCEEDED/FAILED/EXPIRED` của yêu cầu đấu nối. Tên trạng thái API/HTTP code cuối cùng chốt ở Phase 4.
+`AVAILABLE/ASSIGNED` là trạng thái số thuê bao trong kho, khác `WAITING/SUCCEEDED/FAILED/EXPIRED` của yêu cầu đấu nối. HTTP T3 được duyệt lịch sử; schema cụ thể ở OpenAPI REVIEW.
 
 ### 7.2. Dữ liệu request/response ở mức nghiệp vụ
 
@@ -112,17 +105,17 @@ Quy tắc tái cấp số từng dùng sau thời gian cách ly thuộc vòng đ
 |---|---|
 | Request | requestId; chế độ chọn số/tự cấp; họ tên/ngày sinh/loại + số giấy tờ; trường tùy chọn |
 | Request (chọn số) | số thuê bao muốn chọn |
-| Request (tự cấp) | lựa chọn đồng ý chờ khi kho hết số (ký hiệu `allowWaitForNumber`, **mặc định không chờ**, tên và schema cụ thể chốt ở Phase 4) |
-| Header | Bearer JWT; correlationId phục vụ truy vết (cách cấp/gửi chốt Phase 4) |
+| Request (tự cấp) | lựa chọn đồng ý chờ khi kho hết số (ký hiệu `allowWaitForNumber`, **mặc định không chờ**, schema hiện hành xem OpenAPI REVIEW) |
+| Header | Bearer JWT; correlationId phục vụ truy vết (theo OpenAPI REVIEW) |
 | Response đồng bộ hoàn tất | `SUCCEEDED` hoặc `FAILED`, requestId, correlationId, mã/thông báo, dữ liệu thuê bao khi thành công |
 | Response chờ | `WAITING`, requestId, correlationId, thời điểm/hạn chờ có thể tra cứu; không chứa số đã cấp |
 | Tra cứu trạng thái | Theo requestId, trả trạng thái hiện tại/kết quả cuối, yêu cầu JWT/quyền thích hợp; CSKH lưu mã và xử lý tự động |
 
-**Hướng kỹ thuật đã chọn:** scope caller+UC01+ID, canonical payload, replay 7 ngày+tombstone, FIFO, recovery 60s, DB transaction ngắn+row lock+unique. POST /api/v1/activations, GET /api/v1/activations/{requestId}, GET /api/v1/phone-numbers; success mới 201, WAITING 202, conflict 409. **Còn P4:** normalize/absent/null/default, OpenAPI đầy đủ, HTTP replay/in-progress/tombstone, lock order/retry/tie-break FIFO/timeout. Không đưa thuật toán SQL vào mô hình phân tích.
+**Hướng kỹ thuật đã chọn:** scope caller+UC01+ID, canonical payload, replay 7 ngày+tombstone, FIFO, recovery 60s, DB transaction ngắn+row lock+unique. POST /api/v1/activations, GET /api/v1/activations/{requestId}, GET /api/v1/phone-numbers; success mới 201, WAITING 202, conflict 409. **T1–T7 lịch sử:** NFC/trim/collapse whitespace, tên không phân biệt hoa thường nhưng giữ dấu, giấy tờ giữ0đầu; optional null/rỗng lỗi; evidence reference trong fingerprint. Tie-break/clock/claim xem thiết kế; delta MySQL và kiểm chứng còn REVIEW. Không đưa thuật toán SQL vào mô hình phân tích.
 
-## 8. Acceptance Criteria (mức nghiệp vụ)
+## 8. Tiêu chí nghiệm thu giữ mã baseline
 
-| Mã | Điều kiện nghiệm thu | FR/BR liên quan |
+| Mã | Điều kiện nghiệm thu | Truy vết |
 |---|---|---|
 | AC-SUB-01 | Đầu vào thiếu trường bắt buộc bị từ chối; không tạo Subscriber. | FR-SUB-01 |
 | AC-SUB-02 | Chấp nhận CCCD/CMND/hộ chiếu và Customer có nhiều giấy tờ đã xác minh/liên kết; không tự ghép hồ sơ; liên kết thêm giấy tờ cho Customer cũ là quy trình ngoài UC01. | FR-SUB-01/07; BR-25 |
@@ -152,54 +145,16 @@ Quy tắc tái cấp số từng dùng sau thời gian cách ly thuộc vòng đ
 | AC-SUB-26 | Recovery theo chu kỳ 60s khôi phục request bỏ sót; deadline không reset sau restart/retry; không cam kết mọi request hoàn tất trong 60s. | FR-SUB-14; DEC-PRE-10 |
 | AC-SUB-27 | Không hoàn tất cấp số khi đã tới hạn WAITING; đua expiry/worker/nạp kho giữ một kết quả duy nhất. | FR-SUB-05/14; DEC-PRE-09/10 |
 
+## 9. Bổ sung input/output và chính sách hiện hành
 
-## 9. Test Scenario (đề xuất cho kiểm thử P5)
+Chỉ nhận E.164 dạng dấu+ và tối đa15 chữ số, không tự đoán090 thành+84. Danh sách AVAILABLE không reservation. Lookup GET /api/v1/activations/{requestId} luôn caller-owned; POST replay trong7ngày không cấp thêm. Sau cửa sổ GET410/tombstone và POST409; khác fingerprint luôn conflict, không trở thành yêu cầu mới. CSKH tự lưu mã/polling, không bắt người nhập.
 
-| ID | Bối cảnh | Kết quả dự kiến |
-|---|---|---|
-| TC-UC01-01 | Tự cấp có số AVAILABLE | Đồng bộ SUCCEEDED; số, Subscriber, Account chính hợp lệ |
-| TC-UC01-02 | Khách chọn số AVAILABLE | Đồng bộ SUCCEEDED |
-| TC-UC01-03 | Hai request cùng chọn một số đồng thời | Tối đa một SUCCEEDED, request kia FAILED |
-| TC-UC01-04 | Tự cấp hết số, khách **không** chọn chờ | Đồng bộ FAILED (`NO_AVAILABLE_NUMBER`), không WAITING |
-| TC-UC01-05 | Tự cấp hết số, khách **chọn** chờ | WAITING, có requestId; không báo thành công |
-| TC-UC01-06 | Bổ sung số trước hạn, chạy trigger/recovery | Từ WAITING sang SUCCEEDED chính xác một lần |
-| TC-UC01-07 | Quá 24 giờ khi đang WAITING | EXPIRED, không được cấp số sau hạn |
-| TC-UC01-08 | Cùng requestId + payload retry | Cùng trạng thái/kết quả, không tác động lần 2 |
-| TC-UC01-09 | Cùng requestId khác payload | `IDEMPOTENCY_CONFLICT` |
-| TC-UC01-10 | CSKH timeout sau lời gọi có thể đã commit | Tra cứu bằng requestId cho kết quả đúng, không cấp trùng |
-| TC-UC01-11 | Một Customer đã liên kết hai giấy tờ hợp lệ | Reuse Customer khi giấy tờ xác minh; không tự ghép khi chưa xác minh |
-| TC-UC01-12 | Token lỗi/sai issuer/hết hạn/thiếu quyền | Từ chối, không có tác động nghiệp vụ |
+GET /api/v1/phone-numbers là read hỗ trợ, không cấp số. POST /api/v1/activations input hồ sơ/mode/selectedPhoneNumber tùy mode/allowWaitForNumber/evidence reference/requestId; output status/requestId/correlationId, deadline nếu WAITING, subscriberId/phoneNumber nếu SUCCEEDED; lỗi không lộ giấy tờ. canonical loại JWT/correlationId/thứ tự JSON; absent optional khác null/rỗng theo T1. MAIN0VND không hạn mặc định; không tạo phụ tại UC01.
 
-Các ca bổ sung cần triển khai theo AC-SUB-20–27: scope caller/ownership, canonical fields, hồ sơ tùy chọn không khớp, chứng cứ ngoài, replay/tombstone, FIFO/recovery/expiry race. Tất cả **chưa chạy**.
+Quyền activate và evidence trusted phải đủ trước tạo/liên kết Customer. Không có issuer/JWKS hợp lệ thì từ chối, không bật bypass. Kiểm so Customer concurrent theo giấy tờ và không cập nhật hồ sơ cũ. Nạp kho được xác nhận hợp lệ từ quy trình nội bộ; vòng đời tái cấp/chờ cách ly chưa triển khai.
 
-## 10. Phần còn mở và phạm vi nghiệm thu
+## 10. Kiểm chứng và ranh giới
 
-| Mốc | Nội dung |
-|---|---|
-| M1 | Chủ dự án rà soát loại+số giấy tờ vẫn bắt buộc, so mọi trường đã gửi, chứng cứ xác minh ngoài và 27 AC. Chưa chọn Q25. |
-| P3–4 UC01 | Chuẩn hóa từng trường, absent/null/default; issuer/JWKS/claim map; chuẩn số/nạp kho; tombstone response; in-progress/replay/lỗi API; lock order/retry/claim/FIFO tie-break; đồng hồ/deadline. |
-| Ngoài UC01 đầu | Quy trình thêm giấy tờ khách cũ/giải phóng/tái cấp số; retention và hạn mức lệnh tiền trước UC liên quan. |
+Dự kiến test AC-SUB-01..27 trên đúng MySQL: chọn số race, random allocation, FIFO cùng waitingSince tie-break, expiry đúng deadline, recovery restart/redelivery/claim cũ, transaction rollback, timeout commit unknown, caller isolation, evidence denied, normalization và7ngày/tombstone. UC01 recovery60s chỉ là chu kỳ khôi phục, không SLA hoàn tất và không là worker gia hạn gói. Không gọi broker/IdP khi giữ transaction lâu; MQ trùng/mất không là nguồn quyết định.
 
-Canonical payload giữ hồ sơ/mode/số chọn/consent; JWT/correlationId/thứ tự JSON không tham gia. Q01 đã chọn hướng “sau chuẩn hóa” nhưng chưa chọn thuật toán chuẩn hóa cụ thể; không tự áp chính sách bỏ dấu/hoa thường từ phương án chưa chọn. Các chi tiết kỹ thuật được hoãn đến P4, không phải bỏ qua.
-M1 chỉ đóng sau khi chủ dự án đọc SRS 0.6/UC01 0.5 và trả lời Q25 rõ ràng.
-
-## 11. Phê duyệt và lịch sử
-
-| Vai trò | Trạng thái |
-|---|---|
-| Người soạn | Bản v0.5 đề nghị rà soát |
-| Chủ dự án | **Đã chốt Hybrid**, chưa nghiệm thu trọn UC01 và M1 |
-
-| Phiên bản | Ngày | Nội dung |
-|---|---|---|
-| 0.1 | 15/10/2026 | Bản khung theo clarification log mục 12.2. |
-| 0.2 | 15/10/2026 | Ghi nhận 5 lựa chọn clarification log mục 12.3. |
-| 0.3 | 15/10/2026 | CR-UC01-001: thay bất đồng bộ toàn phần bằng **Hybrid**; đồng bộ nếu xử lý xong ngay, chờ chỉ khi tự cấp hết số và khách đồng ý, chờ tối đa 24 giờ; thêm AC/test tương ứng. |
-
-
-## Cập nhật quản lý tài liệu ngày 18/10/2026
-
-Phiên bản 0.4: bỏ phụ thuộc phiếu review theo CR-DOC-001. Nguồn quyết định đầy đủ là clarification log mục 12; không thay đổi nghiệp vụ, chưa nghiệm thu M1.
-
-
-| 0.5 | 18/10/2026 | Đồng bộ DEC-PRE-01–11 và CR-ARCH-001; giữ AC-SUB-01–19, bổ sung AC-SUB-20–27; M1 chờ chủ dự án duyệt. |
+[SRS](../SRS.md), [sequence](../../02-analysis/sequence-diagrams/uc01-activation.puml), [OpenAPI](../../04-design/openapi.yaml), [design](../../04-design/concurrency-and-jobs.md) là tài liệu liên quan. Các test trên là kế hoạch chưa chạy; khóa/isolation/claim/retry cụ thể thuộc design REVIEW. AC27 yêu cầu kiểm deadline lúc hoàn tất nghiệp vụ theo T5/T6; không tự đổi nó thành physical commit deadline của lệnh tiền.

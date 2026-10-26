@@ -1,0 +1,21 @@
+@startuml
+title Daily report period and export - REVIEW
+[*] --> PREPARING : first period claim
+PREPARING --> SNAPSHOT_FIXED : source membership + cutoff durably stored
+SNAPSHOT_FIXED --> AGGREGATING : aggregate persisted contributions
+AGGREGATING --> FINALIZED : counts / sums reconciled and published
+AGGREGATING --> SNAPSHOT_FIXED : technical recovery\nreuse same membership
+FINALIZED --> FINALIZED : late source => ADJUSTMENT in later period\nnever mutate finalized baseline
+FINALIZED --> EXPORTED : optional complete CSV published
+EXPORTED --> EXPORTED : export retry same immutable version
+note right of SNAPSHOT_FIXED
+ Retry never selects a newer baseline source set.
+ Contribution unique per source transaction globally.
+ BASE and ADJUSTMENT cannot both count one source.
+end note
+note right of FINALIZED
+ recordedAt determines original day, only committed sources.
+ Persisted snapshot membership determines inclusion.
+ No physical commit timestamp / client backdating.
+end note
+@enduml

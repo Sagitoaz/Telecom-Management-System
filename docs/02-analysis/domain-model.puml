@@ -1,91 +1,136 @@
 @startuml
 !pragma layout smetana
-title DRAFT - Business Domain Model (not ERD)
+title Business Domain Model - REVIEW (not ERD / JPA)
 hide methods
 class Customer {
-  fullName
-  dateOfBirth
-  optionalAddress
-  optionalOccupation
-  optionalContact
+ fullName
+ dateOfBirth
+ optionalProfile
 }
 class VerifiedIdentityDocument {
-  documentType
-  documentNumber
-  verificationEvidence
+ documentType
+ documentNumber
+ externalVerificationEvidence
 }
 class Subscriber {
-  activatedAt
+ phoneNumber
+ activatedAt
 }
 class PhoneNumberInventory
 class PhoneNumber {
-  number
-  availability
+ e164Number
+ availability
 }
 class ActivationRequest {
-  callerApplication
-  requestId
-  canonicalContentFingerprint
-  terminalAt
-  resultRetentionUntil
-  tombstoneSummary
-  allocationMode
-  waitConsent
-  status
-  waitingSince
-  waitingDeadline
-  outcome
+ callerApplication
+ requestReference
+ allocationMode
+ waitConsent
+ status
+ waitingSince
+ waitingDeadline
+ outcome
 }
 class ServicePackage {
-  name
-  cyclePrice
-  cycleDefinition
+ name
+ saleStatus
+ currentPriceVND
+ durationCalendarDays
+ grandfatherPolicy
 }
 class PackageSubscription {
-  cycleStart
-  cycleEnd
-  cancellationEffectiveAt
-  appliedCyclePrice
-  lifecycleState
+ lifecycleState
+ version
+ autoRenew
+ coverageEnd
+ cancellationEffectiveAt
+}
+class SubscriptionCycle {
+ start
+ end
+ paidPriceVND
+ durationDaysSnapshot
+ catalogVersionSnapshot
+}
+class CancellationIntent {
+ requestedAt
+ receiptCheckedAtAfterConfirmedCommit
+ acceptedAt
+ outcome
 }
 class Account {
-  accountKind
-  balanceVND
-  expiresAtOptional
-  lifecycleState
+ accountKind
+ balanceVND
+ allowedDirections
+ optionalExpiry
+ lifecycleState
 }
 class Transaction {
-  direction
-  amountVND
-  businessRequest
-  committedAt
-  serviceOrPackageContext
+ direction
+ sourceType
+ amountVND
+ balanceBefore
+ balanceAfter
+ recordedAt
+ eligibilityCheckedAt
 }
-Customer "1" -- "0..*" Subscriber : owns currently
-Customer "1" -- "0..*" VerifiedIdentityDocument : verified links
+class OperationRequest {
+ callerApplication
+ operationKind
+ requestReference
+ businessContent
+ status
+ outcome
+}
+class DailyReportPeriod {
+ localDate
+ frozenSourceSet
+ status
+}
+class ReportContribution {
+ contributionKind
+ originalLocalDate
+ amountVND
+}
+Customer "1" -- "0..*" Subscriber : owns
+Customer "1" -- "1..*" VerifiedIdentityDocument : verified links
 PhoneNumberInventory "1" o-- "0..*" PhoneNumber
-PhoneNumber "1" -- "0..1" Subscriber : current allocation
+PhoneNumber "1" -- "0..1" Subscriber : current assignment
 Subscriber "1" -- "1..*" Account
-Account "1" -- "0..*" Transaction
 Subscriber "1" -- "0..*" PackageSubscription
 ServicePackage "1" -- "0..*" PackageSubscription
-ActivationRequest "0..*" --> "0..1" Customer : resolved profile
+PackageSubscription "1" *-- "0..*" SubscriptionCycle : prepaid cycles
+PackageSubscription "1" -- "0..*" CancellationIntent
+Account "1" -- "0..*" Transaction
+SubscriptionCycle "0..1" -- "0..*" Transaction : consumption attribution
+SubscriptionCycle "0..1" -- "1" Transaction : successful cycle fee
+OperationRequest "1" -- "0..1" Transaction : manual monetary effect
+OperationRequest "0..1" -- "0..1" CancellationIntent : cancellation
 ActivationRequest "1" --> "0..1" Subscriber : successful outcome
-note bottom of ActivationRequest
-  SUCCEEDED => exactly one Subscriber + main Account.
-  WAITING => automatic empty pool + explicit consent;
-  no successful Subscriber/Account yet; max 24h.
-  Scope = caller + UC01 + requestId.\n  Same canonical content => at most one effect.\n  Full result 7 days after terminal; then tombstone.\n  WAITING FIFO priority; recovery every60s.
+ActivationRequest "0..*" --> "0..1" Customer : resolved customer
+DailyReportPeriod "1" -- "0..*" ReportContribution : posted in period
+Transaction "1" -- "0..1" ReportContribution : one BASE or ADJUSTMENT
+note bottom of SubscriptionCycle
+ [start,end), local calendar days; immutable paid terms.
+ Root coverageEnd = end of ALL paid cycles.
+ Root may have zero cycles only while no successful purchase exists.
+ Cancellation preserves paid cycles, no refund.
 end note
 note right of Transaction
-  Consumption debit has service/package context;\n  registration fee refers to its subscription.\n  Physical mapping still deferred to detailed design.
+ recordedAt is DB business time inside ultimately committed tx.
+ Not physical commit completion time.
+ Credit has no package consumption attribution.
+ Fee links one cycle; consumption links one effective cycle.
 end note
-note right of PhoneNumber
-  AVAILABLE / ASSIGNED are confirmed concepts.
-  Reuse/quarantine lifecycle remains Open.
+note bottom of OperationRequest
+ Caller + operation + request reference: at most one effect.
+ Full replay: monetary30days; cancellation7days; then tombstone.
+ No database keys/indexes/lock classes in this business model.
 end note
-note bottom of VerifiedIdentityDocument
-  No automatic Customer merge.
-  External verification evidence supplied by CSKH.\n  Linking another document to existing Customer\n  is outside UC01.
+note left of ActivationRequest
+ Hybrid: sync success/failure.
+ WAITING only automatic empty pool + consent, max24h.
+ Success => one Subscriber + MAIN balance0.
+ Recovery60s; not package-renewal cadence.
 end note
 @enduml

@@ -1,0 +1,36 @@
+@startuml
+title JOB-01 - daily00:05 lifecycle and recovery (REVIEW)
+autonumber
+participant "Daily runner / authorized admin" as W
+participant "Job run / checkpoint" as J
+participant "Accounts" as A
+participant "Subscriptions / cancellation" as R
+participant "Shared renewal core" as S
+W -> J : create run with business target and caller audit
+loop expired account batch
+ W -> A : recheck expiry/state
+ A --> W : EXPIRED, preserve balance and history
+ W -> J : progress only after committed effect
+end
+loop due subscription batch
+ W -> R : recheck state, coverageEnd and receipt
+ alt PENDING_CANCEL and coverageEnd reached
+  W -> R : CANCELLED at end of all paid coverage
+ else renewal already completed by worker/manual
+  R --> W : skip, no second fee
+ else auto renewal eligible / technical backlog
+  W -> S : same cycle attempt and Q25 rules
+  S --> W : one new cycle / final failure / bounded technical retry
+ else no renewal
+  W -> R : EXPIRED, retain cycles/history
+ end
+ W -> J : persist progress/counts/errors
+end
+W -> J : complete / partial failure with unresolved details
+note over W,S
+ APIs enforce expiry timestamps even before job runs.
+ Multiple runners/manual retry cannot duplicate cycle/fee.
+ Daily00:05 remains separate from frequent renewal worker.
+ No purge/refund/reallocation of subscriber phone numbers.
+end note
+@enduml

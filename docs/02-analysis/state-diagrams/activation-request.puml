@@ -1,0 +1,24 @@
+@startuml
+title ActivationRequest - Hybrid outcome and retention (REVIEW)
+[*] --> PROCESSING : authenticated valid request
+PROCESSING --> SUCCEEDED : allocation + Subscriber + MAIN committed
+PROCESSING --> FAILED : business failure / selected number unavailable
+PROCESSING --> WAITING : automatic empty pool + explicit consent
+WAITING --> SUCCEEDED : FIFO allocation before deadline\ncomplete consistent result
+WAITING --> EXPIRED : deadline reached
+WAITING --> FAILED : final invalid business conditions
+SUCCEEDED --> Tombstone : full result retention7days elapsed
+FAILED --> Tombstone : full result retention7days elapsed
+EXPIRED --> Tombstone : full result retention7days elapsed
+note right of WAITING
+ Max24h from original waitingSince.
+ Stock signal and DB recovery60s.
+ Retry/restart never resets deadline.
+ No Subscriber/Account success yet.
+end note
+note bottom of Tombstone
+ Retains request scope + fingerprint + outcome summary.
+ Old ID cannot create a new effect; payload mismatch conflicts.
+ Never purge PROCESSING/WAITING as result retention.
+end note
+@enduml

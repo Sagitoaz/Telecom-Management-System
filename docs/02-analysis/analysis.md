@@ -1,42 +1,51 @@
-# Phân tích nghiệp vụ và thuyết minh UML
+# Phân tích nghiệp vụ và chỉ mục UML
 
-**0.2 — DRAFT, 18/10/2026. P2.1/P2.2/P2.4/P2.6.**
-Nguồn: SRS 0.6, UC01 0.5, DEC-01–11, DEC-REQ-01–31, DEC-UC01-01–05, CR-UC01-001.
-M1 chưa nghiệm thu; các sơ đồ tạo mới theo CR-DOC-001, không phải sơ đồ cũ được sửa.
+**DOC-ANL-001 · v0.3 · 26/10/2026 · REVIEW.** M2 nền/UC01 đã duyệt19/10 được giữ lịch sử; nguồn hiện hành đồng bộ quyết định phiếu16 và xác nhận26/10. Sơ đồ sửa/mới cần review, không tự nghiệm thu M2 mở rộng/M4-DB/P5. UML nguồn là `.puml`; SVG do lượt render kiểm chứng tạo từ đúng nguồn, không dùng ảnh baseline cũ làm bằng chứng.
 
-| Sản phẩm | Phạm vi | Giới hạn |
+## 1. Đầu vào và mức trừu tượng
+
+[SRS0.7](../01-requirements/SRS.md), [UC01–06](../01-requirements/use-cases/UC02-UC06.md), [jobs](../01-requirements/scheduled-jobs.md), [DEC/CR](../00-project/clarification-log.md) là nguồn. Domain Model mô tả khái niệm/quan hệ nghiệp vụ, không PK/FK/index/JPA. Sequence dùng các trách nhiệm nghiệp vụ, không chỉ định thuật toán khóaSQL. Khóa/claim/physical schema/API thuộc [thiết kế](../04-design/concurrency-and-jobs.md), [ERD](../04-design/erd.puml), [OpenAPI](../04-design/openapi.yaml) REVIEW.
+
+CR-CAN-002: hủy cuối toàn bộ thời gian đã trả, không hoàn tiền. CR-CAN-003: mốc nhận là receipt giờDB trong TxB sau xác nhận TxA commit, strict trước deadline/cùngversion; receipt muộn reject, accepted outcome cũ replay không xét hạn lại. CR-TIME-001: recordedAt là giờDB ghi trong transaction cuối cùng commit, khác physical commit time. CR-TIME-002: check DB expiry dưới khóa ngay trước update, commit có thể qua hạn. DEC-JOB-001: worker gia hạn thường xuyên vàJOB-01 hằng ngày00:05; không hợp nhất/hẹn một timer cho mỗi thuê bao. Q21: ngày đầu tính ngày đăng ký, 30ngày01/10 10:15 hết31/10 00:00+07.
+
+## 2. Danh mục sơ đồ nguồn
+
+| Nhóm | Sản phẩm | Nội dung/AC |
 |---|---|---|
-| [Use Case toàn hệ thống](use-case-diagram.puml) | UC01–06, tra cứu số/trạng thái; hai job nội bộ | Không biến scheduler thành actor |
-| [Use Case UC01](uc01-use-case-diagram.puml) | Chọn số/tự cấp là biến thể; chờ có điều kiện | Include là bước luôn thực hiện, extend chỉ nhánh có điều kiện |
-| [Domain Model](domain-model.puml) | Khái niệm nghiệp vụ, thuộc tính, multiplicity | Không PK/FK/JPA/SQL |
-| [Sequence UC01](sequence-diagrams/uc01-activation.puml) | Hybrid, retry, WAITING, recovery, timeout, tranh chấp | Không đưa chi tiết khóa/HTTP/database transaction vào phân tích |
-| [State đăng ký gói](state-diagrams/package-subscription.puml) | Có hiệu lực, chờ hủy, hết hạn | Tên trạng thái phân tích; hướng chu kỳ/gia hạn đã chọn; ca biên kỹ thuật còn Open |
+| Use Case | [Toàn hệ thống](use-case-diagram.puml) | Actor CSKH/report/admin/IdP bên ngoài, UC01–06 và read hỗ trợ; scheduler nội bộ |
+| Use Case | [UC01 Hybrid](uc01-use-case-diagram.puml) | Chọn/tự cấp là biến thể; WAITING extend chỉ empty+consent |
+| Domain | [Mô hình nghiệp vụ](domain-model.puml) | Customer/giấy tờ/Subscriber/kho số; root/cycle/fee/account; request/receipt; period/contribution |
+| Sequence | [UC01](sequence-diagrams/uc01-activation.puml) | Đồng bộ, retry/conflict, số chọn/auto, WAITING/FIFO/deadline/recovery; AC-SUB01..27 |
+| Sequence | [UC02](sequence-diagrams/uc02-package-subscription.puml) | Read version, thuMAIN+cycle, snapshot terms, stale conflict; AC-PKG01..12 |
+| Sequence | [UC03](sequence-diagrams/uc03-package-cancellation.puml) | Durable receipt, coverage đã trả, accepted/effective, receipt sau xác nhận commit theo CR-CAN-003; AC-CAN01..10 |
+| Sequence | [UC04](sequence-diagrams/uc04-account-credit.puml) | Specified account/cap/expiry/ledger; AC-CRE01..10 |
+| Sequence | [UC05](sequence-diagrams/uc05-account-debit.puml) | Account+effective cycle+funds, no fallback; AC-DEB01..12 |
+| Sequence | [UC06](sequence-diagrams/uc06-consumption-query.puml) | Fixed membership, OR/AND, recordedAt, caller-bound pagination; AC-RPT01..12 |
+| Sequence | [Renewal worker](sequence-diagrams/renewal-worker.puml) | One late cycle, shared guards, failure finality; AC-JOB03..05 |
+| Sequence | [JOB-01](sequence-diagrams/job01-expiration.puml) | Expiry/cancel/backlog, skip successful renewal; AC-JOB01..08 |
+| Sequence | [JOB-02](sequence-diagrams/job02-daily-aggregation.puml) | First fixed source snapshot, dedup BASE/ADJUSTMENT, export retry; AC-JOB09..14 |
+| State | [Activation request](state-diagrams/activation-request.puml) | PROCESSING/WAITING/SUCCEEDED/FAILED/EXPIRED và tombstone |
+| State | [Package subscription](state-diagrams/package-subscription.puml) | ACTIVE/PENDING_CANCEL/CANCELLED/EXPIRED và coverage predicate |
+| State | [Cancellation intent](state-diagrams/cancellation-intent.puml) | PENDING/ACCEPTED/REJECTED, post-commit receipt/replay |
+| State | [Account](state-diagrams/account.puml) | ACTIVE/EXPIRED, giữ số dư và timestamp checks |
+| State | [Operation request](state-diagrams/operation-request.puml) | PROCESSING/SUCCEEDED/FAILED, replay/tombstone, timeout không là terminal |
+| State | [Report period](state-diagrams/report-period.puml) | Fixed membership/aggregation/finalized/export, immutable day |
 
-## Ràng buộc mô hình
+## 3. Ràng buộc domain và truy vết
 
-Customer có 0..N thuê bao, mỗi Subscriber đúng 1 Customer. Cụm “1–N” là quyền sở hữu, không bắt buộc Customer mới phải có thuê bao trước khi đấu nối thành công.
-Mỗi Account thuộc 1 Subscriber, mỗi Transaction thuộc 1 Account; PackageSubscription thuộc 1 Subscriber và 1 ServicePackage.
-Kho số chứa nhiều PhoneNumber; một số gắn tối đa 1 thuê bao hiện tại. Quan hệ không mô hình hóa lịch sử tái cấp chưa chốt.
-ActivationRequest có thể chưa gắn Customer/Subscriber khi chờ hoặc thất bại; thành công có đúng 1 Subscriber và Account chính.
-VerifiedIdentityDocument chỉ biểu diễn giấy tờ đã xác minh/liên kết. Không mô hình hóa hệ thống KYC hay hợp nhất hồ sơ tự động.
+- Mỗi Subscriber thuộc đúng1Customer; Customer có0..NSubscriber và nhiều giấy tờ đã xác minh. Không tự ghép vì trùng họ tên/ngày sinh; việc thêm giấy tờ khách cũ ngoài UC01. FR-SUB-01/07, BR-01/25, AC-SUB02..04/22/23.
+- Một số E.164 cấp tối đa1Subscriber hiện tại; xem AVAILABLE không giữ chỗ. Kho bổ sung/claim/expiry không làm yêu cầu đã hết hạn thành công. FR-SUB-02..06/10/14, BR-02/03/16/24, AC-SUB06..12/25..27.
+- ActivationRequest WAITING chưa có Subscriber/MAIN thành công. Thành công có đúng1Subscriber và MAIN0 không hạn mặc định. Caller+requestId/canonical chống lặp; recovery60s riêng. FR-SUB-08..15, AC-SUB13..27.
+- PackageSubscription là root ổn định subscriber+package, giữ version/coverageEnd; từng SubscriptionCycle bất biến [start,end), snapshot giá/ngày. coverageEnd không đồng nghĩa end của cycle đang dùng. Root chưa có lần mua thành công có thể0cycle trong lúc giữ chỗ điều phối, không công bố thành subscription có quyền. FR-PKG-01..04, AC-PKG01..12.
+- CancellationIntent accepted bền vững chặn mọi nối/gia hạn; PENDING_CANCEL giữ mọi kỳ trả trước; cuối coverage thành CANCELLED. Không có refund transaction. FR-PKG-05/06, BR-05, AC-CAN01..10.
+- Mỗi Account thuộc1Subscriber; mỗi Transaction thuộc1Account. Consumption ledger thuộc một cycle/package còn hiệu lực, fee thuộc một paid cycle; CREDIT không là tiêu dùng. Không fallback/pooling. FR-ACC-01..07, BR-06/18/20/22, AC-CRE/DEB.
+- OperationRequest là lệnh nghiệp vụ UC02–05, không phải JWT/correlationId; cùng caller+operation+ID có một effect tối đa; PROCESSING không thành công. Replay money30ngày/cancel7ngày rồi tombstone; không dọn đang xử lý. FR-ACC-06, NFR-07.
+- DailyReportPeriod giữ tập nguồn cố định và kết quả finalized; ReportContribution ghi nguồn thuộcBASE hoặcADJUSTMENT đúng một lần toàn cục. recordedAt quyết định ngày gốc; snapshot membership quyết định baseline có thấy nguồn không. FR-RPT-01..04, FR-JOB-04, AC-RPT/AC-JOB09..14.
 
-Trạng thái số AVAILABLE/ASSIGNED khác trạng thái yêu cầu WAITING/SUCCEEDED/FAILED/EXPIRED. WAITING chỉ có ở tự cấp hết số có consent, hạn tối đa 24h. PROCESSING chưa được quyết định là trạng thái API.
+## 4. Các biên cần thiết kế/kiểm chứng
 
-## Truy vết và rà soát
+Q24 đã chốt CR-CAN-003: TxA commit PENDING intent tạm chặn mua nối/renewal; TxB sau xác nhận TxA commit lấy receiptCheckedAt DB dưới slot/request. Nếu cùng version và receipt<observedCoverageEnd thì accepted/PENDING_CANCEL/outcomeSUCCEEDED; TxB có thể commit sau deadline. Nếu chưa có accepted outcome và receipt>=end thì FAILED CANCELLATION_RECEIVED_TOO_LATE, release guard, không tự retarget/refund. Root/version đổi conflict không charge. Accepted outcome mất HTTP phải replay cùngID cả sau hạn; TxA commit unknown lookup/recovery, không đoán rollback. Quy tắc nghiệp vụ không còn mở; thiết kế khóa/claim/recovery và test implementation vẫn REVIEW. Input/claims/expiry config, physical UUID, cursor retention/batch/worker interval là technical REVIEW.
 
-| Quy tắc | Vị trí UML | Kiểm chứng dự kiến |
-|---|---|---|
-| Không cấp trùng, tra cứu không giữ số | Use Case, PhoneNumber, sequence cấp số | AC-SUB-06/08/19 |
-| Customer nhiều giấy tờ, không tự ghép | Domain, bước đối chiếu sequence | AC-SUB-02/03/04 |
-| Hybrid, WAITING có consent, expiry | UC01 extend, sequence | AC-SUB-07–12 |
-| Idempotency, conflict, timeout | ActivationRequest, sequence | AC-SUB-13/14/18 |
-| Đăng ký có thu phí, hủy cuối kỳ | Domain, state | AC-PKG-01/02, AC-CAN-01/02 |
+State ACTIVE không tự cấp quyền nếu không có cycle bao phủ checkedAt. JOB-01 trễ không kéo quyền qua expiry; delayed auto renewal chỉ một kỳ từ xử lý hợp lệ, không tự hồi sinh FAILED thiếu tiền. Root/version/cycle guard chống manual/auto/chạy tay tạo phí trùng; cơ chế cụ thể thuộc design.
 
-## Còn mở và điều kiện M2
-
-OQ-12 đã chọn so toàn bộ trường gửi và chứng cứ ngoài; rà soát cách hiểu R1 ở M1; OQ-02/05/15 kỹ thuật Phase 3–4; OQ-07/09 trước UC02/03. Không bổ sung thuật toán DB ở mô hình phân tích.
-M2 chỉ đủ khi M1 được duyệt, chủ dự án rà soát domain/UC01, các nhánh nhất quán và mọi khoảng trống có OQ/mốc xử lý. Có DRAFT không đồng nghĩa M2 đạt.
-P2.5 sequence chi tiết UC02/05/job còn hoãn đến vòng UC tương ứng.
-
-
-**Quy tắc phân tích mới:** canonical business content/caller scope, replay7 ngày+tombstone; WAITING FIFO ưu tiên tự cấp mới khi bổ sung kho, recovery 60s giữ deadline gốc. Domain bổ sung source evidence/caller và price snapshot/ngữ cảnh tiêu dùng; row lock và RabbitMQ/Redis thuộc architecture/design, không làm thành lớp nghiệp vụ.
+Không remote includes hoặc phụ thuộc font riêng trong nguồn. Mọi sequence/state là mô tả hành vi dự kiến; không thay integration/concurrency/performance tests. Bằng chứng syntax/render/visual QA được ghi ở [verification](../verification.md) sau khi chạy thật. Không có commit/branch/code/migration từ việc biên soạn.

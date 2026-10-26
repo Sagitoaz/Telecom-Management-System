@@ -1,0 +1,65 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam classAttributeIconSize 0
+skinparam nodesep 24
+skinparam ranksep 40
+title Renewal and scheduled jobs - focused design - REVIEW
+class InternalJobController {
+  +trigger(code: JobCode, runKey: String, date: LocalDate): JobRun
+  +status(code: JobCode, runId: UUID): JobRun
+ }
+class JobCoordinator {
+  +getOrCreate(code: JobCode, runKey: String, cutoff: Instant): JobRun
+  +claimLease(run: UUID): Fence
+  +checkpoint(run: UUID, fence: long, cursor: String): void
+ }
+class RenewalWorker {
+  +scanDue(batch: int): int
+  +process(target: RenewalTarget): void
+ }
+class LifecycleJob {
+  +run(date: LocalDate, fence: Fence): JobResult
+  +expireAccountsAndSubscriptions(batch: int): int
+ }
+class ConsumptionSummaryJob {
+  +run(date: LocalDate, fence: Fence): JobResult
+ }
+class SubscriptionService {
+  +register(claim: Claim, root: UUID, expectedVersion: long): SubscriptionResult
+  +renew(target: RenewalTarget): RenewalResult
+ }
+class CancellationService {
+  +persistIntent(claim: Claim, root: UUID, expectedVersion: long): PendingIntent
+  +confirmAfterCommit(intent: UUID): CancellationResult
+  +resolvePending(intent: UUID): CancellationResult
+ }
+class DailySummaryService {
+  +getOrCreatePeriod(date: LocalDate, run: UUID): ReportPeriod
+  +freezeContributionsSingleStatement(period: UUID): int
+  +finalizeFromPersistedMembers(period: UUID): Summary
+ }
+interface AccountStore {
+  +lock(accountId: UUID): Account
+  +updateBalance(change: BalanceChange): void
+ }
+InternalJobController --> JobCoordinator
+RenewalWorker --> SubscriptionService : shared cycle core
+LifecycleJob --> SubscriptionService
+LifecycleJob --> CancellationService : resolve pending
+LifecycleJob --> AccountStore
+LifecycleJob --> JobCoordinator
+ConsumptionSummaryJob --> DailySummaryService
+ConsumptionSummaryJob --> JobCoordinator
+note bottom of RenewalWorker
+  One target cycle and one fee across manual / worker / JOB-01.
+  Persist insufficient-funds attempt as final for that target.
+  Technical recovery creates only one late cycle, no backdating.
+  Renewal cadence is a proposal; UC01 recovery alone is 60s.
+end note
+legend bottom
+  Focused view: selected classes from backend-design-class.puml.
+  Cross-cutting access checks / operation coordination remain in full overview.
+  Methods show responsibilities and ports, not JPA entities.
+endlegend
+@enduml

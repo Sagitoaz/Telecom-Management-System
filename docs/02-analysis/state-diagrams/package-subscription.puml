@@ -1,27 +1,28 @@
 @startuml
-title DRAFT - PackageSubscription business lifecycle
-state "Effective" as Active
-state "Cancellation pending" as CancelPending
-state "Expired / inactive" as Expired
-[*] --> Active : registration AND fee collection succeeded
-Active --> CancelPending : cancellation accepted
-CancelPending --> Expired : current cycle ends
-Active --> Active : automatic renewal [eligible, sufficient funds, no cancellation]
-Active --> Active : manual re-registration extends from current end [not cancellation pending]
-Active --> Expired : cycle ends without successful renewal
-Expired --> [*]
-note right of CancelPending
-  Remains usable until current cycle ends.
-  New repeated cancellation request: business error.
-  Same-request retry: replay; new repeated request: error.\n  Cancellation accepted before cycle end blocks renewal.\n  Exact acceptance/commit boundary remains detailed design.
+title PackageSubscription - paid coverage lifecycle (REVIEW)
+[*] --> NotPurchased
+NotPurchased --> ACTIVE : first fee + cycle committed
+ACTIVE --> ACTIVE : explicit extension / version matches\none fee, extend coverageEnd
+ACTIVE --> PENDING_CANCEL : durable cancellation accepted\nfreeze cancelEffectiveAt=coverageEnd
+PENDING_CANCEL --> CANCELLED : now >= cancelEffectiveAt\nno refund, preserve all paid cycles
+ACTIVE --> EXPIRED : now >= coverageEnd\nno successful renewal / insufficient MAIN
+EXPIRED --> ACTIVE : explicit re-registration\nor eligible delayed renewal\none new cycle starts now
+ACTIVE --> ACTIVE : one valid renewal committed\nno retroactive coverage
+CANCELLED --> ACTIVE : explicit later purchase if policy permits\nnew paid cycle, never undo cancellation
+note right of ACTIVE
+ State alone does not grant rights.
+ A committed cycle must cover checkedAt in [start,end).
+ API denies at expiry even before daily job updates state.
+ expectedVersion + shared cycle guard prevents duplicate fees.
 end note
-note right of Active
-  Analytical labels, not final API/DB enums.
-  Cycle length in days; insufficient funds => no grace.\n  Applied price snapshot per registration/renewal.\n  Day arithmetic and technical-error retry: OQ-07/09.
-  Failed initial collection never enters Effective.
+note right of PENDING_CANCEL
+ No extensions / automatic renewal.
+ Existing prepaid future cycles remain usable.
+ Current-cycle end is not necessarily coverageEnd.
 end note
-note bottom of Expired
-  Preserve subscription history and package definition.
-  Grace/recovery/re-registration rules not invented.
+note bottom of EXPIRED
+ FAILED insufficient-funds attempt is final.
+ No automatic resurrection after credit.
+ Delayed technical recovery follows Q25, not retry of business FAILED.
 end note
 @enduml

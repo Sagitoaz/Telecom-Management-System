@@ -1,37 +1,55 @@
 @startuml
+title Telecom backend - UC01 to UC06 (REVIEW 2026-10-26)
 left to right direction
-title DRAFT - TelecomManagement Use Cases
-actor "CSKH System" as CSKH
-actor "Reporting Consumer\n(caller Open)" as Reporter
-rectangle TelecomManagement {
-  usecase "UC01 Activate Subscriber" as U1
-  usecase "UC02 Subscribe Package" as U2
-  usecase "UC03 Cancel at Cycle End" as U3
-  usecase "UC04 Credit Account" as U4
-  usecase "UC05 Debit Account" as U5
-  usecase "UC06 Query Consumption" as U6
-  usecase "Lookup Available Numbers" as Lookup
-  usecase "Query Activation Request" as Status
+actor "CSKH application" as Care
+actor "Reporting application" as Reporter
+actor "Operations administrator" as Admin
+actor "External Identity Provider" as IdP
+rectangle "Telecom Management" {
+  usecase "UC01 Activate subscriber" as UC01
+  usecase "Select available number" as Select
+  usecase "Allocate number automatically" as Auto
+  usecase "Accept waiting request\n[empty pool + explicit consent]" as Wait
+  usecase "UC02 Purchase package cycle\nwith MAIN fee" as UC02
+  usecase "UC03 Cancel at end of\nall prepaid coverage" as UC03
+  usecase "UC04 Credit specified account" as UC04
+  usecase "UC05 Debit consumption\nwith effective package cycle" as UC05
+  usecase "UC06 Query consumption\nwith stable result pages" as UC06
+  usecase "Lookup available numbers\n(no reservation)" as Lookup
+  usecase "Lookup activation outcome" as ActStatus
+  usecase "Lookup UC02-05 outcome" as OpStatus
+  usecase "Read package catalog /\nsubscription version" as Read
+  usecase "Authenticate and authorize" as Auth
+  usecase "Trigger / inspect internal job run" as JobAdmin
 }
-CSKH --> U1
-CSKH --> U2
-CSKH --> U3
-CSKH --> U4
-CSKH --> U5
-CSKH --> Lookup
-CSKH --> Status
-Reporter --> U6
-note bottom of U2
-  Package activation and fee collection
-  succeed together (DEC-03).
-  Internal fee is not UC05 load traffic.
+Care --> UC01
+Care --> UC02
+Care --> UC03
+Care --> UC04
+Care --> UC05
+Care --> Lookup
+Care --> ActStatus
+Care --> OpStatus
+Care --> Read
+Reporter --> UC06
+Admin --> JobAdmin
+IdP --> Auth : signed token / JWKS
+Select -|> UC01
+Auto -|> UC01
+Wait ..> Auto : <<extend>>
+UC01 ..> Auth : <<include>>
+UC02 ..> Auth : <<include>>
+UC03 ..> Auth : <<include>>
+UC04 ..> Auth : <<include>>
+UC05 ..> Auth : <<include>>
+UC06 ..> Auth : <<include>>
+note bottom of UC02
+  Fee is part of purchase, not a call to UC05.
+  One cycle and one fee commit together.
 end note
-note bottom of Lookup
-  Read does not reserve a number.
+note bottom of JobAdmin
+  Internal work: renewal worker; JOB-01 daily00:05;
+  JOB-02 daily00:30; UC01 recovery60s.
+  Scheduler is not an external actor.
 end note
-note right of Status
-  CSKH manages requestId automatically.
-  WAITING is not successful activation.
-end note
-note "Internal scheduled processing:\nJOB-01 Expiration\nJOB-02 Daily consumption aggregation\nUC01 recovery task is supporting processing.\nScheduler is not an external actor." as Jobs
 @enduml

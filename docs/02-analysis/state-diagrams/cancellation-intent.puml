@@ -1,0 +1,27 @@
+@startuml
+title CancellationIntent - CR-CAN-003 (REVIEW implementation)
+[*] --> PENDING : TxA validates and commits intent
+PENDING --> ACCEPTED : TxB after confirmed TxA commit
+PENDING --> REJECTED : receipt >= observedCoverageEnd
+PENDING --> REJECTED : root version conflict
+ACCEPTED --> ACCEPTED : same requestId replay after lost response
+REJECTED --> REJECTED : same requestId replay, no retargeting
+note right of PENDING
+ Temporarily blocks renewal and manual extension.
+ TxB coordinates slot/request and takes DB receiptCheckedAt.
+ Accept only same observedVersion and receipt < observedCoverageEnd.
+ Commit unknown => lookup/recovery; never infer rollback.
+ Recovery obtains receipt now; no fabricated early acceptance.
+end note
+note right of ACCEPTED
+ Intent and operation SUCCEEDED commit together in TxB.
+ TxB commit may cross deadline; earlier valid receipt still applies.
+ Root PENDING_CANCEL, effective at end of ALL prepaid coverage.
+ HTTP response loss never converts stored accepted outcome to failure.
+end note
+note right of REJECTED
+ TOO_LATE or version conflict; operation FAILED.
+ Release pending guard, preserve history.
+ No automatic new-cycle retarget or refund.
+end note
+@enduml

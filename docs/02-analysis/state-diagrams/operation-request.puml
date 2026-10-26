@@ -1,0 +1,21 @@
+@startuml
+title UC02-05 OperationRequest - idempotency lifecycle (REVIEW)
+[*] --> PROCESSING : claim caller + operation + requestId\ncanonical content
+PROCESSING --> SUCCEEDED : business effect and result committed
+PROCESSING --> FAILED : terminal business rejection committed
+SUCCEEDED --> Tombstone : full result retention elapsed
+FAILED --> Tombstone : full result retention elapsed
+PROCESSING --> PROCESSING : recover technical failure / verify unknown commit
+note right of PROCESSING
+ Same content: return current status, no second effect.
+ Different content: conflict, preserve original.
+ HTTP timeout is observation UNKNOWN, not a DB terminal state.
+ No processing purge; recovery has bounded retries/ownership checks.
+end note
+note right of Tombstone
+ Monetary UC02/04/05 replay30days.
+ Cancellation UC03 replay7days.
+ Retain fingerprint/outcome summary in demo.
+ Old key never becomes new operation.
+end note
+@enduml

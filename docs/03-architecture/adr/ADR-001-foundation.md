@@ -1,6 +1,10 @@
+> **⚠️ CHỈ THAY PHẦN DBMS:** ADR-001 vẫn có hiệu lực về RabbitMQ và Redis, nhưng mọi đề cập PostgreSQL là lựa chọn cũ đã thay bởi CR-DB-001/ADR-003 MySQL.
+
+---
+
 # ADR-001 — Backend chia module, RabbitMQ và Redis
 
-**Trạng thái:** Accepted về lựa chọn stack/công cụ; tài liệu kiến trúc tổng thể/M3 còn chờ.
+**Trạng thái:** Accepted; M3 nền đã duyệt ngày 19/10/2026. Nội dung quyết định ngày 18/10 dưới đây giữ lịch sử; DBMS PG được CR-DB-001/ADR-003 thay MySQL, không đổi broker/cache.
 **Ngày:** 18/10/2026. **Người quyết định:** Chủ dự án, DEC-PRE-03/04 và CR-ARCH-001.
 **Căn cứ duyệt:** Chủ dự án yêu cầu dùng cả broker/cache và giao agent chọn công cụ, mặc định duyệt trong phạm vi này.
 

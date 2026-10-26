@@ -1,210 +1,125 @@
-# Tổng quan dự án – Hệ thống Quản lý thuê bao viễn thông
+# Tổng quan dự án — Hệ thống Quản lý thuê bao viễn thông
 
-**Tên dự án:** Telecom Subscription Management System
+**Tên dự án:** Telecom Subscription Management System (`Telecom-Management-System`)
+**Mã tài liệu:** DOC-PROJ-001 · **Phiên bản:** 1.3 · **Cập nhật:** 26/10/2026.
 
-**Mã tài liệu:** DOC-PROJ-001
+Tài liệu trình bày phạm vi và quy tắc hiện hành sau khi tiếp nhận các quyết định của chủ dự án. Baseline Phase 0 được duyệt ngày 14/10/2026; M1–M4 có phê duyệt lịch sử trong phạm vi UC01. Các thiết kế bổ sung ngày 26/10 và delta MySQL vẫn là REVIEW, chưa phải bằng chứng triển khai/kiểm thử. Trạng thái công việc được quản lý tại [ROADMAP](../ROADMAP.md).
 
-**Phiên bản:** 1.2
+## 1. Bài toán và mục tiêu
 
-**Trạng thái:** Baseline Phase 0 đã được chủ dự án duyệt ngày 14/10/2026; chi tiết còn mở được theo dõi riêng
+TelecomManagement là backend quản lý khách hàng, thuê bao, kho số, gói cước, tài khoản dịch vụ và giao dịch tài chính nội bộ. Hệ thống cung cấp REST API để hệ thống CSKH đấu nối thuê bao, đăng ký hoặc hủy gói, cộng/trừ tiền và tra cứu thuê bao có phát sinh tiêu dùng. Scheduler và worker nội bộ thực hiện gia hạn, xử lý hết hạn, khôi phục yêu cầu và tổng hợp báo cáo ngày.
 
-**Giai đoạn:** Phase 0 – Project Definition & Scope
+Mục tiêu chính là xử lý đúng khi nhiều lời gọi cùng tác động lên một số thuê bao, tài khoản hoặc đăng ký gói. Một số không được cấp hai lần; số dư không âm; phí và quyền dùng gói không được thành công riêng lẻ; retry không tạo lại tác động. Kết quả phải truy vết được theo mã yêu cầu và đối soát với lịch sử giao dịch.
 
-## 1. Giới thiệu dự án (Project Introduction)
+[Nguyên văn đề bài](../requirement.md) được giữ nguyên. Các cách diễn giải và thay đổi đã được chủ dự án xác nhận được lưu riêng trong [sổ quyết định](clarification-log.md), [biên nhận ngày 26/10](decision-receipt-20261026.md) và các CR liên quan. Tài liệu hiện hành áp dụng quyết định mới nhất, không dùng lựa chọn cũ đã bị thay làm quy tắc thực thi.
 
-Hệ thống Quản lý thuê bao viễn thông được xây dựng nhằm quản lý thông tin khách hàng, thuê bao, gói cước, tài khoản dịch vụ và các giao dịch phát sinh trong quá trình sử dụng dịch vụ viễn thông.
+## 2. Các bên liên quan và ranh giới
 
-Hệ thống cung cấp các REST API để những hệ thống bên ngoài, đặc biệt là hệ thống chăm sóc khách hàng (CSKH), có thể thực hiện các nghiệp vụ như đấu nối thuê bao mới, đăng ký hoặc hủy gói cước, cộng tiền, trừ tiền và tra cứu dữ liệu sử dụng dịch vụ.
-
-Một khách hàng có thể sở hữu nhiều thuê bao, mỗi thuê bao có thể đăng ký nhiều gói cước và có các tài khoản phục vụ những dịch vụ khác nhau.
-
-Ngoài các nghiệp vụ trực tuyến, hệ thống còn hỗ trợ truy vấn dữ liệu phục vụ báo cáo, xử lý dữ liệu hết hạn định kỳ và bảo đảm tính chính xác của giao dịch khi nhiều yêu cầu được thực hiện đồng thời.
-
-## 2. Bối cảnh và bài toán (Problem Statement)
-
-Trong hoạt động viễn thông, khách hàng cần đăng ký thông tin cá nhân trước khi được cấp quyền sử dụng dịch vụ thông qua số thuê bao.
-
-Một khách hàng có thể sở hữu nhiều số thuê bao. Khi thực hiện đấu nối mới, số thuê bao có thể được hệ thống cấp tự động hoặc được khách hàng lựa chọn từ danh sách số chưa được sử dụng thông qua hệ thống CSKH.
-
-Mỗi thuê bao có thể đăng ký nhiều gói cước và có các tài khoản phục vụ những dịch vụ khác nhau. Các gói cước và tài khoản có thời hạn sử dụng riêng.
-
-Đăng ký gói cước và trừ tiền là các chức năng riêng. Khi đăng ký gói có thu phí, backend điều phối hai bước; gói chỉ có hiệu lực khi thu phí thành công. Nếu một bước lỗi, không để lại gói hoạt động hoặc khoản trừ tiền thành công một phần (DEC-03).
-
-Trong quá trình tiêu dùng, hệ thống phải ghi nhận đầy đủ các giao dịch làm tăng hoặc giảm số dư tài khoản, đồng thời bảo đảm tính chính xác khi có nhiều giao dịch tác động đồng thời lên cùng tài khoản.
-
-Việc quản lý này đặt ra những yêu cầu chính:
-
-- Quản lý thống nhất thông tin khách hàng, thuê bao và các dịch vụ liên quan.
-- Quản lý việc cấp phát và sử dụng số thuê bao, tránh cấp trùng số.
-- Theo dõi chính xác trạng thái đăng ký và thời hạn sử dụng gói cước.
-- Hỗ trợ hủy gói cước với hiệu lực tại thời điểm kết thúc chu kỳ hiện tại.
-- Ghi nhận đầy đủ và chính xác các giao dịch cộng tiền, trừ tiền.
-- Bảo đảm tính nhất quán của số dư tài khoản khi có nhiều yêu cầu đồng thời.
-- Từ chối giao dịch trừ tiền khi số dư khả dụng không đủ.
-- Hỗ trợ tra cứu dữ liệu tiêu dùng phục vụ báo cáo.
-- Tự động xử lý trạng thái dữ liệu hết hạn mà không làm mất thông tin lịch sử cần thiết.
-- Đáp ứng các yêu cầu về quy mô dữ liệu và hiệu năng xử lý.
-
-## 3. Mục tiêu dự án (Project Objectives)
-
-### 3.1. Mục tiêu nghiệp vụ
-
-Xây dựng hệ thống backend hỗ trợ các nghiệp vụ quản lý thuê bao viễn thông, bao gồm:
-
-1. Đấu nối thuê bao mới cho khách hàng.
-2. Hỗ trợ cấp số thuê bao tự động hoặc lựa chọn số thuê bao còn khả dụng.
-3. Đăng ký gói cước cho thuê bao.
-4. Hủy gói cước với hiệu lực khi kết thúc chu kỳ sử dụng hiện tại.
-5. Cộng tiền vào tài khoản của thuê bao.
-6. Trừ tiền từ tài khoản khi sử dụng dịch vụ.
-7. Tra cứu danh sách thuê bao có phát sinh tiêu dùng theo khoảng thời gian và gói cước.
-8. Kiểm tra và xử lý dữ liệu hết hạn theo lịch trình hàng ngày.
-9. Tổng hợp tiêu dùng bằng một job báo cáo hàng ngày riêng (DEC-07).
-
-### 3.2. Mục tiêu kỹ thuật
-
-- Xây dựng mô hình dữ liệu và cơ sở dữ liệu quan hệ phù hợp với các đối tượng nghiệp vụ.
-- Cung cấp REST API để các hệ thống bên ngoài thực hiện các chức năng được yêu cầu.
-- Bảo đảm tính toàn vẹn và nhất quán của dữ liệu trong quá trình xử lý giao dịch.
-- Hỗ trợ xử lý các yêu cầu đồng thời trên cùng một thuê bao và tài khoản.
-- Bảo đảm việc cập nhật số dư và ghi nhận giao dịch được thực hiện nhất quán trong một transaction.
-- Không cho phép giao dịch trừ tiền làm số dư tài khoản xuống dưới mức cho phép.
-- Hỗ trợ quản lý vòng đời và trạng thái của gói cước, tài khoản.
-- Hỗ trợ xử lý dữ liệu định kỳ theo cơ chế soft delete.
-- Xây dựng công cụ kiểm thử hiệu năng và kiểm chứng tính đúng đắn của giao dịch.
-
-## 4. Tổng quan hệ thống (System Overview)
-
-### 4.1. Các nhóm chức năng chính
-
-**Quản lý thuê bao (Subscriber Management)**
-
-Quản lý thông tin thuê bao, quá trình đấu nối thuê bao mới và liên kết thuê bao với khách hàng.
-
-Hỗ trợ hai hình thức xác định số thuê bao khi đấu nối:
-
-- Hệ thống tự động cấp một số thuê bao còn khả dụng.
-- Hệ thống CSKH tra cứu danh sách số thuê bao còn khả dụng, cho phép khách hàng lựa chọn và truyền số đã chọn trong yêu cầu đấu nối.
-
-**Quản lý gói cước (Package Management)**
-
-Quản lý việc đăng ký, hủy đăng ký và theo dõi thời gian sử dụng gói cước.
-
-Đăng ký gói cước có thu phí do backend điều phối. Chỉ trả kết quả đăng ký thành công khi gói và việc thu phí cùng thành công; không để lại trạng thái thành công một phần. Các chức năng đăng ký và trừ tiền vẫn có trách nhiệm riêng; cơ chế transaction được chốt ở thiết kế (OQ-06).
-
-Khi khách hàng yêu cầu hủy gói cước, hiệu lực hủy được áp dụng tại thời điểm kết thúc chu kỳ sử dụng hiện tại. Gói cước tiếp tục có hiệu lực đến thời điểm đó.
-
-**Quản lý tài khoản và giao dịch (Account & Transaction Management)**
-
-Quản lý tài khoản dịch vụ, số dư và các giao dịch cộng tiền, trừ tiền.
-
-Khi thực hiện trừ tiền, hệ thống kiểm tra số dư khả dụng. Nếu số dư không đủ, transaction bị hủy bỏ, hệ thống không thay đổi số dư và trả về kết quả thất bại.
-
-Các giao dịch phải được xử lý an toàn và nhất quán khi nhiều yêu cầu đồng thời tác động lên cùng tài khoản.
-
-**Tra cứu và báo cáo (Query & Reporting)**
-
-Cung cấp khả năng tra cứu danh sách thuê bao có phát sinh tiêu dùng trên một hoặc nhiều gói cước trong khoảng thời gian xác định.
-
-Có thêm job tổng hợp tiêu dùng hàng ngày riêng, ngoài API truy vấn và job hết hạn. Điều kiện lọc, chỉ tiêu, đầu ra và lịch báo cáo sẽ được đặc tả trong SRS (OQ-03, OQ-13).
-
-**Xử lý dữ liệu định kỳ (Scheduled Processing)**
-
-Thực hiện job hàng ngày để kiểm tra các gói cước và tài khoản đã hết thời gian sử dụng.
-
-Hệ thống áp dụng cơ chế soft delete hoặc cập nhật trạng thái phù hợp thay vì xóa vật lý dữ liệu nghiệp vụ.
-
-Soft delete/trạng thái áp dụng cho lần đăng ký gói và tài khoản hết hạn; không xóa định nghĩa gói chỉ vì một lần đăng ký hết hạn. Thông tin lịch sử và giao dịch cần thiết được giữ để truy vấn và đối soát (DEC-06).
-
-### 4.2. Các đối tượng nghiệp vụ chính
-
-Hệ thống quản lý sáu nhóm đối tượng:
-
-- **Khách hàng (Customer):** Người đăng ký sử dụng dịch vụ viễn thông. Một khách hàng có thể sở hữu nhiều thuê bao.
-- **Thuê bao (Subscriber):** Đại diện cho một số thuê bao được đăng ký. Mỗi thuê bao thuộc về một khách hàng tại một thời điểm.
-- **Gói cước (Service Package):** Gói dịch vụ mà thuê bao có thể đăng ký sử dụng.
-- **Đăng ký gói cước (Package Subscription):** Ghi nhận việc một thuê bao đăng ký một gói cước, thời gian sử dụng và trạng thái đăng ký.
-- **Tài khoản (Account):** Quản lý số dư và thông tin sử dụng dịch vụ của thuê bao.
-- **Giao dịch (Transaction):** Ghi nhận các nghiệp vụ cộng tiền và trừ tiền phát sinh trên tài khoản.
-
-Danh sách số thuê bao còn khả dụng, cơ chế cấp phát số và các trạng thái liên quan sẽ được phân tích chi tiết ở những giai đoạn tiếp theo.
-
-Cấu trúc thuộc tính và quan hệ chi tiết giữa các đối tượng được xác định tại giai đoạn phân tích miền nghiệp vụ và thiết kế cơ sở dữ liệu.
-
-## 5. Các bên liên quan (Stakeholders)
-
-**Khách hàng viễn thông**
-
-Là người đăng ký và sử dụng dịch vụ. Khách hàng cung cấp thông tin cá nhân, lựa chọn số thuê bao khi có nhu cầu và yêu cầu sử dụng hoặc ngừng sử dụng dịch vụ thông qua hệ thống CSKH.
-
-Khách hàng không trực tiếp gọi REST API của hệ thống quản lý thuê bao.
-
-**Hệ thống chăm sóc khách hàng (CSKH)**
-
-Là hệ thống bên ngoài tương tác với backend thông qua REST API để thực hiện các nghiệp vụ quản lý thuê bao, gói cước và tài khoản.
-
-**Bộ phận hoặc hệ thống báo cáo**
-
-Là bên sử dụng dữ liệu tra cứu về tình hình tiêu dùng dịch vụ của thuê bao. Phương thức tích hợp cụ thể sẽ được xác định trong tài liệu yêu cầu.
-
-**Đội phát triển và vận hành**
-
-Chịu trách nhiệm phân tích, thiết kế, xây dựng, kiểm thử, triển khai và duy trì hệ thống.
-
-## 6. Yêu cầu và ràng buộc tổng quan (High-Level Requirements & Constraints)
-
-### 6.1. Yêu cầu gốc và cách áp dụng đã duyệt
-
-| Mã | Yêu cầu / cách áp dụng baseline |
+| Bên/thành phần | Vai trò |
 |---|---|
-| HLR-01 | Tổng các bảng dữ liệu nghiệp vụ có tối thiểu 500.000 bản ghi trước đo tải; thống kê từng bảng (DEC-08). |
-| HLR-02 | Trong cùng bài tải hỗn hợp, đăng ký gói đạt ít nhất 30 nghiệp vụ mới thành công/giây (DEC-09). |
-| HLR-03 | Đồng thời với HLR-02, trừ tiền đạt ít nhất 30 nghiệp vụ mới thành công/giây; tổng hai loại ít nhất 60 TPS. Không đếm retry như nghiệp vụ mới (DEC-09). |
-| HLR-04 | 50% tổng request trừ tiền chia thành nhiều nhóm cặp thuê bao–tài khoản có tranh chấp và thực sự chồng lấn; phân bố chi tiết chốt trong Test Plan (DEC-10). |
-| HLR-05 | Tool đối chiếu từng mã yêu cầu/giao dịch đã commit, một tác động khi retry và số dư đầu/cuối; ca đủ tiền, thiếu tiền, timeout phải rõ kết quả (DEC-11). |
-| HLR-06 | Job hết hạn hàng ngày dùng soft delete/trạng thái lần đăng ký và tài khoản; giữ lịch sử/danh mục gói (DEC-06). |
-| HLR-07 | API truy vấn thuê bao có tiêu dùng theo X–Y và gói; điều kiện lọc chi tiết còn mở. |
-| HLR-08 | Job tổng hợp tiêu dùng hàng ngày riêng; chỉ tiêu, đầu ra và lịch chạy chốt trong SRS (DEC-07). |
+| Khách hàng | Cung cấp hồ sơ, chọn số, đồng ý chờ hoặc yêu cầu sử dụng/hủy dịch vụ thông qua CSKH |
+| Hệ thống CSKH | Gọi API, quản lý requestId, gửi lựa chọn của khách hàng, hiển thị và tra kết quả |
+| Bên khai thác báo cáo | Truy vấn dữ liệu tiêu dùng theo quyền, bộ lọc và bản kết quả cố định |
+| IdP / Keycloak | Cấp JWT và công bố khóa xác minh; nằm ngoài backend Telecom |
+| TelecomManagement | Kiểm quyền/dữ liệu, thực hiện nghiệp vụ, lưu kết quả, cung cấp báo cáo và tác vụ nền |
+| Người vận hành | Theo dõi dịch vụ, chạy/tra job bằng quyền riêng, phục hồi và đối soát |
+| Công cụ kiểm thử | Tạo dữ liệu, phát tải và kiểm chứng từng yêu cầu, giao dịch, số dư |
 
-Các dòng trên phân biệt cách áp dụng đã duyệt với [nguyên văn đề bài](../requirement.md), đặc biệt quan hệ khách hàng, “xóa” và cách đo tải. Không coi mục tiêu là kết quả kiểm thử đã đạt.
+Khách hàng không trực tiếp gọi REST API. Scheduler, worker, MySQL, RabbitMQ và Redis thuộc ranh giới kỹ thuật của giải pháp; scheduler không được vẽ như actor nghiệp vụ bên ngoài. Backend không cấp JWT nội bộ và không tự xác minh giấy tờ như một hệ thống KYC.
 
-### 6.2. Quyết định baseline
+## 3. Đối tượng nghiệp vụ
 
-Chủ dự án xác nhận ngày 14/10/2026 với quyền quyết định nghiệm thu cuối cùng (Q13=C). Toàn bộ 14 đáp án, căn cứ và lịch sử được lưu trong [clarification log](clarification-log.md).
-
-| Mã | Quyết định |
+| Đối tượng | Vai trò và quan hệ |
 |---|---|
-| DEC-01 | Một khách hàng có nhiều thuê bao; mỗi thuê bao thuộc một khách hàng tại một thời điểm. |
-| DEC-02 | Cấp số tự động/chọn số; xem danh sách không giữ số; cấp phát không trùng; số đã bị cấp thì trả lỗi để chọn lại. |
-| DEC-03 | Đăng ký có thu phí do backend điều phối; gói và thu phí cùng thành công, không để lại thành công một phần. |
-| DEC-04 | Hủy gói có hiệu lực cuối chu kỳ hiện tại. |
-| DEC-05 | Không thấu chi; thiếu tiền không đổi số dư, không ghi giao dịch tài chính thành công và trả lỗi. |
-| DEC-06 | Soft delete/trạng thái lần đăng ký và tài khoản hết hạn; giữ lịch sử và định nghĩa gói. |
-| DEC-07 | Thêm job tổng hợp tiêu dùng hàng ngày riêng. |
-| DEC-08 | Tổng bản ghi nghiệp vụ tối thiểu 500.000, chuẩn bị trước đo tải. |
-| DEC-09 | Cùng chạy ≥30 TPS đăng ký và ≥30 TPS trừ tiền, tổng ≥60 TPS thành công mới; báo riêng lỗi/timeout/retry. |
-| DEC-10 | 50% tổng request trừ tiền vào nhiều nhóm cặp thuê bao–tài khoản có tranh chấp đồng thời. |
-| DEC-11 | Đối soát từng yêu cầu/giao dịch và số dư; kiểm tra retry, đủ tiền, thiếu tiền và timeout. |
+| Customer | Hồ sơ khách hàng; một Customer có nhiều Subscriber, mỗi Subscriber thuộc một Customer tại một thời điểm |
+| Giấy tờ đã xác minh | Customer có thể có nhiều giấy tờ; liên kết dựa trên cặp loại/số và chứng cứ tin cậy, không tự ghép theo tên/ngày sinh |
+| Subscriber | Thuê bao được đấu nối trong backend, liên kết Customer, số đã cấp, các tài khoản và đăng ký gói |
+| PhoneNumberInventory | Kho số với trạng thái khả dụng/đã cấp; tra cứu không giữ chỗ |
+| ServicePackage | Định nghĩa gói, giá, số ngày và chính sách; ngừng bán mới không tự cấm gia hạn khách cũ đủ điều kiện |
+| PackageSubscription | Đăng ký ổn định của cặp thuê bao–gói, có version, trạng thái, ý định hủy và cuối thời gian đã trả |
+| SubscriptionCycle | Một kỳ đã mua, lưu khoảng hiệu lực, giá/số ngày/phiên bản áp dụng và phí; lịch sử kỳ bất biến |
+| Account | Số dư theo từng tài khoản của thuê bao; MAIN dùng thu phí gói, tài khoản phụ có loại/quyền/hạn rõ ràng |
+| FinancialTransaction | Giao dịch đã ghi nhận, liên kết đúng tài khoản/nguồn nghiệp vụ và kỳ gói khi cần; phục vụ đối soát |
+| Request và kết quả | Theo dõi thao tác của một caller, chống xử lý lặp và hỗ trợ tra cứu khi mất phản hồi |
+| Snapshot/đóng góp báo cáo | Giữ tập kết quả ổn định và truy vết mỗi nguồn được tính đúng một lần |
 
-## 7. Các vấn đề còn mở và bước tiếp theo
+Đăng ký gói và kỳ gói là hai khái niệm khác nhau. Một đăng ký có thể có kỳ đang dùng và các kỳ tương lai đã trả. `coverageEnd` là cuối toàn bộ thời gian đã trả, có thể muộn hơn cuối kỳ hiện tại; việc hủy phải tôn trọng phần đã trả đó.
 
-OQ-08 đã Resolved. OQ-01–OQ-07 và OQ-09–OQ-15 vẫn Open ở phần chi tiết, dù một số định hướng đã được duyệt. [Clarification log, mục 6](clarification-log.md#6-trạng-thái-và-kế-hoạch-xử-lý-oq) là danh sách chính về phần còn thiếu, người phụ trách và hạn chốt; không tự xem các đề xuất cũ là quyết định.
+## 4. Các nhóm nghiệp vụ
 
-Chủ dự án phụ trách quyết định; trợ lý tổng hợp và đề xuất. Ưu tiên ở SRS UC01 là OQ-05, OQ-12, OQ-15. Các quy tắc gói, tiền, báo cáo và tải được chốt trước khi thiết kế/triển khai thành phần tương ứng. Việc chọn nhóm tranh chấp không tự quyết định số nhóm; việc có thu phí không tự quyết định mức phí/tài khoản thu.
+### 4.1. UC01 — Đấu nối thuê bao
 
-Phase 0 hoàn thành theo Q14=A: ba tài liệu nhất quán, quyết định rõ và các chi tiết còn mở có kế hoạch. Phase 1 đang rà soát SRS/UC01; M1 chờ duyệt. Xem [roadmap](../ROADMAP.md) để theo dõi bước tiếp theo.
+Hệ thống hỗ trợ chọn một số khả dụng hoặc tự cấp số. Số đầu vào phải đúng E.164, ví dụ `+84901234567`; backend không tự đoán quốc gia từ `090…`. Tra cứu số chỉ cung cấp thông tin tại thời điểm đọc; khi cấp vẫn phải kiểm và chống tranh chấp.
 
-## 8. Lịch sử cập nhật
+UC01 dùng mô hình Hybrid: có thể hoàn tất thì trả kết quả cuối đồng bộ. Chỉ khi tự cấp hết kho và khách đồng ý chờ mới ghi `WAITING`, tối đa 24 giờ. Bổ sung kho kích hoạt thử lại; khôi phục DB mỗi 60 giây giúp tìm yêu cầu bị bỏ sót. Hết hạn chuyển `EXPIRED`; WAITING không phải thành công.
 
-| Phiên bản | Ngày | Nội dung |
-|---|---|---|
-| 1.0 | Trước duyệt Phase 0 | Tổng quan ban đầu, còn các vấn đề cần làm rõ. |
-| 1.1 | 14/10/2026 | Đồng bộ 14 lựa chọn: thu phí đăng ký, job báo cáo, 500K tổng, tải hỗn hợp 60 TPS, phân nhóm 50%; xác nhận thẩm quyền và đóng Phase 0. |
+Thành công phải tạo thuê bao, liên kết Customer hợp lệ, cấp đúng một số và tạo MAIN số dư 0 nhất quán. Hồ sơ/chứng cứ được đối chiếu theo quy tắc đã duyệt; không tự merge Customer hoặc sửa hồ sơ khác biệt. Đấu nối chỉ hoàn tất trong backend, không kích hoạt mạng thật.
 
+### 4.2. UC02 — Đăng ký và gia hạn gói
 
-| 1.2 | 18/10/2026 | CR-DOC-001: đồng bộ trạng thái Phase 1, giữ baseline nghiệp vụ. |
+Gói chỉ có hiệu lực khi thu phí MAIN thành công. Số dư, giao dịch phí, kỳ gói và kết quả request phải nhất quán; không để có tiền đã trừ nhưng không có kỳ hoặc ngược lại. API đăng ký gói khác API trừ tiền độc lập.
 
+Thao tác thủ công gửi phiên bản đăng ký đang thấy để tránh hai lệnh mới cùng mua trên một hạn cũ. Nếu worker/thao tác khác đã tạo kỳ đó, phải đánh giá lại và trả xung đột/trạng thái hiện tại, không âm thầm nối thêm kỳ nữa. Muốn mua kỳ tiếp phải lấy phiên bản mới và gửi yêu cầu có chủ đích.
 
-## Bổ sung hiện hành ngày 18/10/2026
+Nếu còn thời gian đã trả, kỳ mua tiếp nối từ coverageEnd. Sau gián đoạn, kỳ mới bắt đầu tại lúc xử lý hợp lệ, không hồi tố quyền hoặc truy thu nhiều kỳ đã bỏ lỡ. Gia hạn tự động xử lý muộn chỉ mua một kỳ khi còn đủ điều kiện/MAIN, chưa hủy hợp lệ và chưa có lệnh khác tạo kỳ. Gói ngừng bán mới vẫn có thể gia hạn cho khách cũ theo chính sách được cấu hình.
 
-Baseline phạm vi Phase0 giữ nguyên; các định hướng chi tiết tại DEC-PRE-01–24 trong [clarification log](clarification-log.md) đã được tiếp nhận. Hồ sơ so mọi trường gửi/chứng cứ ngoài; UC01 caller-scoped ID/replay7 ngày+tombstone/FIFO/recovery 60s. Gói giá snapshot/chu kỳ ngày/hủy theo mốc nhận, lịch job00:05/00:30 Asia/Ho_Chi_Minh, lịch sử 5 năm không purge demo. Báo cáo [X,Y) theo commit/cursor; kiểm thử k6 với các ngưỡng bổ sung. RabbitMQ/Redis theo CR-ARCH-001, không mở rộng mạng thật/ngân hàng/UI. Các trạng thái “còn chờ chọn” trong phần baseline lịch sử phải đối chiếu bảng OQ hiện hành; retention tiền/hạn mức phụ còn đề xuất. M1 vẫn chờ chủ dự án đọc SRS0.6/UC01 0.5 và trả lời Q25. [Thứ tự đọc](review-guide.md).
+### 4.3. UC03 — Hủy gói
+
+Theo [CR-CAN-002](CR-CAN-002-prepaid-cancellation.md), hủy có hiệu lực ở cuối **toàn bộ thời gian đã trả**, không hoàn phí. Nhận hủy hợp lệ chặn mua thêm/gia hạn nhưng giữ quyền dùng trong các kỳ đã trả; tới hạn chuyển `CANCELLED`, khác `EXPIRED` do hết hạn thông thường.
+
+Theo [CR-CAN-003](CR-CAN-003-cancellation-receipt.md), mốc tiếp nhận là giờ DB được kiểm sau khi backend đã xác nhận ý định hủy được lưu thành công. Chỉ mốc nhỏ hơn coverageEnd đang nhắm tới mới đủ điều kiện; bằng/sau hạn bị từ chối với `CANCELLATION_RECEIVED_TOO_LATE`, không tự chuyển sang kỳ mới. Intent đang chờ phân giải chặn tạm cả mua thêm và gia hạn. Timestamp trước commit hoặc log HTTP đến sớm không tạo ưu tiên.
+
+Mất phản hồi commit phải tra kết quả, không đoán rollback. Nếu kết quả nhận hủy đã commit nhưng mất HTTP, cùng requestId/nội dung trả lại kết quả cũ dù tra sau hạn. Ngữ nghĩa này đã được duyệt; thiết kế hai transaction và kiểm thử lỗi vẫn là REVIEW.
+
+### 4.4. UC04/UC05 — Cộng và trừ tiền
+
+Lệnh thao tác đúng accountId được chỉ định. Tài khoản phụ thiếu tiền thì thất bại dù MAIN đủ tiền; không fallback hoặc cộng gộp số dư. MAIN không có hạn mặc định; tài khoản phụ demo phải có loại, quyền cộng/trừ và hạn dùng rõ trước khi tạo. Phạm vi không thêm API mở tài khoản phụ.
+
+Tiền dùng số nguyên VND; mỗi lệnh tối đa 10.000.000 VND, số dư tối đa 100.000.000 VND, cấu hình được. Không cho số dư âm. Trừ tiêu dùng phải chỉ đúng kỳ gói đang có hiệu lực thuộc thuê bao; chưa có gói/đã hết hạn/chỉ sai gói thì không trừ tiền.
+
+Theo [CR-TIME-002](CR-TIME-002-account-expiry.md), kiểm giờ DB dưới khóa tài khoản ngay trước cập nhật. Đã tới hạn thì từ chối; kiểm khi còn hạn có thể commit sau hạn. Thiếu tiền hoặc không đủ điều kiện không tạo giao dịch tài chính thành công và không đổi số dư.
+
+### 4.5. UC06 và tổng hợp tiêu dùng
+
+API trả thuê bao có phát sinh tiêu dùng trong khoảng `[X,Y)` và theo gói. OR là có giao dịch của ít nhất một gói được chọn; AND là có giao dịch của từng gói được chọn. `includeFee` phân biệt chỉ tiêu dùng với tính thêm phí đăng ký/gia hạn; CREDIT không phải tiêu dùng. Mỗi thuê bao xuất hiện một lần, mặc định 50 và tối đa 200 thuê bao/trang.
+
+Một lượt xem cố định tập kết quả; cursor được bảo vệ và gắn caller/bộ lọc/snapshot. Muốn thấy dữ liệu mới phải mở lượt xem mới, không giữ transaction DB trong lúc xem các trang.
+
+Theo [CR-TIME-001](CR-TIME-001-reporting-time.md), phân loại bằng `recordedAt` trong transaction cuối cùng đã commit. Ghi nhận 23:59:59 ngày 20 nhưng commit 00:00:01 ngày 21 vẫn thuộc ngày 20, chỉ xuất hiện sau commit. Ngày đã chốt bất biến; nguồn thuộc ngày cũ được phát hiện muộn tạo điều chỉnh ở kỳ sau, có truy vết và không đếm hai lần. Cutoff/tập nguồn đã lưu lần đầu được giữ qua retry dù lần trước chưa hoàn tất.
+
+## 5. Thời gian, tác vụ nền và lịch sử
+
+Dữ liệu thời gian lưu UTC, ngày nghiệp vụ dùng `Asia/Ho_Chi_Minh`. Ngày đăng ký là ngày đầu: gói 30 ngày từ `2026-10-01T10:15:00+07:00` hết tại `2026-10-31T00:00:00+07:00`. Khoảng hiệu lực `[start,end)` không gồm end. Kỳ tiếp nối bắt đầu tại end trước; kỳ sau gián đoạn bắt đầu tại lúc xử lý hợp lệ.
+
+Worker gia hạn chạy thường xuyên, khoảng chạy cụ thể còn là đề xuất kỹ thuật. JOB-01 chạy 00:05 hằng ngày, xử lý hết hạn gói/tài khoản, hoàn tất hủy và rà soát phần bị bỏ sót. JOB-02 riêng chạy 00:30 để tổng hợp ngày. Các đường gia hạn dùng chung lõi và chống trùng phí/kỳ. Không nhầm nhịp khôi phục UC01 60 giây với nhịp worker gia hạn.
+
+Hết hạn dùng trạng thái/soft delete, giữ lịch sử và định nghĩa gói. UC01/03 giữ đầy đủ phản hồi 7 ngày; UC02/04/05 giữ 30 ngày sau trạng thái cuối, sau đó giữ tombstone để mã cũ không thực hiện lại. Không dọn request đang xử lý/chờ. Lịch sử nghiệp vụ có thời gian giữ 5 năm cấu hình được; demo không chạy purge.
+
+## 6. Bảo mật và tích hợp
+
+JWT do IdP ngoài backend cấp. Backend kiểm chữ ký, issuer, audience, thời hạn và scope thao tác. Caller lấy từ danh tính ứng dụng đã xác minh, không từ body tự khai. Chỉ ứng dụng được cấp quyền chứng cứ tin cậy được gửi tham chiếu xác minh giấy tờ; Telecom kiểm nguồn/định dạng và lưu tham chiếu, không xây quy trình KYC.
+
+Demo dùng chung tập dữ liệu giả, không bắt buộc hệ thống đa tenant. Tuy nhiên request/kết quả và snapshot báo cáo thuộc caller; ứng dụng A không được tra kết quả của B. Cùng mã/cùng nội dung không gây tác động lại; khác nội dung là xung đột. Timeout là chưa rõ kết quả, không cho phép tạo mã mới để thử lại một cách mù quáng.
+
+## 7. Ràng buộc quy mô và nghiệm thu
+
+| Mã | Yêu cầu hiện hành |
+|---|---|
+| HLR-01 | Tổng các bảng nghiệp vụ ≥ 500.000 bản ghi trước đo tải, có thống kê từng bảng |
+| HLR-02 | Đăng ký gói ≥ 30 nghiệp vụ thành công mới/giây trong bài tải hỗn hợp |
+| HLR-03 | Đồng thời trừ tiền độc lập ≥ 30 nghiệp vụ thành công mới/giây; tổng ≥ 60 TPS; không đếm replay hoặc phí gói hai lần |
+| HLR-04 | 50% số lần gọi trừ tiền, kể cả retry, phân vào 10 cặp thuê bao–tài khoản nóng có tranh chấp thực |
+| HLR-05 | Đối soát từng request/giao dịch/số dư, kể cả đủ tiền, thiếu tiền, timeout; kết quả cuối chưa xác định phải bằng 0 |
+| HLR-06 | JOB-01 hằng ngày dùng trạng thái/soft delete, giữ lịch sử và danh mục gói |
+| HLR-07 | UC06 lọc thời gian/gói, OR/AND/includeFee, thuê bao không trùng và phân trang cố định |
+| HLR-08 | JOB-02 tổng hợp ngày riêng, giữ tập nguồn qua retry và điều chỉnh nguồn muộn một lần |
+
+Q32 quy định warm-up 2 phút, đo 10 phút, p95 ≤ 500 ms, p99 ≤ 1 giây và lỗi ≤ 0,1%, với cách tính chi tiết tại [kế hoạch kiểm thử](../05-testing/test-plan.md). Đây là tiêu chí phải đo, chưa phải kết quả đã đạt.
+
+## 8. Hướng kỹ thuật và trạng thái tiếp theo
+
+Nền tảng được chọn là Java 21/Spring Boot, một ứng dụng chia module, MySQL 8.0.46/InnoDB, `READ COMMITTED` cho đường ghi, JPA/JDBC, Flyway, RabbitMQ, Redis và IdP/Keycloak ngoài Telecom. Tại nhà chạy bộ service bằng Compose; tại công ty làm tài liệu/mã/unit test không cần DB. RabbitMQ báo bổ sung kho, Redis cache danh mục; MySQL vẫn là nguồn quyết định nghiệp vụ.
+
+Cách lưu UUID, chi tiết schema/index/DTO/HTTP/scope, nhịp worker và cấu hình runtime mới vẫn REVIEW theo quyền được giao đề xuất. Không có migration/runtime/TPS mới được chứng minh bằng việc soạn tài liệu. Bước tiếp theo là nghiệm thu delta MySQL UC01 theo [checklist M4](../04-design/m4-review-checklist.md), sau đó thực hiện P5.1; các UC sau tiếp tục theo từng vòng triển khai.
+
+Chi tiết phạm vi và định nghĩa nằm tại [Scope & Glossary](scope-and-glossary.md); yêu cầu tại [SRS](../01-requirements/SRS.md). Lịch sử trước lần hợp nhất này được bảo toàn trong [bản lưu 26/10](history/2026-10-26-before-sync.zip) và sổ quyết định, thay vì duy trì các mô tả cũ mâu thuẫn trong nội dung hiện hành.
