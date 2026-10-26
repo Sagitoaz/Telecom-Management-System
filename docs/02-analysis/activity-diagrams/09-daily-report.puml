@@ -1,0 +1,46 @@
+@startuml
+title
+JOB-02 — Chốt nguồn và điều chỉnh muộn
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:00:30 hoặc admin; claim run/period theo thứ tự ngày;
+if (Period đã FINALIZED?) then (Có)
+ :Giữ bản đã chốt; replay/export đúng phiên bản;
+ stop
+endif
+:Tx0 lưu hoặc lấy cutoff đầu tiên\nretry không đổi cutoff;
+if (Đã SNAPSHOTTED?) then (Có)
+ :Dùng đúng contribution set đã lưu;
+else (Chưa)
+ :Tx1 chọn nguồn committed một statement;
+ :BASE cho ngày đang chốt\nADJUSTMENT cho nguồn ngày cũ đã finalized;
+ :Unique source toàn cục\ncommit contributions + SNAPSHOTTED;
+endif
+:Tx2 aggregate từ persisted set\ncommit summary + FINALIZED nguyên tử;
+if (Phát hiện nguồn cũ sau snapshot?) then (Có)
+ :Kỳ sau nhận ADJUSTMENT duy nhất\ntruy ngày gốc, không sửa bản finalized;
+endif
+if (Cần CSV?) then (Có)
+ :Xuất từ đúng phiên bản finalized;
+ if (Export lỗi?) then (Có)
+  :Retry export; không cộng lại summary;
+ endif
+endif
+note right
+Chết trước commit: rollback bước đó.
+Chết sau snapshot: tiếp Tx2 đúng tập đã lưu.
+Commit không rõ: tra period/contribution trước retry.
+end note
+stop
+@enduml

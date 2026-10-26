@@ -312,3 +312,7 @@ Theo yêu cầu chủ dự án, phiếu16 v0.5 viết lại26 câu từ Q09 tớ
 ### Bổ sung cách đọc và báo cáo tổng hợp — 26/10/2026
 
 Theo yêu cầu chủ dự án, bổ sung [hướng dẫn đọc/rà soát](HUONG-DAN-DOC-VA-RA-SOAT.md) và [báo cáo tổng hợp có UML](BAO-CAO-TONG-HOP-DU-AN.md). Phạm vi P1.8/P2.6 là tổng hợp và truy vết, không đổi DEC/CR/SRS/API/UML nguồn. Báo cáo bao quát Phase 0–7 nhưng không tự bắt đầu hoặc nghiệm thu phase sau; delta MySQL UC01 vẫn cần duyệt trước P5.1.
+
+### Sửa báo cáo theo luồng nghiệp vụ và khả năng hiển thị ảnh — 26/10/2026
+
+P1.8/P2.5/P2.6: báo cáo v1.1 dùng ảnh PNG tương đối, Activity Diagram/kịch bản và Class Diagram ở phần đầu; thêm 11 Activity và 3 Class view, giữ các sequence/state/ERD/design class chi tiết. Chủ dự án ủy quyền agent tự quyết cách hoàn thiện tài liệu; không đồng nghĩa đã nghiệm thu delta MySQL, code/test hay checkpoint. Bước phát triển tiếp theo vẫn review M4-DB UC01 trước P5.1.

@@ -1,5 +1,26 @@
 # Kiểm chứng bộ thiết kế backend — 26/10/2026
 
+## Báo cáo v1.1 — sửa ảnh và bổ sung luồng/Class Diagram, 26/10/2026
+
+**Lỗi đã xác định:** ảnh nhúng của báo cáo dùng đường dẫn ổ đĩa `E:/...` thay vì URL tương đối từ Markdown. Checker cũ kiểm file tồn tại/XML nên không phát hiện lỗi hiển thị. Nội dung có sequence/state nhưng thiếu Activity Diagram và Class Diagram tập trung ở phần đầu nên khó theo dõi nghiệp vụ.
+
+**Thay đổi:** viết lại bố cục báo cáo theo luồng trước kỹ thuật; chương 1–9 gồm Activity tổng thể, xử lý lỗi/retry chung, hành trình ví dụ, các UC/jobs và Class Diagram. Mỗi UC có standard scenario với dữ liệu/kết quả cụ thể và bảng nhánh A/E/X. Thêm 11 Activity Diagram và 3 focused business Class Diagram; giữ các sequence/state/domain/ERD/design class có sẵn. Toàn bộ 42 ảnh nhúng dùng PNG tương đối; có SVG/PlantUML cạnh hình. Report 1.368 dòng/20 chương; 64 oracle giữ nguyên từ ma trận nguồn.
+
+**Bằng chứng hiển thị:** chuyển đúng Markdown thành HTML bằng Python Markdown 3.11.2, phục vụ local loopback, mở Microsoft Edge headless. JavaScript sau load ghi complete/naturalWidth/naturalHeight của từng ảnh: **42/42 ảnh tải thành công, 0 ảnh lỗi**. Focus riêng chương class: **3/3 ảnh tải thành công**; đã xem screenshot phần class và hình Activity tổng thể. [JSON bằng chứng](checks/report-preview-20261026.json) gắn hash báo cáo và render manifest. Công cụ browser CUA không khởi động được do lỗi volume D; dùng Edge CLI headless thay thế. Không trực tiếp điều khiển hoặc xác nhận native IDE preview của người dùng.
+
+**Kiểm chứng nguồn/hình:** PlantUML 1.2026.9 render 41 nguồn thành 42 SVG + 42 PNG, exit 0. Đã sửa cú pháp màu activity deprecated để hình không chứa banner cảnh báo; PNG overview lớn dùng giới hạn render đủ để không cắt tại 4.096 px. Checker hiện hành kiểm cả image target tương đối và hash PNG/SVG, không chỉ XML. `verify_report.py` kiểm 42 PNG hiện hành, 11 Activity, 3 business Class, 20 neo mục lục, kịch bản S-UC01..06/ngoại lệ và nguyên 64 ca biên; đối chiếu bằng chứng browser đạt.
+
+Lệnh đã chạy:
+
+```powershell
+python docs/checks/render_uml.py --jar out/docs-sync-20261026/tools/plantuml-1.2026.9.jar --png
+python docs/checks/verify_backend_docs.py --deps out/docs-sync-20261026/pydeps
+python docs/checks/verify_report.py --browser-evidence docs/checks/report-preview-20261026.json
+```
+
+Không đổi quy tắc đã chốt trong SRS/UC/API/schema, đề bài hoặc phiếu. Chỉ bổ sung view và cách đọc/trình bày theo ủy quyền của chủ dự án; thiết kế mới REVIEW, không tự nghiệm thu M4-DB/M5–M8. Không có backend/MySQL/tải được chạy từ việc sửa báo cáo.
+
+
 ## Bổ sung hướng dẫn đọc và báo cáo tổng hợp — 26/10/2026
 
 Theo yêu cầu chủ dự án, đã tạo [hướng dẫn đọc/rà soát](HUONG-DAN-DOC-VA-RA-SOAT.md) (172 dòng) và [báo cáo tổng hợp](BAO-CAO-TONG-HOP-DU-AN.md) (1.087 dòng). Báo cáo có 18 mục lục neo rõ ràng, bao quát Phase 0–7, nhúng đủ 28 SVG hiện hành từ 27 nguồn, kèm diễn giải luồng chuẩn/nhánh/lỗi, 13 API và nguyên 64 oracle TC-EDGE theo ma trận chuẩn. Các hình có link nguồn và link SVG tương đối cạnh ảnh nhúng local.

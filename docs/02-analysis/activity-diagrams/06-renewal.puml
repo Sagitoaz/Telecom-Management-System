@@ -1,0 +1,45 @@
+@startuml
+title
+Worker gia hạn — một target, một phí
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Lấy candidate đến hạn qua chỉ mục/lô;
+:Xác định target từ root version + coverageEnd\nkhông dùng now/runId làm target mới;
+if (Target có terminal outcome?) then (Có)
+ :Skip/replay; FAILED thiếu tiền không hồi sinh;
+ stop
+endif
+:Phối hợp MAIN/root/cycle như manual đăng ký;
+if (Manual đã tạo kỳ hoặc version đổi?) then (Có)
+ :Re-evaluate/skip; không mua kỳ kế nữa;
+ stop
+endif
+if (Pending/accepted cancellation?) then (Có)
+ :Pending -> resolver; accepted -> không gia hạn;
+ stop
+endif
+:Kiểm DB time, MAIN và chính sách/giá hiện hành;
+if (Đủ tiền và đủ điều kiện?) then (Có)
+ :Một kỳ từ lúc xử lý hợp lệ\nkhông backdate hoặc truy thu nhiều kỳ;
+ :AUTO_RENEWAL_FEE + cycle/root\n+ target outcome nguyên tử;
+ :Commit rồi checkpoint;
+else (Không)
+ :Lưu FAILED đúng target; EXPIRED nếu hết quyền\nkhông debit thành công; <<FDE8E8>>
+endif
+note right
+Lỗi kỹ thuật / COMMIT chưa rõ khác thiếu tiền.
+Rollback/recovery/lookup trước retry cùng target.
+end note
+stop
+@enduml

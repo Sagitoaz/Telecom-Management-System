@@ -1,0 +1,55 @@
+@startuml
+!pragma layout smetana
+title
+Class Diagram nghiệp vụ — Khách hàng, thuê bao và tài khoản
+REVIEW — không phải ERD / JPA Entity
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+class Customer {
+ fullName
+ dateOfBirth
+ optionalProfile
+}
+class VerifiedIdentityDocument {
+ documentType
+ normalizedDocumentNumber
+ verificationEvidence
+}
+class Subscriber {
+ phoneNumber
+ activatedAt
+ lifecycleState
+}
+class PhoneNumber {
+ e164Number
+ availability
+}
+class Account {
+ accountKind: MAIN / subsidiary
+ balanceVND
+ allowedDirections
+ expiresAt: optional
+ lifecycleState
+}
+class FinancialTransaction {
+ direction: CREDIT / DEBIT
+ amountVND
+ balanceBefore
+ balanceAfter
+ recordedAt
+ eligibilityCheckedAt
+}
+Customer "1" -- "1..*" VerifiedIdentityDocument : giấy tờ đã xác minh
+Customer "1" -- "0..*" Subscriber : sở hữu
+Subscriber "0..1" -- "1" PhoneNumber : số được cấp
+Subscriber "1" -- "1..*" Account : tài khoản riêng
+Account "1" -- "0..*" FinancialTransaction : lịch sử biến động
+note bottom of Account
+MAIN và tài khoản phụ không gộp số dư.
+Mọi lệnh UC04/05 làm đúng accountId.
+Phí gói có quy tắc riêng: thu MAIN.
+end note
+@enduml

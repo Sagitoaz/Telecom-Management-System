@@ -1,0 +1,42 @@
+@startuml
+title
+JOB-01 — Hết hạn, hủy và rà soát
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:00:05 hoặc admin được cấp quyền\nclaim run/fence/checkpoint;
+:Lấy account/gói tới hạn và phần bỏ sót;
+if (Account tới expiresAt?) then (Có)
+ :Kiểm lại dưới khóa; chuyển EXPIRED\ngiữ số dư/ledger, không suy MAIN có hạn;
+endif
+if (Intent hủy đang PENDING?) then (Có)
+ :Resolver theo CR-CAN-003\nkhông bypass guard;
+endif
+if (PENDING_CANCEL và tới coverageEnd?) then (Có)
+ :CANCELLED; giữ tất cả kỳ/phí đã trả;
+else (Không)
+ if (Root tới hạn không hủy?) then (Có)
+  if (Worker/manual đã tạo kỳ mới?) then (Có)
+   :Skip; không thu lại;
+  else (Chưa)
+   :Gọi cùng core/target gia hạn;
+   if (Không có renewal hợp lệ?) then (Đúng)
+    :EXPIRED; quyền đã mất từ end;
+   endif
+  endif
+ endif
+endif
+:Lưu counts/errors và checkpoint phần đã commit;
+:Retry/restart dùng state/target/fence\nkhông reset deadline hoặc purge lịch sử;
+stop
+@enduml

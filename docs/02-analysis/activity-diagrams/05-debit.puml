@@ -1,0 +1,43 @@
+@startuml
+title
+UC05 — Tiêu dùng, số dư và kỳ hiệu lực
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Nhận account, subscriber, amount, cycle, serviceReference, requestId;
+:Kiểm quyền/schema/key; replay/conflict nếu cần;
+:Khóa đúng account và phối hợp root/cycle;
+if (Đúng chủ, account cho DEBIT?) then (Có)
+else (Không)
+ :Từ chối, không side effect; <<FDE8E8>>
+ stop
+endif
+:Lấy giờ DB mới sau các khóa cần thiết;
+if (Account còn hạn và cycle đúng chủ, đang hiệu lực?) then (Có)
+else (Không)
+ :ACCOUNT_EXPIRED / NO_EFFECTIVE_CYCLE\nkhông trừ tiền; <<FDE8E8>>
+ stop
+endif
+if (Amount hợp lệ và account đủ tiền?) then (Có)
+else (Không)
+ :FAILED; không gộp ví hoặc fallback MAIN; <<FDE8E8>>
+ stop
+endif
+:Trừ đúng account + SERVICE_CONSUMPTION\n+ attribution + outcome cùng transaction;
+if (Commit được xác nhận?) then (Có)
+ :SUCCEEDED: một logical debit;
+else (Chưa rõ)
+ :Lookup/recovery cùng mã; không trừ lần hai;
+endif
+stop
+@enduml

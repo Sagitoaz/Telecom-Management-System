@@ -1,0 +1,59 @@
+@startuml
+title
+UC03 — Nhận hủy, receipt và mất phản hồi
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Kiểm quyền, input, requestId/canonical;
+if (Đã có outcome terminal?) then (Có)
+ :Replay outcome gốc\naccepted không bị đổi do giờ hiện tại;
+ stop
+endif
+:Khóa request/slot; kiểm version và paid coverage;
+if (Mục tiêu hợp lệ, chưa pending/accepted?) then (Có)
+else (Không)
+ :Conflict / không còn quyền; không thu hoặc refund; <<FDE8E8>>
+ stop
+endif
+:TxA lưu intent PENDING + observedCoverageEnd\npending chặn manual và auto;
+if (Đã biết TxA commit thành công?) then (Có)
+else (Không rõ)
+ :Kết nối mới tra request/intent\nchưa biết thì PROCESSING, không đoán rollback;
+ stop
+endif
+:TxB khóa lại; kiểm outcome và version;
+if (Đã terminal do resolver khác?) then (Có)
+ :Replay outcome đã chốt;
+ stop
+endif
+if (Version / coverage mục tiêu còn khớp?) then (Có)
+else (Không)
+ :REJECTED + FAILED version conflict\ngỡ pending guard sau commit; <<FDE8E8>>
+ stop
+endif
+:Lấy receiptCheckedAt mới từ DB;
+if (receipt < observedCoverageEnd?) then (Có)
+ :ACCEPTED + PENDING_CANCEL\ncancelEffectiveAt = cuối toàn bộ paid coverage;
+ :Ghi SUCCEEDED; commit TxB rồi trả xác nhận;
+ :Dùng hết các kỳ đã trả\ntới end -> CANCELLED;
+else (Đúng/sau hạn)
+ :REJECTED + FAILED\nCANCELLATION_RECEIVED_TOO_LATE; <<FDE8E8>>
+ :Gỡ guard; không tự đổi sang kỳ mới\nrenewal sau đó theo điều kiện hiện hành;
+endif
+note right
+Accepted đã commit nhưng HTTP mất:
+tra/retry cùng mã trả accepted cũ.
+TxB có thể commit sau end nếu receipt hợp lệ.
+end note
+stop
+@enduml

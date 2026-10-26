@@ -1,0 +1,50 @@
+@startuml
+title
+Luồng chung — Gửi lại, lỗi nghiệp vụ và mất phản hồi
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Caller gửi lệnh có requestId;
+if (JWT/quyền/schema hợp lệ?) then (Có)
+else (Không)
+ :Từ chối; không tác động nghiệp vụ; <<FDE8E8>>
+ stop
+endif
+:Resolve caller + operation + requestId;
+if (Key đã tồn tại?) then (Có)
+ if (Nội dung khác?) then (Có)
+  :IDEMPOTENCY_CONFLICT; <<FDE8E8>>
+  stop
+ endif
+ if (Đã terminal?) then (Có)
+  :Replay outcome/tombstone; không tác động lại;
+  stop
+ else (Chưa)
+  :PROCESSING / WAITING; tra trạng thái / recovery;
+  stop
+ endif
+endif
+:Claim và thực hiện nghiệp vụ dưới phối hợp;
+if (Điều kiện nghiệp vụ không đạt?) then (Đúng)
+ :Terminal FAILED; không có effect thành công trái phép; <<FDE8E8>>
+ stop
+endif
+:Ghi tiền/quyền/outcome nguyên tử;
+if (Có xác nhận COMMIT?) then (Có)
+ :SUCCEEDED, trả kết quả;
+else (Mất/không rõ)
+ :Caller không biết outcome\nlookup/retry cùng mã, backend tra DB;
+ :Đã commit -> replay; chưa rõ -> PROCESSING\nrollback đã xác định -> recovery an toàn;
+endif
+stop
+@enduml

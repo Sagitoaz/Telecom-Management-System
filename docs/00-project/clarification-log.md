@@ -515,3 +515,7 @@ Các lựa chọn có hiệu lực: Q01=A, Q02=A, Q04=A, Q05=A, Q06=A, Q07=A (DE
 | OQ-13 | Worker gia hạn thường xuyên + JOB-01 00:05 + JOB-02 00:30; cutoff bất biến; contribution duy nhất; điều chỉnh muộn | Duyệt cadence/lô/lease đề xuất, EXPLAIN, recovery/đối soát trước jobs |
 
 Không đóng toàn bộ OQ chỉ vì phần lựa chọn đã được giải quyết. UUID representation, cột/index/DTO/mã HTTP, mặc định cấu hình và phương án kỹ thuật mới vẫn REVIEW. M0–M4 UC01 lịch sử giữ nguyên; mục D phiếu chưa nghiệm thu toàn bộ bản mới. Không có bằng chứng runtime hoặc tải phát sinh từ việc viết tài liệu.
+
+## 20. Ủy quyền hoàn thiện báo cáo và sửa ảnh — 26/10/2026
+
+Chủ dự án yêu cầu sửa ảnh không hiện, làm lại báo cáo để thấy luồng/sơ đồ luồng/kịch bản chuẩn và ngoại lệ, class diagram; đồng thời nói “cần thì tự viết lại tài liệu và bạn tự quyết định các yếu tố thay tôi”. Trong phạm vi yêu cầu này, agent quyết định bố cục theo nghiệp vụ trước, PNG/đường dẫn tương đối cho Markdown, 11 Activity Diagram và 3 Class view nghiệp vụ bổ sung. Không thay các chính sách tiền, hủy, ngày lịch, replay hay lịch job đã chốt; không tự nghiệm thu M4-DB/M5–M8. Các hình mới là REVIEW và dùng cùng nguồn quyết định hiện hành.

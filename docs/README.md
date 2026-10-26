@@ -5,7 +5,7 @@
 ## Hai tài liệu để bắt đầu đọc và rà soát
 
 - [Hướng dẫn đọc và rà soát](HUONG-DAN-DOC-VA-RA-SOAT.md): thứ tự theo phase, vòng đọc theo UC, checklist và cách ghi nhận xét.
-- [Báo cáo tổng hợp dự án có UML](BAO-CAO-TONG-HOP-DU-AN.md): đọc liền mạch toàn bộ phase, luồng chuẩn/ngoại lệ, 28 hình, API/DB và 64 ca biên.
+- [Báo cáo tổng hợp dự án có UML](BAO-CAO-TONG-HOP-DU-AN.md): bắt đầu bằng Activity, kịch bản chuẩn/ngoại lệ và Class Diagram, rồi toàn bộ phase, 42 hình, API/DB và 64 ca biên.
 
 ## Thứ tự đọc đề xuất
 

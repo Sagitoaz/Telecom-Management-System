@@ -49,3 +49,24 @@ Q24 đã chốt CR-CAN-003: TxA commit PENDING intent tạm chặn mua nối/ren
 State ACTIVE không tự cấp quyền nếu không có cycle bao phủ checkedAt. JOB-01 trễ không kéo quyền qua expiry; delayed auto renewal chỉ một kỳ từ xử lý hợp lệ, không tự hồi sinh FAILED thiếu tiền. Root/version/cycle guard chống manual/auto/chạy tay tạo phí trùng; cơ chế cụ thể thuộc design.
 
 Không remote includes hoặc phụ thuộc font riêng trong nguồn. Mọi sequence/state là mô tả hành vi dự kiến; không thay integration/concurrency/performance tests. Bằng chứng syntax/render/visual QA được ghi ở [verification](../verification.md) sau khi chạy thật. Không có commit/branch/code/migration từ việc biên soạn.
+
+## Activity Diagram và Class Diagram tập trung — bổ sung 26/10/2026
+
+Theo yêu cầu đọc lại báo cáo, bổ sung 11 Activity Diagram thể hiện nhánh chuẩn/thay thế/lỗi và 3 Class Diagram nghiệp vụ dễ đọc. Đây là các góc nhìn REVIEW của quy tắc hiện hành, không đổi DEC/CR hoặc tự nghiệm thu checkpoint.
+
+| Nhóm | Nguồn | Ảnh |
+|---|---|---|
+| Luồng nghiệp vụ xuyên suốt | [PlantUML](activity-diagrams/00-end-to-end.puml) | [PNG](activity-diagrams/00-end-to-end.png) · [SVG](activity-diagrams/00-end-to-end.svg) |
+| UC01 — Cấp số, chờ và thất bại | [PlantUML](activity-diagrams/01-activation.puml) | [PNG](activity-diagrams/01-activation.png) · [SVG](activity-diagrams/01-activation.svg) |
+| UC02 — Mua gói và mua nối | [PlantUML](activity-diagrams/02-subscription.puml) | [PNG](activity-diagrams/02-subscription.png) · [SVG](activity-diagrams/02-subscription.svg) |
+| UC03 — Nhận hủy, receipt và mất phản hồi | [PlantUML](activity-diagrams/03-cancellation.puml) | [PNG](activity-diagrams/03-cancellation.png) · [SVG](activity-diagrams/03-cancellation.svg) |
+| UC04 — Cộng tiền đúng accountId | [PlantUML](activity-diagrams/04-credit.puml) | [PNG](activity-diagrams/04-credit.png) · [SVG](activity-diagrams/04-credit.svg) |
+| UC05 — Tiêu dùng, số dư và kỳ hiệu lực | [PlantUML](activity-diagrams/05-debit.puml) | [PNG](activity-diagrams/05-debit.png) · [SVG](activity-diagrams/05-debit.svg) |
+| Worker gia hạn — một target, một phí | [PlantUML](activity-diagrams/06-renewal.puml) | [PNG](activity-diagrams/06-renewal.png) · [SVG](activity-diagrams/06-renewal.svg) |
+| JOB-01 — Hết hạn, hủy và rà soát | [PlantUML](activity-diagrams/07-expiration.puml) | [PNG](activity-diagrams/07-expiration.png) · [SVG](activity-diagrams/07-expiration.svg) |
+| UC06 — Tạo tập kết quả và đọc nhiều trang | [PlantUML](activity-diagrams/08-query.puml) | [PNG](activity-diagrams/08-query.png) · [SVG](activity-diagrams/08-query.svg) |
+| JOB-02 — Chốt nguồn và điều chỉnh muộn | [PlantUML](activity-diagrams/09-daily-report.puml) | [PNG](activity-diagrams/09-daily-report.png) · [SVG](activity-diagrams/09-daily-report.svg) |
+| Luồng chung — Gửi lại, lỗi nghiệp vụ và mất phản hồi | [PlantUML](activity-diagrams/10-common-outcomes.puml) | [PNG](activity-diagrams/10-common-outcomes.png) · [SVG](activity-diagrams/10-common-outcomes.svg) |
+| Class Diagram nghiệp vụ — Khách hàng, thuê bao và tài khoản | [PlantUML](class-diagrams/customer-subscriber-account.puml) | [PNG](class-diagrams/customer-subscriber-account.png) · [SVG](class-diagrams/customer-subscriber-account.svg) |
+| Class Diagram nghiệp vụ — Gói, kỳ đã trả và ý định hủy | [PlantUML](class-diagrams/package-cycle-cancellation.puml) | [PNG](class-diagrams/package-cycle-cancellation.png) · [SVG](class-diagrams/package-cycle-cancellation.svg) |
+| Class Diagram nghiệp vụ — Yêu cầu và báo cáo | [PlantUML](class-diagrams/requests-and-reporting.puml) | [PNG](class-diagrams/requests-and-reporting.png) · [SVG](class-diagrams/requests-and-reporting.svg) |

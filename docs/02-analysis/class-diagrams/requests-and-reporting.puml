@@ -1,0 +1,61 @@
+@startuml
+!pragma layout smetana
+title
+Class Diagram nghiệp vụ — Yêu cầu và báo cáo
+REVIEW — không phải ERD / JPA Entity
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+class OperationRequest {
+ callerApplication
+ operationKind
+ requestReference
+ businessContent
+ status
+ outcome
+}
+class FinancialTransaction {
+ sourceType
+ amountVND
+ recordedAt
+}
+class ReportQuery {
+ callerApplication
+ queryRequestReference
+ filters
+ firstCutoff
+ state
+}
+class FixedQuerySource {
+ copiedAmount
+ copiedAttribution
+}
+class SubscriberReportRow {
+ amountVND
+ transactionCount
+ packageBreakdown
+}
+class DailyReportPeriod {
+ businessDate
+ firstCutoff
+ state
+}
+class ReportContribution {
+ kind: BASE / ADJUSTMENT
+ originalBusinessDate
+ amountVND
+}
+OperationRequest "0..1" -- "0..1" FinancialTransaction : hiệu ứng tiền thủ công
+ReportQuery "1" *-- "0..*" FixedQuerySource : nguồn cố định
+FinancialTransaction "1" -- "0..*" FixedQuerySource : xuất hiện trong nhiều lượt xem
+ReportQuery "1" *-- "0..*" SubscriberReportRow : thuê bao DISTINCT
+FinancialTransaction "1" -- "0..1" ReportContribution : góp tổng hợp đúng một lần
+DailyReportPeriod "1" -- "0..*" ReportContribution : đóng góp của kỳ
+note bottom of ReportContribution
+Một source là BASE hoặc ADJUSTMENT, không cả hai.
+Query snapshot khác bản tổng hợp ngày.
+recordedAt khác thời điểm COMMIT vật lý.
+end note
+@enduml

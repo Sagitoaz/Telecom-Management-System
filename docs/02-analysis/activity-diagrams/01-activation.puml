@@ -1,0 +1,70 @@
+@startuml
+title
+UC01 — Cấp số, chờ và thất bại
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Nhận hồ sơ, requestId, AUTO/SELECTED, consent;
+:Kiểm token, quyền, schema và request key;
+if (Yêu cầu mới hợp lệ?) then (Có)
+else (Không)
+ :Trả lỗi validation/quyền/conflict\nhoặc replay outcome đã lưu;
+ stop
+endif
+:Đối chiếu giấy tờ đã xác minh và hồ sơ;
+if (Hồ sơ khớp / tạo mới hợp lệ?) then (Có)
+else (Không)
+ :FAILED; không tự ghép/ghi đè Customer; <<FDE8E8>>
+ stop
+endif
+if (SELECTED?) then (Có)
+ :Kiểm lại số được chọn;
+ if (Còn khả dụng tại lúc cấp?) then (Có)
+ else (Không)
+  :NUMBER_NOT_AVAILABLE\nkhông đổi số hoặc WAITING ngầm; <<FDE8E8>>
+  stop
+ endif
+else (AUTO)
+ :Phối hợp FIFO và ưu tiên WAITING đã chốt;
+ if (Chưa xử lý được backlog có ưu tiên?) then (Đúng)
+  :ALLOCATION_BACKLOG / retry cùng mã;\nkhông coi backlog là hết kho;
+  stop
+ endif
+ if (Kho thực sự còn số AVAILABLE?) then (Có)
+ else (Không)
+  if (Khách đồng ý chờ?) then (Có)
+   :Lưu WAITING và deadline 24 giờ\ntrả 202, chưa có Subscriber/MAIN;
+   :Kho bổ sung hoặc recovery kiểm FIFO/hạn;
+   if (Được cấp trước deadline?) then (Có)
+   else (Không)
+    if (Đã tới deadline?) then (Có)
+     :EXPIRED; không cấp từ yêu cầu cũ; <<FDE8E8>>
+    else (Chưa)
+     :Vẫn WAITING; không reset deadline;
+    endif
+    stop
+   endif
+  else (Không)
+   :FAILED NO_AVAILABLE_NUMBER; <<FDE8E8>>
+   stop
+  endif
+ endif
+endif
+:Cấp số + Subscriber + MAIN=0\n+ outcome cùng một nghiệp vụ nguyên tử;
+:Xác nhận commit -> SUCCEEDED;
+note right
+Mất phản hồi: tra cùng requestId.
+Không suy rollback hoặc cấp lại bằng mã mới.
+end note
+stop
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+title
+Luồng nghiệp vụ xuyên suốt
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:CSKH gửi hồ sơ và lựa chọn số;
+if (Đấu nối hoàn tất?) then (Có)
+ :Có Subscriber và MAIN = 0;
+else (Chưa)
+ if (AUTO hết số và đồng ý chờ?) then (Có)
+  :WAITING tối đa 24 giờ\ntra kết quả / recovery;
+  if (Cấp số kịp hạn?) then (Có)
+   :Có Subscriber và MAIN = 0;
+  else (Không)
+   :EXPIRED; không có thuê bao thành công; <<FDE8E8>>
+   stop
+  endif
+ else (Không)
+  :FAILED; sửa nguyên nhân / yêu cầu mới; <<FDE8E8>>
+  stop
+ endif
+endif
+:Cộng tiền đúng tài khoản;
+:Đăng ký gói: thu MAIN + ghi kỳ nguyên tử;
+if (Đăng ký thành công?) then (Có)
+ :Tiêu dùng trên kỳ hiệu lực\ntrừ đúng accountId;
+else (Không)
+ :Không có phí / quyền thành công một phần; <<FDE8E8>>
+ stop
+endif
+if (Khách yêu cầu hủy?) then (Có)
+ :Lưu ý định -> xác nhận commit -> kiểm receipt;
+ if (Nhận hủy hợp lệ?) then (Có)
+  :Dùng hết thời gian đã trả\nchặn mua nối và tự gia hạn;
+  :Tới coverageEnd -> CANCELLED;
+ else (Không)
+  :Giữ quyền/quy tắc hiện hành\nkhông hủy kỳ khác ngầm;
+ endif
+else (Không)
+ :Đến hạn: worker thử mua một kỳ mới;
+ if (Đủ tiền và điều kiện?) then (Có)
+  :Ghi một fee + một kỳ mới\nkhông hồi tố khoảng gián đoạn;
+ else (Không)
+  :EXPIRED; giữ lịch sử và số dư;
+ endif
+endif
+:UC06 đọc snapshot; JOB-02 tổng hợp\nnguồn muộn -> adjustment duy nhất;
+stop
+@enduml

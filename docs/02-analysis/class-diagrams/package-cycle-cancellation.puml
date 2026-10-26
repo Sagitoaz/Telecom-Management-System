@@ -1,0 +1,58 @@
+@startuml
+!pragma layout smetana
+title
+Class Diagram nghiệp vụ — Gói, kỳ đã trả và ý định hủy
+REVIEW — không phải ERD / JPA Entity
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+class Subscriber {
+ phoneNumber
+}
+class ServicePackage {
+ name
+ currentPriceVND
+ durationCalendarDays
+ saleStatus
+ grandfatherPolicy
+}
+class PackageSubscription {
+ version
+ state
+ coverageEnd
+ cancellationEffectiveAt
+ autoRenew
+}
+class SubscriptionCycle {
+ start
+ end
+ paidPriceVND
+ durationDaysSnapshot
+ catalogVersionSnapshot
+}
+class FinancialTransaction {
+ sourceType
+ amountVND
+ recordedAt
+}
+class CancellationIntent {
+ observedCoverageEnd
+ expectedVersion
+ status: PENDING / ACCEPTED / REJECTED
+ receiptCheckedAt
+ effectiveAt
+}
+Subscriber "1" -- "0..*" PackageSubscription : đăng ký
+ServicePackage "1" -- "0..*" PackageSubscription : sản phẩm
+PackageSubscription "1" *-- "0..*" SubscriptionCycle : kỳ đã trả
+SubscriptionCycle "1" -- "1" FinancialTransaction : phí của kỳ đã trả
+PackageSubscription "1" -- "0..*" CancellationIntent : lịch sử ý định hủy
+note bottom of PackageSubscription
+Root khác từng cycle.
+coverageEnd = cuối tất cả kỳ đã trả liên tục.
+Hủy không hoàn phí; chặn mua nối/gia hạn.
+Đây là lớp nghiệp vụ, không phải bảng SQL.
+end note
+@enduml

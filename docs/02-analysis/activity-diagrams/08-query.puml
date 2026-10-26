@@ -1,0 +1,45 @@
+@startuml
+title
+UC06 — Tạo tập kết quả và đọc nhiều trang
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Nhận caller, queryRequestId, X/Y, gói, OR/AND, includeFee;
+if (Quyền và filter hợp lệ?) then (Có)
+else (Không)
+ :Validation/quyền lỗi; không tạo query trái phép; <<FDE8E8>>
+ stop
+endif
+:Resolve caller + queryRequestId + filter hash;
+if (Cùng key khác filter?) then (Có)
+ :Conflict; không thay query cũ; <<FDE8E8>>
+ stop
+endif
+if (Đã READY?) then (Có)
+ :Dùng lại members/totals/cutoff cũ;
+else (Chưa)
+ :Tx0 lưu hoặc đọc cutoff đầu tiên;
+ :Freeze nguồn committed bằng một statement\nderive subscriber DISTINCT/totals từ persisted nguồn;
+ :Commit READY nguyên tử; lỗi rollback freeze\nretry vẫn cùng cutoff;
+endif
+:Trả trang 50 mặc định, tối đa 200 + cursor;
+if (Yêu cầu trang tiếp?) then (Có)
+ :Kiểm caller/filter/query/version/integrity/expiry;
+ if (Cursor và snapshot còn hợp lệ?) then (Có)
+  :Đọc cùng persisted result\nnguồn mới không làm xô trang;
+ else (Không)
+  :INVALID_CURSOR / SNAPSHOT_EXPIRED\nkhông lặng lẽ đổi sang live result; <<FDE8E8>>
+ endif
+endif
+stop
+@enduml

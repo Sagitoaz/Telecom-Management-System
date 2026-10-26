@@ -7,6 +7,8 @@ Tài liệu này trả lời hai câu hỏi: **nên đọc file nào trước** 
 
 ## 1. Bắt đầu từ đâu?
 
+Báo cáo v1.1 đưa luồng nghiệp vụ lên trước: chương 1 có Activity tổng thể và xử lý lỗi/retry; chương 2 là ví dụ tiền/thời gian; chương 3–8 có kịch bản chuẩn, nhánh và ngoại lệ từng UC/job; chương 9 là Class Diagram. Đọc phần đó trước rồi mới đi vào yêu cầu/kiến trúc/DB ở các chương sau. Ảnh PNG dùng đường dẫn tương đối, có link SVG và PlantUML cạnh hình.
+
 Nếu mới quay lại dự án, đọc theo thứ tự dưới đây. Không cần đọc toàn bộ clarification log từ đầu ngay lần đầu tiên vì file đó chứa cả quyết định lịch sử đã được thay thế.
 
 1. Đọc phần trạng thái mới nhất đầu [ROADMAP](ROADMAP.md): biết đang ở mốc nào, mốc nào đã duyệt và việc nào chưa được thực hiện.
@@ -58,6 +60,8 @@ Phiếu 16 đã điền được giữ nguyên. Q26/Q34=B trong phiếu là lị
 | Use Case | Ai dùng chức năng nào, ranh giới hệ thống | Scheduler/worker nội bộ không bị biến thành actor bên ngoài |
 | Domain | Những khái niệm nghiệp vụ và quan hệ của chúng | Customer 1–N Subscriber; đăng ký ổn định khác kỳ trả trước |
 | State | Trạng thái nào chuyển được sang trạng thái nào | WAITING ≠ SUCCEEDED; PENDING_CANCEL ≠ CANCELLED; EXPIRED ≠ CANCELLED |
+| Activity | Luồng đi qua bước nào và rẽ nhánh theo điều kiện nào | Nhánh chuẩn, WAITING/PROCESSING, lỗi và khôi phục có kết quả rõ |
+| Class | Các lớp, thuộc tính và bội số nghiệp vụ | Phân biệt Domain/Class view với bảng và Design Class |
 | Sequence | Ai gọi ai, kiểm điều kiện lúc nào, khi nào trả kết quả | Nhánh lỗi, retry, timeout, commit và biên thời gian được thể hiện |
 
 Domain không phải sơ đồ bảng; chưa cần dò kiểu SQL ở đây. Nếu hình cho kết quả khác UC, ghi nhận mâu thuẫn để sửa nguồn; không tự chọn hình làm quy tắc mới.

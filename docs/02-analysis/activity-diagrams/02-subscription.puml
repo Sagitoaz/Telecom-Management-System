@@ -1,0 +1,55 @@
+@startuml
+title
+UC02 — Mua gói và mua nối
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Nhận requestId, subscriber, package, expectedVersion;
+:Kiểm token/schema/key; replay hoặc conflict nếu có;
+:Phối hợp MAIN -> đăng ký/slot -> kỳ mục tiêu;
+if (Version còn khớp và target chưa bị tạo?) then (Có)
+else (Không)
+ :STALE_SUBSCRIPTION_VERSION / CYCLE_ALREADY_CREATED\nkhông tự mua thêm kỳ; <<FDE8E8>>
+ stop
+endif
+if (Không có ý định hủy pending/accepted?) then (Đúng)
+else (Sai)
+ :CANCELLATION_PENDING; không thu phí; <<FDE8E8>>
+ stop
+endif
+:Lấy điều kiện/giá hiện hành có thẩm quyền;
+if (Được bán mới hoặc gia hạn khách cũ?) then (Có)
+else (Không)
+ :PACKAGE_NOT_FOR_SALE; không có kỳ mới; <<FDE8E8>>
+ stop
+endif
+:Lấy giờ DB mới sau mọi khóa cần thiết;
+if (MAIN hợp lệ, đủ tiền, amount trong giới hạn?) then (Có)
+else (Không)
+ :FAILED; balance/coverage không đổi; <<FDE8E8>>
+ stop
+endif
+if (Còn thời gian đã trả?) then (Có)
+ :start = coverageEnd cũ;
+else (Không)
+ :start = lúc xử lý hợp lệ\nkhông hồi tố gap;
+endif
+:Tính end theo ngày lịch; snapshot terms;
+:Trừ MAIN + PACKAGE_FEE + cycle\n+ root/version + outcome trong cùng transaction;
+if (Commit được xác nhận?) then (Có)
+ :SUCCEEDED: một phí, một kỳ;
+else (Chưa rõ)
+ :Lookup/recovery cùng requestId\nkhông tự trừ lại;
+endif
+stop
+@enduml

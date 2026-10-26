@@ -1,0 +1,43 @@
+@startuml
+title
+UC04 — Cộng tiền đúng accountId
+REVIEW — quyết định nghiệp vụ hiện hành
+endtitle
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #EAF2FF
+ BackgroundColor<<FDE8E8>> #FDE8E8
+ BorderColor #355C8A
+ DiamondBackgroundColor #FFF3CE
+ DiamondBorderColor #997B20
+}
+start
+:Nhận accountId, subscriberId, amount, requestId;
+:Kiểm token/scope/schema và request key;
+if (Mới và hợp lệ?) then (Có)
+else (Không)
+ :Trả lỗi hoặc replay; không cộng lại;
+ stop
+endif
+:Khóa account; kiểm đúng chủ và quyền CREDIT;
+if (Account hợp lệ?) then (Có)
+else (Không)
+ :Từ chối; không đổi account khác; <<FDE8E8>>
+ stop
+endif
+:Lấy DB clock dưới khóa ngay trước mutation;
+if (Còn hạn và amount/cap/overflow hợp lệ?) then (Có)
+else (Không)
+ :FAILED; không ledger thành công; <<FDE8E8>>
+ stop
+endif
+:Cộng đúng account + CREDIT_TOPUP\n+ balanceBefore/After + outcome nguyên tử;
+if (Commit được xác nhận?) then (Có)
+ :SUCCEEDED; replay không cộng thêm;
+else (Chưa rõ)
+ :Tra cùng key; chưa xác định không gọi là FAILED;
+endif
+stop
+@enduml
