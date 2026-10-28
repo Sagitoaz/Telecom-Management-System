@@ -1,13 +1,16 @@
 # Telecom Management System
 
-Backend quản lý thuê bao: đấu nối Hybrid, đăng ký/hủy gói có thu phí, cộng/trừ tiền, báo cáo tiêu dùng và tác vụ định kỳ. Xem [đề bài gốc](docs/requirement.md).
+Backend quản lý thuê bao: đấu nối Hybrid, đăng ký/hủy gói có thu phí, cộng/trừ tiền, báo cáo tiêu dùng và tác vụ định kỳ. [Đề bài gốc](docs/requirement.md).
 
-**26/10/2026:** đã đồng bộ bộ thiết kế theo phiếu chủ dự án và CR mới; đọc [chỉ mục tài liệu](docs/README.md) hoặc [báo cáo nghiệp vụ tổng thể](docs/07-business-review/17-BAO-CAO-NGHIEP-VU-TONG-THE_DRAFT.md). M0–M4 UC01 có phê duyệt lịch sử; delta MySQL và thiết kế mới còn REVIEW theo [checklist M4](docs/04-design/m4-review-checklist.md).
+**28/10/2026 — bộ tài liệu đã chốt, gồm M4-DB MySQL.** Chủ dự án phê duyệt theo [CR-DOC-004](docs/00-project/document-approval-20261028.md). Việc kế tiếp: **P5.1 — khởi tạo backend**, sau đó code/test UC01 trước. [ROADMAP](docs/ROADMAP.md) · [Kế hoạch coding](docs/04-design/implementation-plan.md).
 
-Repo hiện có Maven pom và Main mẫu, chưa có backend nghiệp vụ, migration hoặc Compose được kiểm chứng. pom còn dependency PostgreSQL cũ; chuyển sang MySQL tại P5.1 sau duyệt delta, không xem tài liệu là bằng chứng triển khai xong.
+Nền tảng đã chọn: Java21/Spring Boot, MySQL8.0.46/InnoDB, Flyway, RabbitMQ, Redis và Keycloak/IdP ngoài backend. Công ty code/unit không DB; chạy service tại nhà theo [hướng dẫn](docs/06-deployment/deployment-guide.md).
 
-Mục tiêu runtime Java 21/Spring Boot, MySQL 8.0.46/InnoDB; RabbitMQ, Redis và Keycloak theo [kiến trúc](docs/03-architecture/architecture.md). Công ty đọc/duyệt/code không DB; chạy service ở nhà theo [hướng dẫn triển khai](docs/06-deployment/deployment-guide.md).
+Repo hiện có pom và Main mẫu; pom còn driver/Flyway/Testcontainers PostgreSQL cần chuyển trong P5.1. Chưa có backend nghiệp vụ/migration/Compose được nghiệm thu. M5–M8 và kết quả runtime/tải chưa đạt.
 
-Tiến độ và bước kế tiếp: [ROADMAP](docs/ROADMAP.md). Kiểm chứng tài liệu: [verification](docs/verification.md). Không có kết quả build/backend/MySQL/tải mới trong lượt biên soạn này.
+- [Chỉ mục tài liệu đã chốt](docs/README.md)
+- [Báo cáo tổng hợp có UML](docs/BAO-CAO-TONG-HOP-DU-AN.md)
+- [Schema](docs/04-design/database-schema.md), [OpenAPI](docs/04-design/openapi.yaml), [transaction/jobs](docs/04-design/concurrency-and-jobs.md)
+- [Nhật ký kiểm chứng](docs/verification.md)
 
-Hướng dẫn đọc toàn bộ hồ sơ: [thứ tự đọc và rà soát](docs/HUONG-DAN-DOC-VA-RA-SOAT.md). Báo cáo một file kèm hình: [tổng hợp dự án](docs/BAO-CAO-TONG-HOP-DU-AN.md).
+Đã dọn out/target, ZIP lưu tạm và bộ script/JSON kiểm tra tài liệu. Giữ tài liệu chuẩn, nguồn UML/hình và lịch sử quyết định trong Markdown. Các nhãn REVIEW/DRAFT cũ trên hình/tên file được đóng bởi CR-DOC-004, không còn là yêu cầu duyệt lại.

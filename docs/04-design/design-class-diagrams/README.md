@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Design Class Diagrams — REVIEW 26/10/2026
 
 Bắt đầu bằng các sơ đồ tập trung dưới đây để đọc signatures và trách nhiệm ở kích thước rõ ràng. Mỗi sơ đồ giữ tên lớp/phương thức từ overview, chỉ lược các trách nhiệm không thuộc luồng đang xem; authorization và operation registry dùng chung vẫn áp dụng. Đây là Design Class, không phải Domain Model/JPA Entity/ERD.

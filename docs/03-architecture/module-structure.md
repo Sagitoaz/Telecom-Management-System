@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Cấu trúc module và hợp đồng trách nhiệm
 
 **Mã tài liệu:** DOC-ARCH-MOD-001 · **Cập nhật:** 26/10/2026 · **Trạng thái:** REVIEW.

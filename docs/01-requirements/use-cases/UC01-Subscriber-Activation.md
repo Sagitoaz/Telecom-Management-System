@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # UC01 — Đấu nối thuê bao
 
 **DOC-UC-001 · v0.6 · 26/10/2026 · REVIEW delta.** Baseline UC01v0.5 và 27AC được duyệt19/10; giữ nguyên các AC bên dưới. CR-UC01-001 Hybrid vẫn hiệu lực. MySQL8.0.46/InnoDB, E.164 và caller/evidence quyền theo phiếu16 đã chọn; artifact mới chưa tự nghiệm thu.

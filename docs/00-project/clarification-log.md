@@ -1,4 +1,4 @@
-> **Hiệu lực hiện hành ngày 26/10/2026:** Phiếu 16 đã được chủ dự án điền. Đọc [bản tiếp nhận quyết định](decision-receipt-20261026.md) và mục 19 cuối file để áp dụng quyết định mới nhất; các bảng “chờ phiếu” phía dưới là lịch sử trước đợt tiếp nhận. SRS/UML/API đã được đồng bộ thành bản REVIEW. Mục D nghiệm thu toàn bộ thiết kế chưa được điền; delta MySQL vẫn cần duyệt.
+> **Hiệu lực 28/10/2026: CR-DOC-004 — toàn bộ bộ tài liệu hiện hành đã được chủ dự án chốt, gồm M4-DB MySQL. Bước tiếp theo P5.1.** Các trạng thái trước đó bên dưới là lịch sử; phần kiểm chứng runtime còn phải thực hiện. [Biên bản chốt](document-approval-20261028.md).
 
 # Nhật ký làm rõ yêu cầu – Telecom Subscription Management System
 
@@ -519,3 +519,18 @@ Không đóng toàn bộ OQ chỉ vì phần lựa chọn đã được giải q
 ## 20. Ủy quyền hoàn thiện báo cáo và sửa ảnh — 26/10/2026
 
 Chủ dự án yêu cầu sửa ảnh không hiện, làm lại báo cáo để thấy luồng/sơ đồ luồng/kịch bản chuẩn và ngoại lệ, class diagram; đồng thời nói “cần thì tự viết lại tài liệu và bạn tự quyết định các yếu tố thay tôi”. Trong phạm vi yêu cầu này, agent quyết định bố cục theo nghiệp vụ trước, PNG/đường dẫn tương đối cho Markdown, 11 Activity Diagram và 3 Class view nghiệp vụ bổ sung. Không thay các chính sách tiền, hủy, ngày lịch, replay hay lịch job đã chốt; không tự nghiệm thu M4-DB/M5–M8. Các hình mới là REVIEW và dùng cùng nguồn quyết định hiện hành.
+
+
+## 21. CR-DOC-004 — Phê duyệt toàn bộ tài liệu, 28/10/2026
+
+**APPROVED. Người duyệt: Chủ dự án.** Xác nhận trong phiên: “giờ coi như bộ tài liệu đã chốt rồi, đóng mọi tài liệu là chốt, xóa bớt các tool và các file không cần thiết đi, chuẩn bị để vào giai đoạn coding”.
+
+[Biên bản](document-approval-20261028.md) xác lập baseline được duyệt và phạm vi từng nhóm tài liệu. Chốt phần bổ sung P1.7/P1.8/P2.3/P2.5/P2.6/P4.6 và toàn bộ delta M4-DB; kế hoạch P6/P7 được duyệt ở mức tài liệu. Các đề xuất kỹ thuật hiện hành tại schema/API/transaction/config nay có hiệu lực để triển khai. Không mở lại lựa chọn đã bị thay hoặc CR-JOB-001 NOT ADOPTED.
+
+Các phần OQ trước đây ghi “chờ review thiết kế/UUID/HTTP/cadence/lô/lease” nay đã duyệt theo artifact hiện hành. Những thông số môi trường chưa được cung cấp (JWT/secret/seed), kiểm chứng migration/index/recovery, kết quả test/tải và việc ngoài phạm vi vẫn theo bảng phần thực thi trong biên bản; không đánh dấu bằng chứng đã có. M5–M8 chưa đạt, không đổi câu NOT_RUN thành PASS.
+
+Cho phép dọn công cụ/file tạm trong out/target; tài liệu chuẩn và lịch sử quyết định được giữ trong Markdown. **Tiếp theo duy nhất: P5.1**, sau đó code/test UC01 trước. Không commit/push/đổi branch/deploy trong lượt này.
+
+### 21.1. Dọn bổ sung theo phản hồi chủ dự án — 28/10/2026
+
+Chủ dự án phản hồi còn ZIP và nhiều tool Python check sau lượt dọn. Agent xóa toàn bộ ZIP lưu tạm, bộ script/JSON kiểm tra tài liệu và manifest JSON phụ; gỡ liên kết và lệnh phụ thuộc chúng. Giữ phiếu/DEC/CR, đặc tả chuẩn, UML/hình và tóm tắt kiểm chứng trong Markdown. Không tạo bộ tool thay thế hoặc khôi phục archive. Phê duyệt CR-DOC-004 và bước P5.1 giữ nguyên; không thay nghiệp vụ/code/pom.

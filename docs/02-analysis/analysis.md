@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Phân tích nghiệp vụ và chỉ mục UML
 
 **DOC-ANL-001 · v0.3 · 26/10/2026 · REVIEW.** M2 nền/UC01 đã duyệt19/10 được giữ lịch sử; nguồn hiện hành đồng bộ quyết định phiếu16 và xác nhận26/10. Sơ đồ sửa/mới cần review, không tự nghiệm thu M2 mở rộng/M4-DB/P5. UML nguồn là `.puml`; SVG do lượt render kiểm chứng tạo từ đúng nguồn, không dùng ảnh baseline cũ làm bằng chứng.

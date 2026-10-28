@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Đọc bộ hồ sơ sau khi hoàn tất khảo sát
 
 **Ngày 26/10/2026.** Phiếu 16 đã được chủ dự án điền; câu trả lời bổ sung trong chat được ghi thành CR. Không cần điền lại phiếu cũ.
@@ -8,4 +10,4 @@
 4. [64 ca biên](19-MA-TRAN-TRUY-VET-VA-NGOAI-LE.md): expected cần kiểm chứng, tất cả chưa chạy.
 5. [Checklist nghiệm thu delta MySQL](../04-design/m4-review-checklist.md): phần cần review trước implementation UC01.
 
-Các trang 01–15/20 dẫn tới tài liệu chuẩn chi tiết; không duy trì hai bản nghiệp vụ khác nhau. [Archive](../00-project/history/2026-10-26-before-sync.zip) giữ nội dung trước đồng bộ. [Bằng chứng kiểm tra](../verification.md) chỉ ghi việc đã thực sự chạy.
+Các trang 01–15/20 dẫn tới tài liệu chuẩn chi tiết; không duy trì hai bản nghiệp vụ khác nhau. [Bằng chứng kiểm tra](../verification.md) chỉ ghi việc đã thực sự chạy.

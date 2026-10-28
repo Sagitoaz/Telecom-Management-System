@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # CR-TIME-001 – Báo cáo theo mốc ghi nhận của giao dịch đã commit
 
 **Trạng thái:** Approved, chủ dự án xác nhận trực tiếp26/10/2026: “Đổi sang mốc ghi nhận nghiệp vụ của transaction đã commit; lập CR”. Thay Q26=B trong file nguồn ở phạm vi mốc lọc, không sửa dấu chọn lịch sử.

@@ -1,14 +1,10 @@
-> **Trạng thái điều hành 26/10/2026:** Hoàn tất tiếp nhận phiếu 16; CR-CAN-002/003 và CR-TIME-001/002 có hiệu lực nghiệp vụ. Đã soạn SRS/UC01–06/jobs, UML, kiến trúc, MySQL/OpenAPI/transaction và kế hoạch test. **Các sản phẩm mới là REVIEW**, không tự nghiệm thu M4-DB hoặc M5–M8. Các mục bên dưới ghi tình trạng lịch sử cần đọc cùng cập nhật này; “chờ đáp án phiếu” trước ngày 26/10 đã được thay bằng [bản tiếp nhận](00-project/decision-receipt-20261026.md).
-
-> **CR-DB-001 / 19-10-2026:** DBMS được chủ dự án chuyển **PostgreSQL → MySQL**; môi trường công ty dùng đọc/duyệt/code không DB, chạy service ở nhà. **M4-DB delta trên MySQL chưa duyệt** dù M4 UC01 cũ đã được duyệt. Khung chi tiết UC02–UC06 và jobs mới trong [bộ rà soát](07-business-review/README-START-HERE.md) là DRAFT để chủ dự án duyệt một lần. Không báo Phase 5 DB migration/test hoàn thành khi chưa chạy.
-
 # Lộ trình phát triển dự án – Telecom Subscription Management System
 
 > **File theo dõi chính (vị trí thực tế):** `docs/ROADMAP.md`
 > **Dự án:** `Telecom-Management-System`
-> **Ngày cập nhật:** 26/10/2026
-> **Trạng thái tổng thể (26/10/2026):** M0–M4 UC01 có phê duyệt lịch sử; delta MySQL chưa nghiệm thu. P1.8/P2.6 đã đồng bộ quyết định khảo sát và CR mới thành tài liệu REVIEW cho toàn backend. Chưa có backend nghiệp vụ/runtime/tải.
-> **Bước tiếp theo duy nhất:** **P4.1–P4.5 / nghiệm thu delta MySQL cho UC01** theo [checklist M4](04-design/m4-review-checklist.md), sau đó mới P5.1. Phiếu 16 đã được tiếp nhận; không chờ trả lời lại các câu nghiệp vụ đã chọn.
+> **Ngày cập nhật:** 28/10/2026
+> **Trạng thái tổng thể:** Bộ tài liệu hiện hành đã được Chủ dự án chốt theo [CR-DOC-004](00-project/document-approval-20261028.md), gồm bổ sung toàn backend và M4-DB MySQL. M0–M4 đã đạt ở mức hồ sơ. Chưa có backend nghiệp vụ/runtime/tải.
+> **Bước tiếp theo duy nhất:** **P5.1 — Khởi tạo backend MySQL** theo [kế hoạch](04-design/implementation-plan.md). Không còn chờ nghiệm thu bộ tài liệu.
 
 ## 1. Quy ước trạng thái và cách cập nhật
 
@@ -22,20 +18,20 @@
 - Tick `- [x]` khi **đầu việc đã hoàn tất**, không chỉ vì đã tạo file rỗng. Dùng `- [ ]` cho việc đang làm hoặc chưa làm, kèm trạng thái trong ngoặc nếu cần.
 - Một Phase chỉ đổi sang **✅ Hoàn thành** khi đạt *điều kiện chuyển Phase* của phần đó; không bắt buộc giải quyết mọi vấn đề được phép hoãn.
 - Nếu một chức năng đã được code, test xong, cập nhật cả checkbox tương ứng **và** tài liệu liên quan. Ghi ngày và commit ở nhật ký cuối file.
-- **Không bắt buộc hoàn tất chi tiết toàn hệ thống trước code** (khung DRAFT được chuẩn bị theo CR-DOC-001): phân tích, thiết kế đủ cho UC01 để triển khai UC01; sau đó lặp theo từng chức năng.
+- **Không bắt buộc hoàn tất chi tiết toàn hệ thống trước code** (baseline đã chốt theo CR-DOC-004): phân tích, thiết kế đủ cho UC01 để triển khai UC01; sau đó lặp theo từng chức năng.
 
 ## 2. Dashboard – Tiến độ theo Phase
 
 | Phase | Trọng tâm | Trạng thái hiện tại | Sản phẩm / mốc chính |
 |---|---|---|---|
 | **0 – Project Definition & Scope** | Mục tiêu, phạm vi, thuật ngữ, câu hỏi mở | ✅ Baseline được chủ dự án có quyền nghiệm thu duyệt 14/10/2026 | M0 – Baseline phạm vi ban đầu |
-| **1 – Requirements (SRS)** | FR, NFR, quy tắc, kịch bản Use Case | ✅ SRS 0.6/UC01 0.5; chủ dự án Q25=A, M1 duyệt 19/10 | M1 – Yêu cầu đủ rõ cho UC01 và kiến trúc nền |
-| **2 – Analysis & UML** | Use Case, Domain Class, State, Sequence | ✅ M2 duyệt mô hình nền/UC01 theo xác nhận 19/10; mô hình UC sau làm theo vòng | M2 – Mô hình nghiệp vụ ban đầu |
-| **3 – Architecture** | C4, module, quyết định kiến trúc | ✅ M3 duyệt kiến trúc nền 19/10; runtime/config ở P4/P5 | M3 – Kiến trúc nền được chọn |
-| **4 – Detailed Design** | ERD, schema, Design Class, API, transaction | 🟡 M4 UC01/T1–T7 đã duyệt lịch sử; delta MySQL chưa duyệt | Chốt delta trước DB implementation UC01 |
-| **5 – Implementation** | Spring Boot, JPA/JDBC, nghiệp vụ, test theo chức năng | ⬜ P5.1 sau duyệt delta MySQL; P5.2 chưa bắt đầu | M5 – UC01; M6 – đủ nghiệp vụ |
-| **6 – System & Performance Testing** | Dữ liệu lớn, đồng thời, đo TPS, đối soát | 🟡 Có kế hoạch DRAFT, chưa đo | M7 – Bằng chứng đáp ứng đề bài |
-| **7 – Deployment & Handover** | Đóng gói, triển khai, vận hành | 🟡 Có guide khung, chưa chạy | M8 – Có thể chạy và bàn giao |
+| **1 – Requirements (SRS)** | FR, NFR, quy tắc, kịch bản Use Case | ✅ Bộ SRS/UC01–06/jobs và truy vết đã chốt 28/10 | M1 – Yêu cầu đủ rõ cho UC01 và kiến trúc nền |
+| **2 – Analysis & UML** | Use Case, Domain Class, State, Sequence | ✅ Domain/Use Case/Activity/State/Sequence hiện hành đã chốt 28/10 | M2 – Mô hình nghiệp vụ ban đầu |
+| **3 – Architecture** | C4, module, quyết định kiến trúc | ✅ Kiến trúc/module/security/runtime và ADR hiện hành đã chốt 28/10 | M3 – Kiến trúc nền được chọn |
+| **4 – Detailed Design** | ERD, schema, Design Class, API, transaction | ✅ Bộ hiện hành và M4-DB được chủ dự án duyệt 28/10 | Đủ đầu vào coding |
+| **5 – Implementation** | Backend MySQL, nghiệp vụ và test từng UC | ⬜ P5.1 sẵn sàng bắt đầu; chưa hoàn tất khởi tạo | M5 – UC01; M6 – đủ nghiệp vụ |
+| **6 – System & Performance Testing** | Dữ liệu lớn, đồng thời, đo TPS, đối soát | 🟡 Kế hoạch đã chốt, chưa đo | M7 – Bằng chứng đáp ứng đề bài |
+| **7 – Deployment & Handover** | Đóng gói, triển khai, vận hành | 🟡 Guide đã chốt, chưa chạy | M8 – Có thể chạy và bàn giao |
 
 **Mốc cần nhớ:** Sau khi có kiến trúc nền + mô hình dữ liệu + hợp đồng API + kiểm thử dự kiến cho **UC01**, **chuyển sang code UC01**, không chờ hoàn thành mọi sơ đồ/API của toàn hệ thống.
 
@@ -56,7 +52,7 @@
 
 **Điều kiện chuyển Phase:** Ba tài liệu liên kết nhất quán, quyết định nội bộ rõ ràng, vấn đề chưa giải quyết có mã/trách nhiệm/thời điểm cần chốt. **Không yêu cầu đóng hết 15 OQ.**
 
-### Phase 1 – Software Requirements Specification (SRS) ✅ M1 UC01; 🟡 bổ sung toàn hệ thống
+### Phase 1 – Software Requirements Specification (SRS) ✅ Yêu cầu toàn backend đã chốt 28/10/2026
 
 **Mục tiêu:** Chuyển đề bài thành yêu cầu kiểm chứng được; ưu tiên đủ chi tiết cho UC01 trước.
 
@@ -66,21 +62,21 @@
 - [x] **P1.4 – Non-Functional Requirements:** Gắn mã `NFR-...` cho tính đúng giao dịch, 500.000 bản ghi, tối thiểu 30 TPS, 50% request cùng thuê bao/tài khoản, bảo mật và vận hành. Giữ rõ các chỉ tiêu còn cần chốt cách đo.
 - [x] **P1.5 – Use Case Specification cho UC01 (v0.5 Hybrid, 27 AC đã duyệt Q25=A ngày 19/10):** Trigger, tiền/hậu điều kiện, Basic Flow, Alternative Flow, Exception Flow, liên kết FR/BR và tiêu chí kiểm thử.
 - [x] **P1.6 – Use Case Specification cho UC02–UC06:** Xây dựng khung/danh sách đầy đủ; đặc tả chi tiết **khi sắp triển khai từng UC**, không chặn việc code UC01. **Cập nhật 19/10:** Khung UC02–UC06.md đã có; chi tiết từng UC khi sắp code.
-- [ ] **P1.7 – Đặc tả các job hàng ngày:** Job hết hạn và job tổng hợp tiêu dùng riêng; chốt trạng thái, đầu ra/chỉ tiêu/lịch và chạy lại theo OQ-07/OQ-11/OQ-13. Không bắt buộc tạo actor bên ngoài chỉ để vẽ Use Case. **Tình trạng 18/10:** Có scheduled-jobs.md; lịch/cutoff/chi tiết vẫn Open.
-- [ ] **P1.8 – Rà soát tính truy vết:** Đối chiếu yêu cầu gốc ↔ FR/NFR/BR ↔ Use Case ↔ tiêu chí kiểm thử. **Tình trạng 18/10:** Có truy vết SRS và analysis.md; chưa nghiệm thu đầy đủ.
+- [x] **P1.7 – Đặc tả các job:** scheduled-jobs.md đã được duyệt 28/10; worker gia hạn, JOB-01 00:05 và JOB-02 00:30 theo baseline. Kiểm chứng thực thi thuộc P5/P6.
+- [x] **P1.8 – Rà soát tính truy vết:** SRS/UC/UML và 64 TC-EDGE đã chốt theo CR-DOC-004; các ca runtime vẫn NOT_RUN.
 
 **Điều kiện chuyển:** Các yêu cầu lõi không mâu thuẫn; **UC01 đủ rõ để vẽ mô hình và lập API**, những yêu cầu chưa cần ngay được ghi rõ trạng thái. SRS tiếp tục cập nhật theo từng vòng phát triển.
 
-### Phase 2 – Analysis & UML ✅ M2 nền UC01 đã duyệt
+### Phase 2 – Analysis & UML ✅ M2 và UML bổ sung đã chốt 28/10/2026
 
 **Mục tiêu:** Hiểu mô hình nghiệp vụ, quan hệ và vòng đời trước khi hiện thực CSDL.
 
 - [x] **P2.1 – Rà soát Use Case Diagram:** Tạo mới use-case-diagram.puml và uc01-use-case-diagram.puml từ tài liệu hiện có; kiểm tra actor, Hybrid, ranh giới; đã duyệt 19/10. Không tìm thấy sơ đồ cũ trong repository.
 - [x] **P2.2 – Domain Class Diagram:** Vẽ **các lớp nghiệp vụ và quan hệ**, tối thiểu xét `Customer`, `Subscriber`, `ServicePackage`, `PackageSubscription`, `Account`, `Transaction`; cân nhắc `PhoneNumberInventory`. **Cập nhật 19/10:** Domain Model hiện có đã duyệt M2.
-- [ ] **P2.3 – State Diagram:** Vẽ vòng đời **đăng ký gói cước** (đang hiệu lực, chờ hủy, hết hạn...), thêm thuê bao/tài khoản khi có nhu cầu thật. **Tình trạng 18/10:** Có state package-subscription.puml DRAFT, còn OQ-07/09.
+- [x] **P2.3 – State Diagram:** các vòng đời gói, request, tài khoản, báo cáo và cancellation intent đã được duyệt 28/10.
 - [x] **P2.4 – Sequence Diagram nghiệp vụ UC01:** Luồng chọn/cấp số, đấu nối thành công và tranh chấp cấp số. **Cập nhật 19/10:** Sequence UC01 hiện có đã duyệt M2.
-- [ ] **P2.5 – Sequence Diagram các luồng rủi ro cao:** Đăng ký + trừ tiền, giao dịch đồng thời, job hết hạn; thực hiện sát thời điểm thiết kế module tương ứng.
-- [ ] **P2.6 – Rà soát và đồng bộ SRS:** Nếu UML làm lộ khoảng trống nghiệp vụ thì cập nhật yêu cầu và `clarification-log.md`. **Tình trạng 18/10:** Đã ghi sai lệch sơ đồ/đường dẫn và phần Open trong log; chưa đóng.
+- [x] **P2.5 – Sequence Diagram các luồng rủi ro cao:** UC02–UC06, renewal và jobs đã được duyệt 28/10.
+- [x] **P2.6 – Rà soát và đồng bộ SRS:** bộ cập nhật 26/10 được chủ dự án chốt 28/10 theo CR-DOC-004; lỗi phát hiện khi code sẽ ghi delta/CR.
 
 **Điều kiện chuyển:** Có **Domain Model ban đầu cho toàn hệ thống** và luồng UC01 đủ rõ; không phải vẽ xong mọi Sequence Diagram trước khi thiết kế UC01.
 
@@ -96,7 +92,7 @@
 
 **Điều kiện chuyển:** Xác định công nghệ, ranh giới module và nguyên tắc transaction đủ rõ để thiết kế UC01.
 
-### Phase 4 – Detailed Design ✅ M4 UC01 lịch sử; 🟡 delta MySQL chờ duyệt
+### Phase 4 – Detailed Design ✅ M4 và delta MySQL đã chốt 28/10/2026
 
 **Mục tiêu:** Biến mô hình nghiệp vụ thành thiết kế kỹ thuật; triển khai dần theo UC.
 
@@ -105,7 +101,7 @@
 - [x] **P4.3 – API Contract UC01:** Khai báo tra cứu số khả dụng, cấp số tự động/đấu nối, request/response, lỗi và các trường hợp đồng thời trong `04-design/openapi.yaml`. **Lịch sử 18/10:** chưa có OpenAPI. **Cập nhật 19/10:** Bản thiết kế UC01 đã được chủ dự án duyệt M4 (T1–T7). Kiểm chứng migration/test thuộc P5.
 - [x] **P4.4 – Design Class Diagram UC01:** Thiết kế class Java thực sự cần (Entity, Repository, Service, Controller, DTO), không lặp lại toàn bộ Domain Diagram. **Lịch sử 18/10:** chưa có Design Class Diagram. **Cập nhật 19/10:** Bản thiết kế UC01 đã được chủ dự án duyệt M4 (T1–T7). Kiểm chứng migration/test thuộc P5.
 - [x] **P4.5 – Concurrency & Transaction Design:** Phác thảo cách chống cấp trùng cho UC01. Trước UC04/UC05, **bắt buộc** chốt xử lý đồng thời trên cùng tài khoản, chống xử lý trùng và đối soát; bổ sung `04-design/concurrency-and-jobs.md`. **Lịch sử 18/10:** chưa có thuật toán cụ thể. **Cập nhật 19/10:** Bản thiết kế UC01 đã được chủ dự án duyệt M4 (T1–T7). Kiểm chứng migration/test thuộc P5.
-- [ ] **P4.6 – Thiết kế module tiếp theo:** Mở rộng ERD, API, Design Class và Sequence kỹ thuật khi chuyển sang từng UC.
+- [x] **P4.6 – Thiết kế module tiếp theo:** schema/API/Design Class/transaction toàn backend hiện có đã được duyệt 28/10. Rà tính đúng bằng test theo từng slice, không yêu cầu duyệt lại toàn bộ.
 
 **🚩 MỐC BẮT ĐẦU CODE (M4):** Khi **P4.1–P4.4 cho UC01** và xử lý tranh chấp cấp số ở P4.5 đủ rõ → **dừng thiết kế tổng thể quá mức, bắt đầu triển khai UC01**.
 
@@ -132,7 +128,7 @@
 
 **Mục tiêu:** Chứng minh hệ thống đáp ứng các yêu cầu bắt buộc, không chỉ “API chạy được”.
 
-- [ ] **P6.1 – Test Plan:** Tạo `05-testing/test-plan.md`, xác định môi trường, dữ liệu, tiêu chí thành công, loại lỗi và phương pháp ghi kết quả. **Tình trạng 18/10:** Có test-plan.md DRAFT; chưa thực thi.
+- [x] **P6.1 – Test Plan:** 05-testing/test-plan.md và protocol/ma trận ca kiểm thử được duyệt 28/10 ở mức kế hoạch; chưa thực thi P6.
 - [ ] **P6.2 – Functional/Integration Regression:** Kiểm tra luồng chính, nhánh thay thế và ngoại lệ giữa các module.
 - [ ] **P6.3 – Data Generator:** Tổng các bảng nghiệp vụ có **tối thiểu 500.000 bản ghi trước đo tải**, phân bố đủ chạy nghiệp vụ hợp lệ; lưu thống kê từng bảng (DEC-08).
 - [ ] **P6.4 – Performance Tool:** Xây tool hoặc kịch bản k6 phát tải đã chọn; đối soát riêng và lưu kết quả (không nhất thiết là Maven dependency của backend).
@@ -143,7 +139,7 @@
 
 **Điều kiện chuyển:** Có kết quả đo tái lập được, chứng minh tính đúng/đủ và mức đạt hoặc chưa đạt của từng chỉ tiêu; nếu chưa đạt thì tối ưu và chạy lại.
 
-### Phase 7 – Deployment & Handover 🟡 Khung hướng dẫn
+### Phase 7 – Deployment & Handover 🟡 Guide đã chốt; chưa triển khai
 
 **Mục tiêu:** Người khác có thể dựng và kiểm tra hệ thống theo hướng dẫn.
 
@@ -151,7 +147,7 @@
 - [ ] **P7.2 – Docker/Compose:** Chạy backend và MySQL theo cấu hình triển khai được kiểm tra.
 - [ ] **P7.3 – Database Migration & Seed:** Khởi tạo schema và dữ liệu mẫu/kiểm thử có hướng dẫn.
 - [ ] **P7.4 – Logging/Health/Recovery:** Kiểm tra health, log giao dịch phù hợp, cách khởi động lại job và sao lưu/phục hồi cơ bản.
-- [ ] **P7.5 – Deployment Guide:** Viết `06-deployment/deployment-guide.md` với hướng dẫn từ máy mới đến khi gọi thử API. **Tình trạng 18/10:** Có deployment-guide.md dạng khung; chưa được chạy từ máy sạch.
+- [ ] **P7.5 – Deployment Guide:** Viết `06-deployment/deployment-guide.md` với hướng dẫn từ máy mới đến khi gọi thử API. **28/10:** Tài liệu đã chốt; mục này vẫn mở vì chưa chạy tái lập từ máy sạch.
 - [ ] **P7.6 – README & Handover:** Cập nhật `README.md`, link tài liệu, lệnh build/test, các hạn chế còn lại và báo cáo nghiệm thu.
 
 **Điều kiện hoàn tất:** Có thể cài đặt, chạy, kiểm thử và đọc tài liệu mà không cần phụ thuộc vào thao tác chưa được ghi lại.
@@ -169,20 +165,20 @@
 | `01-requirements/use-cases/UC01-Subscriber-Activation.md` | Markdown | 1 | ✅ v0.5/27 AC đã duyệt M1; UC02–UC06 có khung riêng |
 | `02-analysis/use-case-diagram.puml` | UML | 2 | ✅ Đã duyệt M2 theo xác nhận 19/10 |
 | `02-analysis/domain-model.puml` | UML Class mức phân tích | 2 | ✅ Đã duyệt M2 |
-| `02-analysis/state-diagrams/` | UML State | 2 | 🟡 State đăng ký gói DRAFT |
-| `02-analysis/sequence-diagrams/` | UML Sequence | 2 | ✅ UC01 đã duyệt M2; UC sau bổ sung theo vòng |
+| `02-analysis/state-diagrams/` | UML State | 2 | ✅ Toàn bộ state hiện hành đã chốt 28/10 |
+| `02-analysis/sequence-diagrams/` | UML Sequence | 2 | ✅ Toàn bộ sequence hiện hành đã chốt 28/10 |
 | `03-architecture/architecture.md` | Markdown | 3 | ✅ Đã duyệt M3 |
 | `03-architecture/c4-diagrams/` | C4 | 3 | ✅ C4 đã duyệt M3 |
-| `03-architecture/adr/` | Quyết định kiến trúc (khi cần) | 3 | 🟡 ADR-001 Accepted trong phạm vi stack/công cụ |
+| `03-architecture/adr/` | Quyết định kiến trúc (khi cần) | 3 | ✅ ADR hiện hành đã chốt; ADR bị thay giữ lịch sử |
 | `04-design/erd.puml` | ERD | 4 | ✅ Thiết kế UC01 được duyệt M4 19/10 |
 | `04-design/database-schema.md` | Markdown | 4 | ✅ Thiết kế UC01 được duyệt M4 19/10 |
 | `04-design/design-class-diagrams/` | UML Class mức thiết kế | 4 | ✅ Thiết kế UC01 được duyệt M4 19/10 |
 | `04-design/openapi.yaml` | OpenAPI | 4–5 | ✅ Hợp đồng UC01 được duyệt M4; API runtime chưa có |
-| `04-design/concurrency-and-jobs.md` | Markdown | 4–5 | 🟡 Có thuật toán đề xuất UC01, chờ review/test thực tế |
-| `05-testing/test-plan.md` | Markdown | 6 | 🟡 Kế hoạch DRAFT |
-| `05-testing/performance-test.md` | Markdown | 6 | 🟡 Kế hoạch, chưa đo |
-| `06-deployment/deployment-guide.md` | Markdown | 7 | 🟡 Khung, chưa chạy |
-| `../README.md` | Markdown | Xuyên suốt | 🟡 Đã có file, nội dung cần tiếp tục cập nhật |
+| `04-design/concurrency-and-jobs.md` | Markdown | 4–5 | ✅ Transaction/khóa/jobs đã chốt; test thực tế thuộc P5 |
+| `05-testing/test-plan.md` | Markdown | 6 | ✅ Kế hoạch đã chốt; chưa thực thi |
+| `05-testing/performance-test.md` | Markdown | 6 | ✅ Protocol đã chốt; chưa đo |
+| `06-deployment/deployment-guide.md` | Markdown | 7 | ✅ Hướng dẫn đã chốt; chưa chạy |
+| `../README.md` | Markdown | Xuyên suốt | ✅ Đã đồng bộ bước P5.1; cập nhật tiếp theo code |
 
 > **Không cần tạo trước mọi thư mục/file ở bảng trên.** `Domain Class Diagram` ≠ `ERD` ≠ `Design Class Diagram` ≠ Java `@Entity`: phân biệt mô hình nghiệp vụ, cấu trúc lưu trữ và thiết kế lớp trong code.
 
@@ -192,13 +188,15 @@
 - [x] **M1 – Yêu cầu UC01 sẵn sàng:** Có SRS v0.6 + UC01 v0.5, đủ 5 quyết định DEC-UC01-01–05 và đã chốt CR-UC01-001 Hybrid; **Q25=A được chủ dự án xác nhận ngày 19/10/2026**; các OQ kỹ thuật được hoãn theo P4.
 - [x] **M2 – Mô hình nghiệp vụ sẵn sàng:** Domain Model nền và luồng đấu nối thống nhất.
 - [x] **M3 – Kiến trúc nền sẵn sàng:** Module, công nghệ và trách nhiệm đã rõ.
-- [x] **M4 – Thiết kế UC01 sẵn sàng:** Chủ dự án duyệt T1–T7 ngày 19/10/2026, chốt ERD/schema/API/lock/recovery UC01 lịch sử. **Delta MySQL chưa duyệt** theo CR-DB-001; không suy ra phần DB P5 đã sẵn sàng từ M4 PG cũ; triển khai/test chưa có bằng chứng.
+- [x] **M4 – Thiết kế UC01 sẵn sàng:** Chủ dự án duyệt T1–T7 ngày 19/10/2026, chốt ERD/schema/API/lock/recovery UC01 lịch sử. **M4-DB MySQL đã được chủ dự án duyệt 28/10/2026 theo CR-DOC-004**; schema/API/lock/recovery hiện hành đủ để bắt đầu P5.1. Triển khai/test chưa có bằng chứng.
 - [ ] **M5 – UC01 hoàn thiện:** API hoạt động, migration và test đạt → chuyển UC02.
 - [ ] **M6 – Hoàn thiện nghiệp vụ:** UC02–UC06, job hết hạn và job tổng hợp tiêu dùng hàng ngày có test.
 - [ ] **M7 – Kiểm thử yêu cầu gốc và baseline:** Tổng ≥500K trước đo, ≥30 TPS mỗi loại đồng thời (tổng ≥60), phân nhóm 50% request trừ tiền tranh chấp, giao dịch đúng/đủ có bằng chứng.
 - [ ] **M8 – Bàn giao:** Chạy được theo README/Deployment Guide.
 
 ## 6. Nhật ký cập nhật roadmap
+
+> Các mục ngày trước 28/10 bên dưới giữ lịch sử; trạng thái hiện hành ở đầu file và CR-DOC-004.
 
 | Ngày | Nội dung thay đổi | Phase / checkpoint |
 |---|---|---|
@@ -316,3 +314,12 @@ Theo yêu cầu chủ dự án, bổ sung [hướng dẫn đọc/rà soát](HUON
 ### Sửa báo cáo theo luồng nghiệp vụ và khả năng hiển thị ảnh — 26/10/2026
 
 P1.8/P2.5/P2.6: báo cáo v1.1 dùng ảnh PNG tương đối, Activity Diagram/kịch bản và Class Diagram ở phần đầu; thêm 11 Activity và 3 Class view, giữ các sequence/state/ERD/design class chi tiết. Chủ dự án ủy quyền agent tự quyết cách hoàn thiện tài liệu; không đồng nghĩa đã nghiệm thu delta MySQL, code/test hay checkpoint. Bước phát triển tiếp theo vẫn review M4-DB UC01 trước P5.1.
+
+
+## Chốt tài liệu và chuẩn bị coding — 28/10/2026
+
+**Người duyệt: Chủ dự án. CR-DOC-004 APPROVED.** Bộ tài liệu hiện hành, M4-DB MySQL, kế hoạch kiểm thử và guide được chốt theo [biên bản](00-project/document-approval-20261028.md). Hoàn tất phần tài liệu P1/P2/P3/P4; giữ nguyên mọi đầu việc triển khai/kiểm thử/đo tải/bàn giao chưa chạy. Đã dọn out/target; theo phản hồi bổ sung, dọn cả ZIP và bộ công cụ/JSON kiểm tra tài liệu. Không sửa pom/Java hay commit/push.
+
+**Tiếp theo duy nhất: P5.1** — Java21/Maven, Spring Boot entrypoint/package, MySQL dependencies/Flyway/office/home/Compose; cần build, migration và healthcheck thực tế trước khi tick. Sau đó P5.2 UC01; không mở lại gate duyệt tài liệu đã chốt.
+
+**Dọn bổ sung 28/10:** Xóa ZIP lưu tạm và toàn bộ script/JSON kiểm tra tài liệu theo yêu cầu chủ dự án. Tài liệu không còn liên kết hoặc lệnh phụ thuộc các file đã xóa; tiếp theo vẫn P5.1.

@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Hợp đồng API toàn backend — REVIEW 26/10/2026
 
 Nguồn máy đọc: [OpenAPI3.0.3](openapi.yaml). MySQL8.0.46 hiện hành; lựa chọn nghiệp vụ đã ghi DEC/CR, HTTP DTO/status/scope chi tiết là đề xuất kỹ thuật cần duyệt. Chưa endpoint/runtime test. UC01 giữ ba path/field/hành vi lịch sử; Q10 nâng phân trang50/200. [UC01 riêng](api-contract-uc01.md), [transaction](concurrency-and-jobs.md).

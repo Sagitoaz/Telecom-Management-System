@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Kế hoạch kiểm thử backend
 
 **DOC-TST-001 · v0.3 · 26/10/2026 · REVIEW · NOT_RUN.** Tài liệu mô tả kịch bản và oracle cần thực thi, không phải báo cáo test. Hiện chưa có kết quả unit/integration/API/concurrency/tải/restore để tuyên bố backend đạt. M0–M4 UC01 đã duyệt lịch sử không thay kiểm thử deltaMySQL.

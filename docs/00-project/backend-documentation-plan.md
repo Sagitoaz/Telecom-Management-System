@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Kế hoạch đồng bộ bộ thiết kế backend ngày 26/10/2026
 
 **Phạm vi được giao:** Chủ dự án đã điền phiếu16 và yêu cầu rà soát, cập nhật, mô tả chi tiết kèm UML đầy đủ cho backend. Chỉ biên soạn tài liệu/PlantUML/SVG/OpenAPI, không triển khai Java/migration/runtime và không tự nghiệm thu checkpoint.

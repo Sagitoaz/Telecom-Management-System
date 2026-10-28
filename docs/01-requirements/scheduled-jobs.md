@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Tác vụ định kỳ, gia hạn và khôi phục
 
 **DOC-JOB-001 · v0.3 · 26/10/2026 · REVIEW.** Nguồn DEC-JOB-001, DEC-PRE-19/20, Q12/24/25/28/29/30 và CR-TIME-001/002, CR-CAN-002/003. Giữ hai job nghiệp vụ hằng ngày; scheduler/worker là thành phần nội bộ, không actor ngoài. Chưa có code/test/runtime.

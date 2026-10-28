@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Tổng quan dự án — Hệ thống Quản lý thuê bao viễn thông
 
 **Tên dự án:** Telecom Subscription Management System (`Telecom-Management-System`)
@@ -122,4 +124,4 @@ Nền tảng được chọn là Java 21/Spring Boot, một ứng dụng chia mo
 
 Cách lưu UUID, chi tiết schema/index/DTO/HTTP/scope, nhịp worker và cấu hình runtime mới vẫn REVIEW theo quyền được giao đề xuất. Không có migration/runtime/TPS mới được chứng minh bằng việc soạn tài liệu. Bước tiếp theo là nghiệm thu delta MySQL UC01 theo [checklist M4](../04-design/m4-review-checklist.md), sau đó thực hiện P5.1; các UC sau tiếp tục theo từng vòng triển khai.
 
-Chi tiết phạm vi và định nghĩa nằm tại [Scope & Glossary](scope-and-glossary.md); yêu cầu tại [SRS](../01-requirements/SRS.md). Lịch sử trước lần hợp nhất này được bảo toàn trong [bản lưu 26/10](history/2026-10-26-before-sync.zip) và sổ quyết định, thay vì duy trì các mô tả cũ mâu thuẫn trong nội dung hiện hành.
+Chi tiết phạm vi và định nghĩa nằm tại [Scope & Glossary](scope-and-glossary.md); yêu cầu tại [SRS](../01-requirements/SRS.md). Lịch sử quyết định được tra trong sổ DEC/CR/OQ; bản ZIP phụ đã dọn theo yêu cầu chủ dự án ngày 28/10/2026.

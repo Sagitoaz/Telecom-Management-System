@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Báo cáo tổng hợp — Luồng nghiệp vụ, kịch bản và thiết kế backend Telecom
 
 **Mã:** REPORT-ALL-001 · **Phiên bản:** 1.1 · **Cập nhật:** 26/10/2026 · **Trạng thái:** REVIEW.
@@ -1182,7 +1184,7 @@ Mã chi tiết còn trong SRS/UC/AC và ma trận nguồn; các nhóm trên giú
 
 ### 19.2 Đã kiểm chứng ở mức tài liệu
 
-Bộ nguồn UML hiện có 41 file, xuất 42 SVG do C4 có hai hình; OpenAPI và các local reference có checker; baseline đề bài/phiếu/27 AC UC01 được bảo toàn trong đợt đồng bộ. Số đếm/lệnh/kết quả chính thức ở [verification](verification.md) và [render manifest](checks/render-manifest-20261026.json).
+Bộ nguồn UML hiện có 41 file, xuất 42 SVG do C4 có hai hình; OpenAPI và các local reference có checker; baseline đề bài/phiếu/27 AC UC01 được bảo toàn trong đợt đồng bộ. Số đếm/lệnh/kết quả chính thức ở [verification](verification.md).
 
 Báo cáo này dùng lại ảnh hiện hành, không tạo quy tắc UML mới. Ảnh nhúng dùng PNG và đường dẫn tương đối từ file Markdown. SVG/PlantUML cạnh mỗi ảnh phục vụ phóng to/sửa nguồn. Checker kiểm cả target ảnh, PNG và hash nguồn; chỉ kiểm file SVG tồn tại chưa đủ để kết luận Markdown hiển thị được.
 

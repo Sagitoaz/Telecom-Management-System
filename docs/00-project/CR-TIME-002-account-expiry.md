@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # CR-TIME-002 – Kiểm hạn dưới khóa trước tác động tài chính
 
 **Trạng thái:** Approved, chủ dự án xác nhận26/10/2026: “Đổi sang kiểm giờ DB dưới khóa trước cập nhật; lập CR”. Thay yêu cầu Q34=B commit vật lý trước hạn; giữ dấuB trong phiếu làm lịch sử.

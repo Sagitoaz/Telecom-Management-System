@@ -22,16 +22,15 @@ Trước **mọi nhiệm vụ có tác động đến dự án**, kiểm tra nh�
 
 **Thứ bậc áp dụng khi mâu thuẫn:** yêu cầu người dùng vừa xác nhận rõ trong phiên làm việc (phải ghi lại thành quyết định) → `CR/DEC` có hiệu lực trong clarification log → SRS/UC đã được nghiệm thu → bản nháp đang rà soát → đề xuất của agent. Không tự áp dụng phương án trong phiếu *chưa được chọn*, hoặc thay đổi quyết định đã chốt mà không xin duyệt.
 
-## 2. Tình trạng dự án làm mốc, KHÔNG coi là trạng thái bất biến
+## 2. Tình trạng hiện hành — 28/10/2026
 
-Theo bộ hồ sơ gần nhất đã trao đổi (15/10/2026):
+Chủ dự án đã phê duyệt **toàn bộ bộ tài liệu hiện có**, gồm delta MySQL M4-DB, theo `docs/00-project/document-approval-20261028.md` / **CR-DOC-004** trong clarification log mục21. M0–M4 đã đạt ở mức hồ sơ; các phần bổ sung SRS/UC02–06/jobs/UML/kiến trúc/API/schema/transaction/config và kế hoạch test/guide đã chốt.
 
-- **Phase 0:** Đã chốt baseline (`M0`).
-- **Phase 1:** Có `SRS.md` v0.4 và `UC01-Subscriber-Activation.md` v0.3; **quyết định Hybrid `CR-UC01-001` đã được chủ dự án chốt riêng**. Bộ tài liệu có thể vẫn ghi `M1` chờ nghiệm thu; **kiểm tra sự phê duyệt thực tế, không tự tích M1**.
-- **Phase 2 / P2.1:** Đã **tạo mới từ đầu** `docs/02-analysis/use-case-diagram.puml` và `docs/02-analysis/uc01-use-case-diagram.puml` (bản nháp). **Không có sơ đồ cũ để sửa.** Cần rà soát và duyệt P2.1 trước khi coi là xong.
-- **Việc kế tiếp theo trình tự:** xác minh trạng thái M1 và rà soát/hoàn tất **P2.1 → P2.2 Domain Class Diagram → P2.4 Sequence Diagram UC01**, phối hợp P2.3/P2.6 khi cần. **Chưa tới bước ERD/schema/API chi tiết hoặc code UC01** chỉ vì đã vẽ Use Case Diagram.
-
-Đây chỉ là ảnh chụp lịch sử. **Mỗi lần làm việc phải đọc lại `docs/ROADMAP.md`, kiểm tra sản phẩm và bằng chứng mới nhất**; nếu roadmap chưa cập nhật nhưng có phê duyệt rõ ràng, nêu sai lệch và đồng bộ thay vì bám máy móc vào trạng thái cũ.
+- **Việc kế tiếp duy nhất: P5.1 — khởi tạo backend MySQL**, sau đó P5.2 code/test UC01 trước. Không yêu cầu duyệt lại tài liệu đã chốt.
+- Java21/Spring Boot; MySQL8.0.46/InnoDB/READ COMMITTED; RabbitMQ/Redis/IdP ngoài backend theo kiến trúc. Office code/unit không DB; home chạy service. Không dùng starter PostgreSQL/Supabase cũ.
+- Repo còn pom PostgreSQL và Main mẫu; cần chuyển trong P5.1. Chưa có migration/runtime/test/tải được nghiệm thu. Chỉ tick P5.1/M5–M8 khi có bằng chứng đúng điều kiện.
+- Nhãn REVIEW/DRAFT và tên file có DRAFT trong bản ký duyệt là lịch sử trước phê duyệt. Quyết định bị thay hoặc NOT ADOPTED không được khôi phục; áp dụng CR-CAN-002/003 và CR-TIME-001/002 mới nhất.
+- Phần OQ thiếu giá trị môi trường hoặc kiểm chứng thực tế tiếp tục theo P5–P7; không biến chúng thành vòng duyệt lại toàn bộ hồ sơ. Đọc `docs/ROADMAP.md` mỗi lượt để xác định trạng thái mới.
 
 ## 3. Thứ tự Phase bắt buộc và điều kiện chuyển
 
@@ -61,7 +60,7 @@ Theo bộ hồ sơ gần nhất đã trao đổi (15/10/2026):
 
 Các việc bổ sung của Phase 1 có thể diễn ra song song ở mức cần thiết, **không chặn vòng phát triển UC01 nếu không phải phụ thuộc thực sự**.
 
-### Phase 2 — việc đang tới
+### Phase 2 — quy trình tham chiếu (đã chốt bộ hiện hành 28/10/2026)
 
 1. **P2.1:** Rà soát Use Case Diagram **đã tạo mới** (`.puml` là nguồn sửa); kiểm tra actor ngoài hệ thống, UC01–UC06, tra cứu số/trạng thái, hai job, `include/extend/generalization`, nhánh Hybrid. Xuất lại PNG/SVG nếu sửa và trình duyệt.
 2. **P2.2:** Tạo `docs/02-analysis/domain-model.puml`: lớp nghiệp vụ, thuộc tính nghiệp vụ, bội số/quan hệ, quy tắc sở hữu; ít nhất xem xét `Customer`, `Subscriber`, `ServicePackage`, `PackageSubscription`, `Account`, `Transaction`, `PhoneNumberInventory`; với UC01 còn xem xét giấy tờ đã xác minh và yêu cầu đấu nối/chờ. **Không viết như JPA Entity/ERD.**

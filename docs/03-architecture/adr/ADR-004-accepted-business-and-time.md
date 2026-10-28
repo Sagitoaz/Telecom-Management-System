@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # ADR-004 — Ảnh hưởng kiến trúc của quyết định nghiệp vụ và thời gian
 
 **Trạng thái:** Quy tắc đầu vào đã được chủ dự án xác nhận ngày 26/10/2026; cơ chế kỹ thuật bổ sung là REVIEW.  

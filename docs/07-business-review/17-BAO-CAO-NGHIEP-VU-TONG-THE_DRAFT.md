@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Báo cáo nghiệp vụ và thiết kế backend tổng thể
 
 **Cập nhật 26/10/2026 — REVIEW.** Đây là báo cáo mô tả hệ thống và phương án thiết kế theo quyết định đã tiếp nhận, chưa phải báo cáo kết quả triển khai. Tên file DRAFT được giữ để không làm hỏng liên kết cũ. [Phiếu 16](16-PHIEU-DUYET-TONG-HOP.md) giữ nguyên; hiệu lực mới trong [bản tiếp nhận](../00-project/decision-receipt-20261026.md) và các CR.

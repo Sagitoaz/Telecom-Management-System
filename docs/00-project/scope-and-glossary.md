@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Phạm vi hệ thống và thuật ngữ
 
 **Dự án:** Telecom Subscription Management System
@@ -150,6 +152,5 @@ MySQL 8.0.46/InnoDB, READ COMMITTED cho đường ghi, utf8mb4, UTC DATETIME(6),
 - [Overview](overview.md): mục tiêu, nghiệp vụ và tiêu chí tổng quan.
 - [Sổ quyết định](clarification-log.md) và [biên nhận ngày 26/10](decision-receipt-20261026.md): lựa chọn, CR và phần còn mở.
 - [SRS](../01-requirements/SRS.md), [UC01](../01-requirements/use-cases/UC01-Subscriber-Activation.md), [kiến trúc](../03-architecture/architecture.md): yêu cầu và mô hình chi tiết hơn.
-- [Bản lưu trước đồng bộ](history/2026-10-26-before-sync.zip): bảo toàn tài liệu lịch sử đã được thay bằng nội dung hiện hành nhất quán.
 
 Phiên bản 1.2 ngày 26/10 hợp nhất các quy tắc có hiệu lực, thay các đoạn cũ “M1 chờ duyệt”, “hủy cuối kỳ hiện tại” hoặc “báo cáo theo giờ commit” đã lỗi thời. Việc hợp nhất không xóa lịch sử quyết định và không tự nâng checkpoint.

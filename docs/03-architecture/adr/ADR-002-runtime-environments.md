@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 > **⚠️ ADR-002 SUPERSEDED VỀ DATABASE VÀ OFFICE:** Office→Supabase và home→PostgreSQL Docker đã thay đổi theo CR-DB-001/ADR-003; giữ nội dung dưới để tra cứu lịch sử, không làm theo cách kết nối cũ.
 
 ---

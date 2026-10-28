@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Ma trận truy vết và64 ngoại lệ backend
 
 **TRACE-EDGE-001 · v0.3 · 26/10/2026 · REVIEW · TẤT CẢ NOT_RUN.** Giữ nguyên tập64 mã TC-EDGE-01..64; không đổi số27 AC-SUB baseline. Đây là kịch bản dự kiến, chưa có executable tests hoặc kết quả runtime. Các đáp án phiếu16 đã được tiếp nhận; Q21 và CR-CAN-002/003, CR-TIME-001/002 đã rõ, không còn oracle kiểu “đợi chọn Qxx”. Thiết kế/API/implementation/cấu hình vẫn cần review và thực thi kiểm chứng.

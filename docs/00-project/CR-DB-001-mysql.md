@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # CR-DB-001 – Thay PostgreSQL bằng MySQL và thay môi trường làm việc
 
 **Ngày quyết định:** 19/10/2026 · **Người quyết định:** Chủ dự án (trong cuộc trò chuyện).  

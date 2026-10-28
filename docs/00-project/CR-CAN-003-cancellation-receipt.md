@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # CR-CAN-003 — Mốc tiếp nhận hủy và khôi phục khi mất phản hồi
 
 **Trạng thái:** Approved về nghiệp vụ ngày 26/10/2026. **Người duyệt:** chủ dự án, xác nhận trực tiếp: “Đồng ý mốc xác nhận sau commit; ghi rõ quy tắc và xử lý mất phản hồi”. Giao thức transaction bên dưới là thiết kế REVIEW để thực hiện quyết định, chưa phải kết quả chạy thử.

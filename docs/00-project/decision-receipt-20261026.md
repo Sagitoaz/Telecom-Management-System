@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Tiếp nhận quyết định từ phiếu16 và xác nhận ngày26/10/2026
 
 **Mã:** RECEIPT-BE-20261026 · **Người quyết định:** Chủ dự án · **Ngày tiếp nhận:** 26/10/2026. Đây là ghi nhận nội dung đã chọn, không phải nghiệm thu thiết kế/schema/API hay kết quả code/test. MụcD, tên và ngày duyệt toàn tài liệu trong phiếu còn trống.

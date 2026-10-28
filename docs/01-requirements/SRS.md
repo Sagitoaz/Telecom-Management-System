@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Đặc tả yêu cầu hệ thống (SRS)
 
 **DOC-SRS-001 · v0.7 · 26/10/2026 · REVIEW.** Quyết định nghiệp vụ từ phiếu16 và xác nhận trong chat đã tiếp nhận; bộ tài liệu mới cần chủ dự án rà soát. M1–M4 UC01/T1–T7 được duyệt lịch sử19/10; delta MySQL và artifact mới chưa được tự nghiệm thu. Không có bằng chứng backend/migration/tải chỉ từ tài liệu này.

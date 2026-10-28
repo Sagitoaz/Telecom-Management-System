@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
   title: Telecom Management Backend API
-  version: 0.2.0-review
-  description: REVIEW 26/10/2026. MySQL8.0.46 design, not implemented/runtime tested. UC01 historical contract retained;
-    UC02–06/jobs/support reads are proposed detailed contracts based on approved choices. CR-TIME-001 recordedAt
+  version: 0.2.0
+  description: APPROVED 28/10/2026 by project owner under CR-DOC-004. MySQL8.0.46 design, not implemented/runtime tested. UC01 historical contract retained;
+    UC02–06/jobs/support reads are approved detailed contracts; runtime verification is pending. CR-TIME-001 recordedAt
     is DB event time in ultimately committed transaction; CR-TIME-002 eligibility under lock before money update.
     CR-CAN-003 uses DB receipt after confirmed intent commit; late receipt fails, accepted lost ACK replays. Protocol
-    implementation REVIEW; see concurrency-and-jobs.md.
+    implementation verification pending; see concurrency-and-jobs.md.
 servers:
 - url: http://localhost:8080
   description: Local development (backend runs from IDE or Docker published port)

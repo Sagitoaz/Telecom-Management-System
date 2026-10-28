@@ -1,6 +1,6 @@
 # Chỉ mục bộ thiết kế backend
 
-**Cập nhật 26/10/2026.** Đã tiếp nhận phiếu 16 và các xác nhận bổ sung; tài liệu được đồng bộ thành bản **REVIEW**. Nghiệp vụ đã chọn có hiệu lực, còn schema/API/transaction mới cần nghiệm thu. Chưa có backend nghiệp vụ chạy được hoặc kết quả đo tải.
+**28/10/2026 — ĐÃ CHỐT.** Chủ dự án duyệt toàn bộ tài liệu hiện hành theo [CR-DOC-004](00-project/document-approval-20261028.md), gồm M4-DB MySQL. Bước kế tiếp **P5.1**, theo [kế hoạch coding](04-design/implementation-plan.md). Chưa có backend nghiệp vụ chạy được hoặc kết quả đo tải.
 
 ## Hai tài liệu để bắt đầu đọc và rà soát
 
@@ -19,8 +19,10 @@
 
 ## Trạng thái và bước tiếp theo
 
-M0–M4 lịch sử đã duyệt trong phạm vi UC01. DB hiện hành **MySQL 8.0.46/InnoDB**; delta MySQL và nội dung thiết kế mới vẫn REVIEW. [Checklist M4](04-design/m4-review-checklist.md) xác định chính xác phần cần nghiệm thu trước triển khai. [ROADMAP](ROADMAP.md) là nguồn trạng thái; [implementation plan](04-design/implementation-plan.md) triển khai từng UC, bắt đầu UC01.
+M0–M4 và delta MySQL **đã duyệt ngày 28/10/2026**. DB hiện hành **MySQL 8.0.46/InnoDB**. [Checklist M4](04-design/m4-review-checklist.md) tách phần thiết kế đã chốt và kiểm chứng runtime còn phải chạy. [ROADMAP](ROADMAP.md) là nguồn trạng thái; [implementation plan](04-design/implementation-plan.md) triển khai từng UC, bắt đầu UC01.
 
-[Phiếu 16](07-business-review/16-PHIEU-DUYET-TONG-HOP.md) đã điền và được giữ nguyên để lưu lịch sử; không yêu cầu điền lại. Các trang review 01–15/20 hiện đóng vai trò chỉ dẫn đến tài liệu chuẩn để tránh duy trì hai bộ quy tắc mâu thuẫn. [Ảnh chụp trước đồng bộ](00-project/history/2026-10-26-before-sync.zip) giữ nội dung cũ và manifest.
+[Phiếu 16](07-business-review/16-PHIEU-DUYET-TONG-HOP.md) đã điền và được giữ nguyên để lưu lịch sử; không yêu cầu điền lại. Các trang review 01–15/20 hiện đóng vai trò chỉ dẫn đến tài liệu chuẩn để tránh duy trì hai bộ quy tắc mâu thuẫn. Lịch sử quyết định được tra tại clarification log; bản ZIP phụ đã dọn theo yêu cầu chủ dự án.
 
 [Đề bài gốc](requirement.md) giữ nguyên byte. Tài liệu thiết kế, kết quả kiểm tra tĩnh và kết quả runtime là ba loại bằng chứng khác nhau. Chưa có bằng chứng M5–M8.
+
+Các nhãn REVIEW/DRAFT trước 28/10 trong hình/tên file/nội dung lịch sử đã được đóng bằng CR-DOC-004; giữ nguyên nguồn–hình và phiếu để truy vết. Kế hoạch test và guide đã chốt ở mức tài liệu, chưa là bằng chứng đạt M5–M8.

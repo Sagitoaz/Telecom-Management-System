@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 > **⚠️ CHỈ THAY PHẦN DBMS:** ADR-001 vẫn có hiệu lực về RabbitMQ và Redis, nhưng mọi đề cập PostgreSQL là lựa chọn cũ đã thay bởi CR-DB-001/ADR-003 MySQL.
 
 ---

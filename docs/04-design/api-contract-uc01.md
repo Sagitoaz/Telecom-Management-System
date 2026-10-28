@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # UC01 API — hợp đồng hiện hành, REVIEW delta MySQL 26/10/2026
 
 [OpenAPI](openapi.yaml) là nguồn schema. Ba path giữ nguyên: POST `/api/v1/activations`, GET `/api/v1/activations/{requestId}`, GET `/api/v1/phone-numbers`. UC01/T1–T7 M4 lịch sử19/10 đã duyệt; delta MySQL8.0.46 chưa nghiệm thu/runtime test. [Ma trận API toàn backend](api-contract.md).

@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Kết quả rà soát và các giới hạn còn lại
 
 **Cập nhật 26/10/2026 — rà soát tài liệu, không phải báo cáo test backend.** Bộ tài liệu đã được đồng bộ theo phiếu 16 và các xác nhận bổ sung của chủ dự án. [Chỉ mục chuẩn](../README.md) là điểm đọc chính; chi tiết kiểm chứng trong [verification](../verification.md).

@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Transaction, cạnh tranh và jobs — MySQL REVIEW 26/10/2026
 
 Đây là thiết kế P4.5 toàn backend, chưa migration/test/runtime và chưa duyệt delta M4-DB. Đầu vào: Q01–34 đã tiếp nhận và CR-TIME-001/002, CR-CAN-002/003; [schema](database-schema.md), [API](api-contract.md). READ COMMITTED cho writes. MySQL là nguồn sự thật; Redis/RabbitMQ không quyết định idempotency, số dư, cấp số hoặc quyền dùng gói.

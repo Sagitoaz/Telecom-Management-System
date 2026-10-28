@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](../00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Thiết kế CSDL MySQL toàn backend — REVIEW 26/10/2026
 
 Thiết kế hiện hành cho MySQL **8.0.46 / InnoDB**; thay hướng schema PostgreSQL trong tài liệu trước. M4 UC01/T1–T7 ngày19/10 là lịch sử đã duyệt; **delta MySQL và thiết kế UC02–06/jobs dưới đây chưa được nghiệm thu**. Không có migration hoặc runtime test từ tài liệu này. Nguồn: [SRS](../01-requirements/SRS.md), [quyết định](../00-project/clarification-log.md), [ERD](erd.puml), [transaction](concurrency-and-jobs.md).

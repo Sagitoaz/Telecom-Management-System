@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Hướng dẫn rà soát thiết kế backend
 
 Đọc [chỉ mục tài liệu](../README.md), sau đó [bản tiếp nhận](decision-receipt-20261026.md) để phân biệt quyết định nghiệp vụ đã chọn với thiết kế kỹ thuật còn REVIEW. Không cần điền lại phiếu 16.

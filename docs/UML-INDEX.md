@@ -1,3 +1,5 @@
+> **ĐÃ CHỐT — 28/10/2026, Chủ dự án phê duyệt theo [CR-DOC-004](00-project/document-approval-20261028.md).** Nhãn REVIEW/DRAFT/chờ duyệt bên dưới là trạng thái trước phê duyệt; các phương án đã bị thay hoặc không được chọn vẫn giữ hiệu lực lịch sử. Kết quả runtime chưa được nghiệm thu.
+
 # Chỉ mục sơ đồ nghiệp vụ, UML và kiến trúc
 
 **REVIEW — 26/10/2026.** Có 41 nguồn PlantUML, sinh 42 SVG và 42 PNG. Đọc ảnh PNG trong Markdown để tương thích trình xem; mở SVG để phóng to và PlantUML để sửa nguồn. [Báo cáo theo luồng nghiệp vụ](BAO-CAO-TONG-HOP-DU-AN.md) nhúng đầy đủ các hình.
@@ -49,4 +51,4 @@ Activity Diagram theo nhánh quyết định khác Sequence theo tương tác; C
 | Design Class UC01 | [PNG](04-design/design-class-diagrams/uc01-design-class.png) | [SVG](04-design/design-class-diagrams/uc01-design-class.svg) | [PlantUML](04-design/design-class-diagrams/uc01-design-class.puml) |
 | ERD toàn backend | [PNG](04-design/erd.png) | [SVG](04-design/erd.svg) | [PlantUML](04-design/erd.puml) |
 
-Nguồn và ảnh được kiểm bằng [manifest](checks/render-manifest-20261026.json). Nguồn thay đổi phải xuất lại cả PNG/SVG; không dùng kiểm tra file tồn tại thay cho kiểm tra hiển thị ảnh.
+Nguồn và ảnh đã được đối chiếu trong lượt kiểm ngày 28/10/2026, ghi tại [verification](verification.md). Nguồn thay đổi phải xuất lại cả PNG/SVG; không dùng kiểm tra file tồn tại thay cho kiểm tra hiển thị ảnh.
