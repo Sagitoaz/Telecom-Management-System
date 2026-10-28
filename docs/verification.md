@@ -24,3 +24,11 @@ Xóa ZIP lưu tạm, thư mục bộ kiểm tra tài liệu (script Python, hư�
 Lượt dọn bổ sung kiểm trực tiếp sự tồn tại của file/thư mục, liên kết Markdown/ảnh và Git diff; không tạo script hay JSON kiểm tra mới trong repository. Đề bài, phiếu đã điền, code/pom, nguồn UML/ảnh không sửa. Không build, commit, push, đổi branch hoặc deploy.
 
 **Phần còn phải chứng minh:** Maven verify, boot/healthcheck, migrations MySQL, ràng buộc/index, xác thực API, concurrency/recovery, đo TPS/latency/đối soát và chạy từ máy sạch. Các phần này thuộc P5–P7, không yêu cầu duyệt lại bộ tài liệu.
+
+## Lập kế hoạch học/thực hành — 28/10/2026
+
+Theo CR-IMPL-001, bổ sung đúng hai file kế hoạch: [học tại công ty](KE-HOACH-HOC-TAI-CONG-TY.md) và [code tại nhà](KE-HOACH-CODE-TAI-NHA.md). Đồng bộ thứ tự UC04/UC05 trước UC01 trong AGENTS/roadmap/implementation plan/README; giữ mã task, ý nghĩa M5–M8 và nội dung SRS/UC/API/schema. C01–C15 ghép N01–N16, có ma trận M01–M22, điều kiện fixture debit và các chỉ tiêu của requirement. Thời lượng học là đề xuất, mọi ô tiến độ mới còn trống.
+
+Nguồn học chính thức Spring/Docker/MySQL/Maven/Flyway/JUnit/Testcontainers/RabbitMQ/k6 được mở để đối chiếu khi biên soạn; không đổi dependency theo version mới trên website. Lượt này chỉ kiểm tài liệu bằng lệnh dùng một lần trong terminal, không tạo bộ script/ZIP/JSON phụ. Không code, build, chạy DB/test/tải, commit hoặc push trong lượt lập kế hoạch.
+
+**Bản2 theo phản hồi:** viết lại file công ty thành hướng dẫn tra syntax/đọc code tối trước; file nhà có mẫu Compose/XML/Java/YAML/Dockerfile và lệnh cho N01A–D, bản đồ file/method/test cho phần tiền và các UC tiếp. Chỉ kiểm cấu trúc snippet/liên kết và bảo toàn baseline; chưa build/run các snippet hoặc xác nhận image pull/migration/API thành công.

@@ -4,7 +4,7 @@
 > **Dự án:** `Telecom-Management-System`
 > **Ngày cập nhật:** 28/10/2026
 > **Trạng thái tổng thể:** Bộ tài liệu hiện hành đã được Chủ dự án chốt theo [CR-DOC-004](00-project/document-approval-20261028.md), gồm bổ sung toàn backend và M4-DB MySQL. M0–M4 đã đạt ở mức hồ sơ. Chưa có backend nghiệp vụ/runtime/tải.
-> **Bước tiếp theo duy nhất:** **P5.1 — Khởi tạo backend MySQL** theo [kế hoạch](04-design/implementation-plan.md). Không còn chờ nghiệm thu bộ tài liệu.
+> **Bước tiếp theo duy nhất:** **P5.1 — Khởi tạo backend MySQL phục vụ module tiền**. Theo CR-IMPL-001, sau nền tảng làm **UC04 cộng tiền → UC05 trừ tiền** và kiểm thử/đối soát trước UC01. [Học tại công ty](KE-HOACH-HOC-TAI-CONG-TY.md) · [Code tại nhà](KE-HOACH-CODE-TAI-NHA.md). Không còn chờ nghiệm thu bộ tài liệu.
 
 ## 1. Quy ước trạng thái và cách cập nhật
 
@@ -33,7 +33,7 @@
 | **6 – System & Performance Testing** | Dữ liệu lớn, đồng thời, đo TPS, đối soát | 🟡 Kế hoạch đã chốt, chưa đo | M7 – Bằng chứng đáp ứng đề bài |
 | **7 – Deployment & Handover** | Đóng gói, triển khai, vận hành | 🟡 Guide đã chốt, chưa chạy | M8 – Có thể chạy và bàn giao |
 
-**Mốc cần nhớ:** Sau khi có kiến trúc nền + mô hình dữ liệu + hợp đồng API + kiểm thử dự kiến cho **UC01**, **chuyển sang code UC01**, không chờ hoàn thành mọi sơ đồ/API của toàn hệ thống.
+**Mốc cần nhớ:** Thiết kế hiện hành đã chốt. **CR-IMPL-001 ưu tiên module tiền trước:** nền tảng → UC04/UC05 và test → UC01/UC02/các UC còn lại. Fixtures cần đủ quan hệ và kỳ gói cho debit; không chờ xong UC01/UC02 API hoặc bỏ quy tắc nghiệp vụ. M5 vẫn dành cho UC01.
 
 ---
 
@@ -103,11 +103,11 @@
 - [x] **P4.5 – Concurrency & Transaction Design:** Phác thảo cách chống cấp trùng cho UC01. Trước UC04/UC05, **bắt buộc** chốt xử lý đồng thời trên cùng tài khoản, chống xử lý trùng và đối soát; bổ sung `04-design/concurrency-and-jobs.md`. **Lịch sử 18/10:** chưa có thuật toán cụ thể. **Cập nhật 19/10:** Bản thiết kế UC01 đã được chủ dự án duyệt M4 (T1–T7). Kiểm chứng migration/test thuộc P5.
 - [x] **P4.6 – Thiết kế module tiếp theo:** schema/API/Design Class/transaction toàn backend hiện có đã được duyệt 28/10. Rà tính đúng bằng test theo từng slice, không yêu cầu duyệt lại toàn bộ.
 
-**🚩 MỐC BẮT ĐẦU CODE (M4):** Khi **P4.1–P4.4 cho UC01** và xử lý tranh chấp cấp số ở P4.5 đủ rõ → **dừng thiết kế tổng thể quá mức, bắt đầu triển khai UC01**.
+**🚩 MỐC BẮT ĐẦU CODE (M4):** Bộ thiết kế và M4-DB đã được duyệt. Bắt đầu P5.1, sau đó ưu tiên UC04/UC05 theo CR-IMPL-001; không thiết kế lại toàn hệ thống hoặc yêu cầu duyệt lại để bắt đầu.
 
 ### Phase 5 – Implementation & Developer Testing ⬜
 
-**Mục tiêu:** Code theo từng chức năng, chạy được và có bằng chứng kiểm thử.
+**Mục tiêu:** Code theo từng chức năng, chạy được và có bằng chứng kiểm thử. **Thứ tự hiện hành CR-IMPL-001:** P5.1 → P5.5 UC04 → P5.6 UC05 và test tiền → P5.2 UC01 → P5.3 UC02 → P5.4/P5.8 → P5.7/P5.10 → P6/P7. Giữ mã đầu việc; checklist bên dưới không tự biểu thị thứ tự thực hiện.
 
 - [ ] **P5.1 – Khởi tạo backend:** Kiểm tra Maven import/build, Java 21, Spring Boot, MySQL theo CR-DB-001, cấu hình môi trường, Flyway và cấu trúc package. **Repo thực có pom.xml và Main in thông báo; pom vẫn dùng PG driver/Flyway/Testcontainers, chưa có backend nghiệp vụ/config/migration/Compose/test suite. Lịch sử thử build/ZIP không thay kiểm chứng mới; P5.1 chưa hoàn tất.**
 - [ ] **P5.2 – UC01 – Đấu nối thuê bao:** Entity, migration, Repository, Service, Controller, validation, API và test cấp số/đấu nối.
@@ -323,3 +323,12 @@ P1.8/P2.5/P2.6: báo cáo v1.1 dùng ảnh PNG tương đối, Activity Diagram/
 **Tiếp theo duy nhất: P5.1** — Java21/Maven, Spring Boot entrypoint/package, MySQL dependencies/Flyway/office/home/Compose; cần build, migration và healthcheck thực tế trước khi tick. Sau đó P5.2 UC01; không mở lại gate duyệt tài liệu đã chốt.
 
 **Dọn bổ sung 28/10:** Xóa ZIP lưu tạm và toàn bộ script/JSON kiểm tra tài liệu theo yêu cầu chủ dự án. Tài liệu không còn liên kết hoặc lệnh phụ thuộc các file đã xóa; tiếp theo vẫn P5.1.
+
+
+## Kế hoạch học ở công ty, tự code ở nhà — 28/10/2026
+
+**CR-IMPL-001 Approved, Chủ dự án xác nhận:** ưu tiên module cộng/trừ tiền theo mentor; công ty dành cho học, ở nhà thực hành. Hai kế hoạch: [học tại công ty](KE-HOACH-HOC-TAI-CONG-TY.md), [code tại nhà](KE-HOACH-CODE-TAI-NHA.md). Nền tảng/migrations/fixtures/auth → UC04/UC05 → test đồng thời/retry/recovery/đối soát → các UC còn lại → kiểm chứng đầy đủ requirement.
+
+Tài liệu mới có chủ đề học, bài thực hành, tiêu chí tự kiểm và liên kết AC/ngoại lệ/TPS. Chưa triển khai code/test/runtime; P5.1/M5–M8 không đổi sang hoàn thành. Thứ tự “UC01 trước” trong các nhật ký cũ đã được thay bằng CR-IMPL-001; giữ nguyên nghĩa checkpoint M5 UC01. **Việc thực hành đầu tiên: N01/P5.1**, học C01–C05 song song với mức cần dùng.
+
+**Làm rõ hai kế hoạch, bản2:** công ty đọc lại từng dòng/file/lệnh/lỗi từ tối trước và tra syntax từ số0; ở nhà theo các bước tạo file/code/lệnh/kết quả. Nền tảng tách N01A tools, N01B Compose/MySQL, N01C Spring/Ping, N01D backend image/container. Chưa thực hiện P5.1; đây là hướng dẫn tự làm.

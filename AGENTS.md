@@ -26,7 +26,7 @@ Trước **mọi nhiệm vụ có tác động đến dự án**, kiểm tra nh�
 
 Chủ dự án đã phê duyệt **toàn bộ bộ tài liệu hiện có**, gồm delta MySQL M4-DB, theo `docs/00-project/document-approval-20261028.md` / **CR-DOC-004** trong clarification log mục21. M0–M4 đã đạt ở mức hồ sơ; các phần bổ sung SRS/UC02–06/jobs/UML/kiến trúc/API/schema/transaction/config và kế hoạch test/guide đã chốt.
 
-- **Việc kế tiếp duy nhất: P5.1 — khởi tạo backend MySQL**, sau đó P5.2 code/test UC01 trước. Không yêu cầu duyệt lại tài liệu đã chốt.
+- **CR-IMPL-001 — 28/10/2026:** Công ty dành cho học/đọc Spring, Docker và thành phần liên quan; ở nhà tự code/chạy service. Sau **P5.1**, ưu tiên **P5.5 UC04 cộng tiền → P5.6 UC05 trừ tiền**, test/recovery/đối soát, rồi P5.2 UC01 và các UC còn lại. Hai kế hoạch tại `docs/KE-HOACH-HOC-TAI-CONG-TY.md` và `docs/KE-HOACH-CODE-TAI-NHA.md`. Không yêu cầu duyệt lại tài liệu đã chốt.
 - Java21/Spring Boot; MySQL8.0.46/InnoDB/READ COMMITTED; RabbitMQ/Redis/IdP ngoài backend theo kiến trúc. Office code/unit không DB; home chạy service. Không dùng starter PostgreSQL/Supabase cũ.
 - Repo còn pom PostgreSQL và Main mẫu; cần chuyển trong P5.1. Chưa có migration/runtime/test/tải được nghiệm thu. Chỉ tick P5.1/M5–M8 khi có bằng chứng đúng điều kiện.
 - Nhãn REVIEW/DRAFT và tên file có DRAFT trong bản ký duyệt là lịch sử trước phê duyệt. Quyết định bị thay hoặc NOT ADOPTED không được khôi phục; áp dụng CR-CAN-002/003 và CR-TIME-001/002 mới nhất.
@@ -41,11 +41,11 @@ Chủ dự án đã phê duyệt **toàn bộ bộ tài liệu hiện có**, g�
 | **2 — Analysis & UML** | P2.1 Use Case; P2.2 Domain Model; P2.3 State; P2.4 Sequence UC01; P2.5 khi cần; P2.6 đồng bộ SRS | **Domain Model nền của toàn hệ thống** + các luồng UC01 nhất quán (`M2`). Không bắt buộc vẽ mọi Sequence của mọi UC. |
 | **3 — Architecture** | Tài liệu kiến trúc; C4 Context/Container; module; ADR khi có quyết định thực | Chốt stack, ranh giới module, nguyên tắc transaction và tích hợp đủ để thiết kế UC01 (`M3`). |
 | **4 — Detailed Design** | ERD/schema nền; thiết kế DB cho UC01; OpenAPI UC01; Design Class; xử lý cạnh tranh cấp số | **P4.1–P4.4 cho UC01 và phương án P4.5 chống cấp số trùng đủ rõ** (`M4`) → được bắt đầu code UC01. |
-| **5 — Implementation & Developer Testing** | Khởi tạo backend; code/test **UC01 trước**, rồi UC02–UC06, hai job; đồng bộ tài liệu | Từng UC có API chạy được, migration và unit/integration test đạt; toàn bộ nghiệp vụ bắt buộc có bằng chứng (`M5/M6`). |
+| **5 — Implementation & Developer Testing** | Khởi tạo backend; ưu tiên **UC04/UC05 tiền trước** theo CR-IMPL-001, rồi UC01/UC02/UC03/UC06/jobs; đồng bộ tài liệu | Từng UC có API chạy được, migration và unit/integration test đạt; toàn bộ nghiệp vụ bắt buộc có bằng chứng (`M5/M6`). |
 | **6 — System, Concurrency & Performance Testing** | Sinh dữ liệu, phát tải, test race/retry, đối soát, báo cáo | Có kết quả đo và đối soát tái lập, nêu rõ đạt/chưa đạt từng tiêu chí (`M7`). |
 | **7 — Deployment & Handover** | Packaging, Docker Compose, migration/seed, logging, hướng dẫn chạy và bàn giao | Người khác triển khai và kiểm thử theo tài liệu được (`M8`). |
 
-**Chiến lược triển khai: theo từng Use Case/vertical slice, không theo kiểu vẽ/cài hết toàn hệ thống trước.** Sau M4 cho UC01, tiến hành code và test UC01; trước UC02, UC03... thì bổ sung SRS/UML/thiết kế riêng của UC đó theo yêu cầu. Không để các tài liệu chưa cần tới chặn không cần thiết.
+**Chiến lược triển khai: theo từng Use Case/vertical slice, không theo kiểu vẽ/cài hết toàn hệ thống trước.** Bộ thiết kế đã chốt cho phép bắt đầu nền tảng và UC04/UC05 tiền trước theo CR-IMPL-001; dùng fixtures đúng quan hệ để không phải hoàn tất API UC01/UC02 trước. Không bỏ điều kiện kỳ gói của debit. Các UC còn lại dùng thiết kế hiện hành và bổ sung delta nếu thực sự cần; M5 vẫn là nghiệm thu UC01. Không để các tài liệu chưa cần tới chặn không cần thiết.
 
 ## 4. Thứ tự công việc cụ thể cần bám
 

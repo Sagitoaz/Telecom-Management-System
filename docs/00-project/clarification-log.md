@@ -1,4 +1,4 @@
-> **Hiệu lực 28/10/2026: CR-DOC-004 — toàn bộ bộ tài liệu hiện hành đã được chủ dự án chốt, gồm M4-DB MySQL. Bước tiếp theo P5.1.** Các trạng thái trước đó bên dưới là lịch sử; phần kiểm chứng runtime còn phải thực hiện. [Biên bản chốt](document-approval-20261028.md).
+> **Hiệu lực 28/10/2026: CR-DOC-004 chốt hồ sơ; CR-IMPL-001 đổi thứ tự triển khai: P5.1 → UC04/UC05 module tiền → UC01 và các UC còn lại. Công ty học, ở nhà code/chạy service.** Các trạng thái trước đó bên dưới là lịch sử; phần kiểm chứng runtime còn phải thực hiện. [Biên bản chốt](document-approval-20261028.md).
 
 # Nhật ký làm rõ yêu cầu – Telecom Subscription Management System
 
@@ -534,3 +534,29 @@ Cho phép dọn công cụ/file tạm trong out/target; tài liệu chuẩn và 
 ### 21.1. Dọn bổ sung theo phản hồi chủ dự án — 28/10/2026
 
 Chủ dự án phản hồi còn ZIP và nhiều tool Python check sau lượt dọn. Agent xóa toàn bộ ZIP lưu tạm, bộ script/JSON kiểm tra tài liệu và manifest JSON phụ; gỡ liên kết và lệnh phụ thuộc chúng. Giữ phiếu/DEC/CR, đặc tả chuẩn, UML/hình và tóm tắt kiểm chứng trong Markdown. Không tạo bộ tool thay thế hoặc khôi phục archive. Phê duyệt CR-DOC-004 và bước P5.1 giữ nguyên; không thay nghiệp vụ/code/pom.
+
+
+<a id="cr-impl-001"></a>
+
+## 22. CR-IMPL-001 — Học ở công ty, code ở nhà; ưu tiên module tiền
+
+**Trạng thái: APPROVED về môi trường làm việc và thứ tự triển khai. Người xác nhận: Chủ dự án. Ngày: 28/10/2026.** Căn cứ: chủ dự án cho biết điều kiện công ty không cho phép triển khai, muốn tìm hiểu Spring/Docker/các thành phần ở công ty, tự code ở nhà; mentor giao tập trung module tính tiền/cộng-trừ trước và yêu cầu hai file kế hoạch.
+
+| Phạm vi | Quyết định / ảnh hưởng |
+|---|---|
+| Thứ tự cũ | P5.1 → P5.2 UC01 trước → các UC tiếp theo, theo CR-DOC-004 và roadmap trước cập nhật này |
+| Thứ tự mới | P5.1 nền tảng → P5.5 UC04 cộng tiền → P5.6 UC05 trừ tiền, test/recovery/đối soát module tiền → P5.2 UC01 → P5.3 UC02 → UC03/worker/JOB-01 → UC06/JOB-02 → P6/P7 |
+| Công ty | Học/đọc/phân tích và chuẩn bị bài thực hành; không yêu cầu cài hoặc chạy Docker/DB/service, không coi mock/unit là kết quả tích hợp |
+| Nhà | Tự code, dựng service, migration/fixtures, unit/integration/API/concurrency tests và đo tải |
+| Phụ thuộc module tiền | Fixtures phát triển/test tạo graph Customer/Subscriber/inventory/account; debit có package/root/cycle/fee hợp lệ theo schema. Không yêu cầu xong API UC01/UC02 trước, không bỏ điều kiện kỳ gói hoặc tạo public API bypass |
+| Giữ nguyên baseline | Không đổi FR/BR/AC, schema/API/transaction/security và các CR nghiệp vụ đã chốt; phí gói khác debit tiêu dùng; M5 vẫn nghiệm thu UC01, M6 toàn nghiệp vụ, M7 tải, M8 bàn giao |
+| Kế hoạch học/thực hành | [Tại công ty](../KE-HOACH-HOC-TAI-CONG-TY.md) và [tại nhà](../KE-HOACH-CODE-TAI-NHA.md). C01–C15/N01–N16, thời lượng và cách chia buổi là đề xuất của agent, có thể điều chỉnh theo tiến độ thực; không phải cam kết thời gian hay bằng chứng hoàn thành |
+| Tài liệu đồng bộ | AGENTS, roadmap, implementation plan và chỉ mục/README; bộ SRS/UML/API/schema giữ nội dung nghiệp vụ hiện hành, không vẽ lại chỉ vì đổi thứ tự |
+
+Lượt này chỉ lập hai kế hoạch và đồng bộ điều hành; không viết code, tạo migrations/Compose/test tools, chạy backend hoặc tự tick P5–P7. Không commit/push trong lượt lập kế hoạch này. Các ghi nhận “UC01 trước” trong nhật ký cũ là lịch sử trước CR-IMPL-001.
+
+### 22.1. Làm rõ cách dùng hai file — hướng dẫn từ số 0, 28/10/2026
+
+Chủ dự án làm rõ rằng chưa biết Docker/Docker Desktop/Spring; ở công ty cần tra cú pháp và đọc lại code/công cụ đã dùng tối trước, ở nhà cần chỉ rõ tạo file gì, viết gì, chạy lệnh nào, dựng Docker/Java/thành phần nào và kiểm kết quả thế nào. Đây là điều chỉnh cách hướng dẫn, không thay quyết định ưu tiên tiền hoặc nghiệp vụ.
+
+Hai file được viết lại bản2: file công ty là sổ tra theo file/lệnh/lỗi, giải thích khái niệm/cú pháp và vòng tối làm → sáng đọc; file nhà chia nền tảng N01A cài tools → N01B Compose/MySQL → N01C Spring/Ping → N01D JAR/image/backend container, rồi bản đồ file/method/test/lệnh cho N02–N16. Snippet trong Markdown là mẫu để người dùng tự thực hành, chưa có app/Compose/migrations được tạo hoặc chạy trong lượt biên soạn. Không tick tiến độ, không khôi phục tool Python/ZIP, không commit/push.

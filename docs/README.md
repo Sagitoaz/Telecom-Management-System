@@ -26,3 +26,7 @@ M0–M4 và delta MySQL **đã duyệt ngày 28/10/2026**. DB hiện hành **MyS
 [Đề bài gốc](requirement.md) giữ nguyên byte. Tài liệu thiết kế, kết quả kiểm tra tĩnh và kết quả runtime là ba loại bằng chứng khác nhau. Chưa có bằng chứng M5–M8.
 
 Các nhãn REVIEW/DRAFT trước 28/10 trong hình/tên file/nội dung lịch sử đã được đóng bằng CR-DOC-004; giữ nguyên nguồn–hình và phiếu để truy vết. Kế hoạch test và guide đã chốt ở mức tài liệu, chưa là bằng chứng đạt M5–M8.
+
+## Kế hoạch học và tự triển khai
+
+Theo CR-IMPL-001, ưu tiên module tiền trước; không thay yêu cầu/chỉ tiêu nghiệm thu. [Học tại công ty](KE-HOACH-HOC-TAI-CONG-TY.md) có C01–C15 và tài liệu chính thức; [code tại nhà](KE-HOACH-CODE-TAI-NHA.md) có N01–N16, ma trận ngoại lệ tiền và lộ trình hoàn thành toàn bộ requirement.
