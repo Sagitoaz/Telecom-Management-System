@@ -33,9 +33,6 @@
         <!-- CVE-2026-19880 and its incomplete-fix follow-up CVE-2026-104721.
              https://logback.qos.ch/news.html -->
         <logback.version>1.6.5</logback.version>
-        <!-- pgJDBC security release; covers the PostgreSQL warnings reported by Mend.
-             https://jdbc.postgresql.org/changelogs/2026-10-07-42.7.14-release/ -->
-        <postgresql.version>42.7.14</postgresql.version>
     </properties>
 
     <build>
@@ -54,14 +51,11 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
+                <!-- Đóng gói JAR có thể chạy bằng java -jar. -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.telecom.Main</mainClass>
-                        </manifest>
-                    </archive>
+                    <mainClass>com.telecom.TelecomManagementApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
@@ -91,12 +85,12 @@
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
+            <artifactId>flyway-mysql</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -127,7 +121,7 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers-postgresql</artifactId>
+            <artifactId>testcontainers-mysql</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

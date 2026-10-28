@@ -28,7 +28,7 @@ Chủ dự án đã phê duyệt **toàn bộ bộ tài liệu hiện có**, g�
 
 - **CR-IMPL-001 — 28/10/2026:** Công ty dành cho học/đọc Spring, Docker và thành phần liên quan; ở nhà tự code/chạy service. Sau **P5.1**, ưu tiên **P5.5 UC04 cộng tiền → P5.6 UC05 trừ tiền**, test/recovery/đối soát, rồi P5.2 UC01 và các UC còn lại. Hai kế hoạch tại `docs/KE-HOACH-HOC-TAI-CONG-TY.md` và `docs/KE-HOACH-CODE-TAI-NHA.md`. Không yêu cầu duyệt lại tài liệu đã chốt.
 - Java21/Spring Boot; MySQL8.0.46/InnoDB/READ COMMITTED; RabbitMQ/Redis/IdP ngoài backend theo kiến trúc. Office code/unit không DB; home chạy service. Không dùng starter PostgreSQL/Supabase cũ.
-- Repo còn pom PostgreSQL và Main mẫu; cần chuyển trong P5.1. Chưa có migration/runtime/test/tải được nghiệm thu. Chỉ tick P5.1/M5–M8 khi có bằng chứng đúng điều kiện.
+- P5.1 đã bắt đầu: pom chuyển sang MySQL/Flyway MySQL/Testcontainers MySQL; có Spring Boot entrypoint, application YAML, home YAML, .env.example và Compose chỉ MySQL. Chưa có schema nghiệp vụ, JWT, API tiền hoặc kiểm chứng DB/health thực tế; P5.1/M5–M8 vẫn mở. Xem docs/verification.md để biết bằng chứng mới nhất.
 - Nhãn REVIEW/DRAFT và tên file có DRAFT trong bản ký duyệt là lịch sử trước phê duyệt. Quyết định bị thay hoặc NOT ADOPTED không được khôi phục; áp dụng CR-CAN-002/003 và CR-TIME-001/002 mới nhất.
 - Phần OQ thiếu giá trị môi trường hoặc kiểm chứng thực tế tiếp tục theo P5–P7; không biến chúng thành vòng duyệt lại toàn bộ hồ sơ. Đọc `docs/ROADMAP.md` mỗi lượt để xác định trạng thái mới.
 

@@ -4,6 +4,10 @@
 
 **Ở nhà làm theo [file thực hành](KE-HOACH-CODE-TAI-NHA.md). Ở công ty mở lại thay đổi tối trước, rồi dùng file này để hiểu từng dòng.** Không phải học hết một giáo trình trước khi được code. Module cộng/trừ tiền vẫn được làm trước theo [CR-IMPL-001](00-project/clarification-log.md#cr-impl-001).
 
+## Bộ file thật đã tạo để mai đọc
+
+Không còn chỉ là ví dụ trong kế hoạch: đã có [.env.example](../.env.example), [compose.yaml](../compose.yaml), [application.yaml](../src/main/resources/application.yaml), [application-home.yaml](../src/main/resources/application-home.yaml), [Java main](../src/main/java/com/telecom/TelecomManagementApplication.java) và [pom đã sửa](../pom.xml). Mai đọc theo thứ tự đó và dùng C05 → C03 → C02 để tra từng dòng. Chưa có PingController/Dockerfile/API tiền; các phần ấy vẫn là bài thực hành tiếp theo.
+
 ## 1. Ngày đầu chưa có code tối trước thì làm gì?
 
 Chỉ đọc mục 2–3 để biết các thành phần là gì, sau đó đọc C01/C02/C05. Tối đầu làm **N01A**, tối sau làm **N01B** trong file ở nhà. Không phải cài/chạy gì trên máy công ty.

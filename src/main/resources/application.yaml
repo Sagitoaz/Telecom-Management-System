@@ -1,0 +1,14 @@
+# Cấu hình chung; profile home bổ sung kết nối DB trong file bên cạnh.
+spring:
+  application:
+    name: telecom-management
+
+server:
+  port: 8080
+
+# Mới dùng health để kiểm nền tảng; chưa có endpoint nghiệp vụ cộng/trừ tiền.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

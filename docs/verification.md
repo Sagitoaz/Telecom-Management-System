@@ -32,3 +32,16 @@ Theo CR-IMPL-001, bổ sung đúng hai file kế hoạch: [học tại công ty]
 Nguồn học chính thức Spring/Docker/MySQL/Maven/Flyway/JUnit/Testcontainers/RabbitMQ/k6 được mở để đối chiếu khi biên soạn; không đổi dependency theo version mới trên website. Lượt này chỉ kiểm tài liệu bằng lệnh dùng một lần trong terminal, không tạo bộ script/ZIP/JSON phụ. Không code, build, chạy DB/test/tải, commit hoặc push trong lượt lập kế hoạch.
 
 **Bản2 theo phản hồi:** viết lại file công ty thành hướng dẫn tra syntax/đọc code tối trước; file nhà có mẫu Compose/XML/Java/YAML/Dockerfile và lệnh cho N01A–D, bản đồ file/method/test cho phần tiền và các UC tiếp. Chỉ kiểm cấu trúc snippet/liên kết và bảo toàn baseline; chưa build/run các snippet hoặc xác nhận image pull/migration/API thành công.
+
+## P5.1 — Kiểm bộ file nền đầu tiên, 28/10/2026
+
+**Đã tạo:** .env.example, compose.yaml chỉ MySQL, application.yaml/application-home.yaml, Spring Boot entrypoint com.telecom.TelecomManagementApplication; thay Main mẫu và chuyển dependency PG sang MySQL/Flyway MySQL/Testcontainers MySQL. Boot Maven plugin đóng executable JAR. Các security overrides khác trong pom giữ nguyên. Không có logic nghiệp vụ mới/test mirror cho hàm main; chưa có test nghiệp vụ/DB.
+
+**Kiểm chứng thực tế:**
+
+- `mvn -o verify` lần đầu thất bại vì plugin Boot chưa có trong cache offline. Sau khi cho Maven tải dependency, `mvn verify` exit0 / BUILD SUCCESS; compile một nguồn bằng `release21`, đóng Boot JAR thành công. Môi trường thực là Maven3.9.14/JDK25.0.1; chưa chạy ứng dụng trên JDK21. Có cảnh báo deprecated Unsafe của Lombok trên JDK25, không phải build failure.
+- Kiểm JAR: Start-Class/Boot JarLauncher đúng; bytecode major65 (Java21), đủ hai application YAML, thư viện MySQL/Flyway MySQL; không còn PostgreSQL runtime hoặc class Main cũ. Chưa có Java test suite, không diễn giải verify thành đạt kiểm thử nghiệp vụ.
+- Parse XML/YAML đạt. Docker Compose CLI `config --quiet` với env mẫu có biến kiểm tra tạm exit0; khi mật khẩu trống exit1 đúng yêu cầu. Các giá trị dùng kiểm chỉ trong environment của subprocess, không lưu .env/secret thật, không chạy container.
+- Máy **có Docker Desktop/CLI29.8.2**, context desktop-linux. `docker version` cả trong và ngoài sandbox chưa nối được pipe dockerDesktopLinuxEngine tại lúc kiểm. Đây là Engine chưa truy cập được, không phải kết luận máy thiếu Docker Desktop. Chưa xác minh pull tag/MySQL/Flyway migration/home boot/HTTP health/JWT.
+
+P5.1 vẫn đang làm; M5–M8 chưa đạt. File hướng dẫn đã bổ sung đường dẫn/thứ tự đọc bộ nền có thật; PingController/Dockerfile/migration/API tiền vẫn là các bước tiếp theo, chưa được tạo trong lượt này. Không commit/push/đổi branch/deploy hoặc tạo lại tool Python/ZIP trong repository.

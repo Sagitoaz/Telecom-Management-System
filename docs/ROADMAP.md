@@ -29,7 +29,7 @@
 | **2 – Analysis & UML** | Use Case, Domain Class, State, Sequence | ✅ Domain/Use Case/Activity/State/Sequence hiện hành đã chốt 28/10 | M2 – Mô hình nghiệp vụ ban đầu |
 | **3 – Architecture** | C4, module, quyết định kiến trúc | ✅ Kiến trúc/module/security/runtime và ADR hiện hành đã chốt 28/10 | M3 – Kiến trúc nền được chọn |
 | **4 – Detailed Design** | ERD, schema, Design Class, API, transaction | ✅ Bộ hiện hành và M4-DB được chủ dự án duyệt 28/10 | Đủ đầu vào coding |
-| **5 – Implementation** | Backend MySQL, nghiệp vụ và test từng UC | ⬜ P5.1 sẵn sàng bắt đầu; chưa hoàn tất khởi tạo | M5 – UC01; M6 – đủ nghiệp vụ |
+| **5 – Implementation** | Backend MySQL, nghiệp vụ và test từng UC | 🟡 P5.1 có bộ nền/build; chưa kiểm DB/health, chưa hoàn tất | M5 – UC01; M6 – đủ nghiệp vụ |
 | **6 – System & Performance Testing** | Dữ liệu lớn, đồng thời, đo TPS, đối soát | 🟡 Kế hoạch đã chốt, chưa đo | M7 – Bằng chứng đáp ứng đề bài |
 | **7 – Deployment & Handover** | Đóng gói, triển khai, vận hành | 🟡 Guide đã chốt, chưa chạy | M8 – Có thể chạy và bàn giao |
 
@@ -109,7 +109,7 @@
 
 **Mục tiêu:** Code theo từng chức năng, chạy được và có bằng chứng kiểm thử. **Thứ tự hiện hành CR-IMPL-001:** P5.1 → P5.5 UC04 → P5.6 UC05 và test tiền → P5.2 UC01 → P5.3 UC02 → P5.4/P5.8 → P5.7/P5.10 → P6/P7. Giữ mã đầu việc; checklist bên dưới không tự biểu thị thứ tự thực hiện.
 
-- [ ] **P5.1 – Khởi tạo backend:** Kiểm tra Maven import/build, Java 21, Spring Boot, MySQL theo CR-DB-001, cấu hình môi trường, Flyway và cấu trúc package. **Repo thực có pom.xml và Main in thông báo; pom vẫn dùng PG driver/Flyway/Testcontainers, chưa có backend nghiệp vụ/config/migration/Compose/test suite. Lịch sử thử build/ZIP không thay kiểm chứng mới; P5.1 chưa hoàn tất.**
+- [ ] **P5.1 – Khởi tạo backend:** Kiểm tra Maven import/build, Java 21, Spring Boot, MySQL theo CR-DB-001, cấu hình môi trường, Flyway và cấu trúc package. **Cập nhật 28/10: đã chuyển pom sang MySQL, có Boot entrypoint, 2 application YAML, .env.example và Compose chỉ MySQL; Maven verify build JAR thành công. Chưa có migration/JWT/API tiền và DB/healthcheck runtime; P5.1 chưa hoàn tất.**
 - [ ] **P5.2 – UC01 – Đấu nối thuê bao:** Entity, migration, Repository, Service, Controller, validation, API và test cấp số/đấu nối.
 - [ ] **P5.3 – UC02 – Đăng ký gói cước:** Thiết kế bổ sung → code → Unit/Integration Test.
 - [ ] **P5.4 – UC03 – Hủy gói cước:** Xử lý yêu cầu hủy vào cuối chu kỳ → test trạng thái và thời gian.
@@ -332,3 +332,7 @@ P1.8/P2.5/P2.6: báo cáo v1.1 dùng ảnh PNG tương đối, Activity Diagram/
 Tài liệu mới có chủ đề học, bài thực hành, tiêu chí tự kiểm và liên kết AC/ngoại lệ/TPS. Chưa triển khai code/test/runtime; P5.1/M5–M8 không đổi sang hoàn thành. Thứ tự “UC01 trước” trong các nhật ký cũ đã được thay bằng CR-IMPL-001; giữ nguyên nghĩa checkpoint M5 UC01. **Việc thực hành đầu tiên: N01/P5.1**, học C01–C05 song song với mức cần dùng.
 
 **Làm rõ hai kế hoạch, bản2:** công ty đọc lại từng dòng/file/lệnh/lỗi từ tối trước và tra syntax từ số0; ở nhà theo các bước tạo file/code/lệnh/kết quả. Nền tảng tách N01A tools, N01B Compose/MySQL, N01C Spring/Ping, N01D backend image/container. Chưa thực hiện P5.1; đây là hướng dẫn tự làm.
+
+## P5.1 — Bộ file nền đầu tiên cho việc học, 28/10/2026
+
+Theo yêu cầu tạo vài file đơn giản để ngày mai đọc ở công ty, thêm .env.example/Compose MySQL, application YAML/home YAML, Boot main và cập nhật pom MySQL/Boot packaging; thay Main mẫu. Chưa mở rộng UC/API/DB schema. Build và giới hạn môi trường ghi tại verification; không tick P5.1 chỉ vì đã có file. **Tiếp theo duy nhất:** điền env local và xác minh MySQL/home boot/health thực tế trước bước schema tiền.

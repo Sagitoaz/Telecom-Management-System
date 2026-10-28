@@ -560,3 +560,7 @@ Lượt này chỉ lập hai kế hoạch và đồng bộ điều hành; không
 Chủ dự án làm rõ rằng chưa biết Docker/Docker Desktop/Spring; ở công ty cần tra cú pháp và đọc lại code/công cụ đã dùng tối trước, ở nhà cần chỉ rõ tạo file gì, viết gì, chạy lệnh nào, dựng Docker/Java/thành phần nào và kiểm kết quả thế nào. Đây là điều chỉnh cách hướng dẫn, không thay quyết định ưu tiên tiền hoặc nghiệp vụ.
 
 Hai file được viết lại bản2: file công ty là sổ tra theo file/lệnh/lỗi, giải thích khái niệm/cú pháp và vòng tối làm → sáng đọc; file nhà chia nền tảng N01A cài tools → N01B Compose/MySQL → N01C Spring/Ping → N01D JAR/image/backend container, rồi bản đồ file/method/test/lệnh cho N02–N16. Snippet trong Markdown là mẫu để người dùng tự thực hành, chưa có app/Compose/migrations được tạo hoặc chạy trong lượt biên soạn. Không tick tiến độ, không khôi phục tool Python/ZIP, không commit/push.
+
+### 22.2. Bắt đầu P5.1 bằng vài file nền để học — 28/10/2026
+
+Chủ dự án yêu cầu agent tạo trực tiếp một vài file base (YAML/env/Java đơn giản) để ngày mai đọc cấu trúc/cú pháp. Trong phạm vi đã giao, tạo .env.example, Compose chỉ MySQL, application YAML/home YAML và Boot entrypoint; đồng bộ pom từ PG sang MySQL/Boot plugin. Không có thay đổi nghiệp vụ, không thêm API tiền/ping/JWT/migration/Dockerfile; không tạo secret hoặc chạy container trong lượt này. M4-DB/CR-IMPL-001 giữ nguyên; P5.1 vẫn mở tới khi đủ kiểm chứng. Không commit/push nếu chưa được yêu cầu cho lượt thay đổi này.

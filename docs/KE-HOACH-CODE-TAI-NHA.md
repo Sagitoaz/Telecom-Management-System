@@ -6,6 +6,10 @@
 
 Đọc kèm [kế hoạch học tại công ty](KE-HOACH-HOC-TAI-CONG-TY.md). Không chờ hoàn tất UC01 hoặc API đăng ký gói mới được làm tiền: dùng fixtures phát triển/test có đủ quan hệ hợp lệ. **Không bỏ điều kiện kỳ gói của debit để làm shortcut.** M5 vẫn là nghiệm thu UC01; hoàn thành tiền trước không tự tick M5/M6/M7.
 
+## Cập nhật bộ nền đã được tạo thật
+
+Đã có .env.example, compose.yaml chỉ MySQL, application.yaml/application-home.yaml, Java main Spring Boot và pom MySQL/Boot plugin; Main in thông báo cũ đã được thay. Khi làm N01B/N01C, **mở và đọc file hiện có trước**, không chép mẫu ghi đè thay đổi mới. Mật khẩu .env phải tự điền local; chưa tạo .env thật. Chưa có PingController, Dockerfile, migration hoặc JWT; các phần hướng dẫn tương ứng vẫn chưa được làm. Trạng thái lúc viết bản2 ở bên dưới giữ ngữ cảnh của kế hoạch; tình trạng thực hiện mới xem cập nhật này và verification.
+
 ## 1. Đọc phần này trước khi làm
 
 Bạn không cần hiểu toàn bộ framework trước. Làm một buổi nhỏ, giữ file/lệnh/log đã dùng, sáng hôm sau mở [file ở công ty](KE-HOACH-HOC-TAI-CONG-TY.md) đọc lại từng dòng. Không hiểu chỗ nào thì ghi đúng từ/annotation/property đó, không chỉ ghi “chưa hiểu Spring”.

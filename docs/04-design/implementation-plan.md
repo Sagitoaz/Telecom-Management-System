@@ -11,7 +11,7 @@
 5. Cấu hình JWT resource server từ IdP ngoài backend, issuer/audience/caller/scope/evidence; cung cấp thông số thực khi chạy API. Backend không phát JWT nội bộ.
 6. Chạy Maven verify, boot/healthcheck và kiểm Flyway/MySQL thật; lưu lệnh, môi trường, output và giới hạn tại verification. Chỉ tick P5.1 khi đủ bằng chứng; thiếu Docker/DB thì ghi phần chưa chạy.
 
-Lượt chốt/dọn này chưa sửa pom/Java, chưa chạy migration hoặc bắt đầu UC01.
+Cập nhật P5.1 28/10: pom MySQL/Boot plugin, Boot main, application YAML/home YAML, .env.example và Compose chỉ MySQL đã tạo; chưa có migration/JWT/API tiền hoặc kiểm chứng MySQL/health runtime. Chưa hoàn tất P5.1.
 
 ## Các slice sau P5.1
 

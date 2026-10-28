@@ -1,0 +1,19 @@
+# Bật bằng SPRING_PROFILES_ACTIVE=home hoặc --spring.profiles.active=home.
+spring:
+  datasource:
+    # Giá trị sau dấu : là URL mặc định khi không cấp DB_JDBC_URL.
+    url: ${DB_JDBC_URL:jdbc:mysql://localhost:3306/telecom_dev?connectionTimeZone=UTC}
+    username: ${DB_USERNAME:telecom}
+    # Không có mật khẩu mặc định: phải cấp bằng biến môi trường khi chạy Java.
+    password: ${DB_PASSWORD}
+    hikari:
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      connection-init-sql: SET time_zone = '+00:00'
+  flyway:
+    # Chưa có migration nghiệp vụ; sẽ bổ sung ở bước dựng schema cho module tiền.
+    enabled: true
+  jpa:
+    hibernate:
+      # Flyway quản lý schema; Hibernate chỉ kiểm, không tự tạo/sửa bảng.
+      ddl-auto: validate
+    open-in-view: false

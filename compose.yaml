@@ -1,0 +1,29 @@
+# Compose hiện chỉ chạy MySQL. Backend Java chạy từ IDE/terminal ở bước đầu.
+services:
+  mysql:
+    # Giữ đúng phiên bản DB trong thiết kế; không dùng tag latest.
+    image: mysql:8.0.46
+    environment:
+      MYSQL_DATABASE: telecom_dev
+      MYSQL_USER: ${DB_USERNAME:?Dien DB_USERNAME trong .env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Dien DB_PASSWORD trong .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Dien MYSQL_ROOT_PASSWORD trong .env}
+    command:
+      - --transaction-isolation=READ-COMMITTED
+      - --default-time-zone=+00:00
+    # Bên trái là máy nhà; bên phải là cổng bên trong container.
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # Ping kiểm DB có phản hồi; cần kiểm đăng nhập/schema riêng sau khi chạy.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
+# Volume giữ dữ liệu khi container dừng hoặc được tạo lại.
+volumes:
+  mysql_data:
