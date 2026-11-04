@@ -11,9 +11,12 @@ services:
     command:
       - --transaction-isolation=READ-COMMITTED
       - --default-time-zone=+00:00
+      - --default-storage-engine=InnoDB
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
     # Bên trái là máy nhà; bên phải là cổng bên trong container.
     ports:
-      - "127.0.0.1:3306:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     # Ping kiểm DB có phản hồi; cần kiểm đăng nhập/schema riêng sau khi chạy.
