@@ -6,13 +6,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "customer")
 public class Customer {
     @Id
     @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "full_name", length = 200, nullable = false)
     private String fullName;

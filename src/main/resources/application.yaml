@@ -4,6 +4,11 @@ spring:
     name: telecom-management
   config:
     import: "optional:file:./.env[.properties]"
+  jpa:
+    properties:
+      hibernate:
+        type:
+          preferred_uuid_jdbc_type: CHAR
 
 server:
   port: 8080
@@ -14,3 +19,9 @@ management:
     web:
       exposure:
         include: health
+
+# Cấu hình cho app
+telecom:
+  money:
+    max-balance: 100000000
+    max-credit-amount: 10000000

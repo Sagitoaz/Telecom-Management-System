@@ -5,13 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "service_package")
 public class ServicePackage {
     @Id
     @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "code", length = 64, nullable = false)
     private String code;

@@ -10,13 +10,14 @@ import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 @Entity
 @Table(name = "operation_request")
 public class OperationRequest {
     @Id
     @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "caller_id", length = 128, nullable = false)
     private String callerId;

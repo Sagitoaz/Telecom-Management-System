@@ -5,16 +5,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "subscription_cycle")
 public class SubscriptionCycle {
     @Id
     @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "subscription_id", length = 36, nullable = false)
-    private String subscriptionId;
+    private UUID subscriptionId;
 
     @Column(name = "cycle_key", length = 128, nullable = false)
     private String cycleKey;

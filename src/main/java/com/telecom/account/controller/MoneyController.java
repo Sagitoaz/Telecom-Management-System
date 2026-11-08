@@ -6,6 +6,8 @@ import com.telecom.operations.dto.OperationResult;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/accounts")
 public class MoneyController {
@@ -18,7 +20,7 @@ public class MoneyController {
 
     @PostMapping("/{accountId}/credits")
     public OperationResult creditMoney(
-            @PathVariable String accountId,
+            @PathVariable UUID accountId,
             @Valid @RequestBody CreditRequest request
             ) {
         return moneyService.creditMoney(accountId, request);

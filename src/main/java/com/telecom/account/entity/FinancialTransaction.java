@@ -6,28 +6,29 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "financial_transaction")
 public class FinancialTransaction {
     @Id
     @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "operation_request_id", length = 36)
-    private String operationRequestId;
+    private UUID operationRequestId;
 
     @Column(name = "account_id", length = 36, nullable = false)
-    private String accountId;
+    private UUID accountId;
 
     @Column(name = "subscriber_id", length = 36, nullable = false)
-    private String subcriberId;
+    private UUID subcriberId;
 
     @Column(name = "subscription_id", length = 36)
-    private String subscriptionId;
+    private UUID subscriptionId;
 
     @Column(name = "subscription_cycle_id", length = 36)
-    private String subscriptionCycleId;
+    private UUID subscriptionCycleId;
 
     @Column(name = "source_type", length = 24, nullable = false)
     private String sourceType;

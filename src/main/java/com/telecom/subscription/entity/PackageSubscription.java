@@ -5,19 +5,20 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "package_subscription")
 public class PackageSubscription {
     @Id
     @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    private UUID id;
 
     @Column(name = "subscriber_id", length = 36, nullable = false)
-    private String subscriberId;
+    private UUID subscriberId;
 
     @Column(name = "package_id", length = 36, nullable = false)
-    private String packageId;
+    private UUID packageId;
 
     @Column(name = "version", nullable = false)
     private long version;
