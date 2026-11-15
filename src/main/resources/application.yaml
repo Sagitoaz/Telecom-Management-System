@@ -9,6 +9,13 @@ spring:
       hibernate:
         type:
           preferred_uuid_jdbc_type: CHAR
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI}
+          audiences:
+            - ${JWT_AUDIENCE:telecom-api}
 
 server:
   port: 8080
