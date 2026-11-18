@@ -11,7 +11,7 @@ spring:
           preferred_uuid_jdbc_type: CHAR
   security:
     oauth2:
-      resourceserver:
+      resource-server:
         jwt:
           issuer-uri: ${JWT_ISSUER_URI}
           audiences:

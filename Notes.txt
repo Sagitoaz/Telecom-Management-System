@@ -1,0 +1,4 @@
+- Transaction + sql dùng preparedStatement để kiểm soát
+- Transaction xử lí dùng queue
+- Tìm cách kiểm soát các tham số về multithread của spring
+- Dùng spring để kiểm soát request response thôi, còn các phần pipeline ở dưới xử lí nguyên thủy

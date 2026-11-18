@@ -1,7 +1,6 @@
-package com.telecom.service;
+package com.telecom.account.service;
 
 import com.telecom.account.config.MoneyLimit;
-import com.telecom.account.service.MoneyCore;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

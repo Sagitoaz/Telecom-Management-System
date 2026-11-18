@@ -21,7 +21,7 @@ public interface ServiceAccountRepository extends JpaRepository<ServiceAccount, 
     @Modifying
     @NativeQuery("""
     UPDATE service_account
-        SET balanceVND = :newBalance.
+        SET balance_vnd = :newBalance,
             version = version + 1
         WHERE id = :accountId
             AND version = :version
