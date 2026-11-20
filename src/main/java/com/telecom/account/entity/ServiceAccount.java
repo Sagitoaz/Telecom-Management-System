@@ -17,6 +17,7 @@ public class ServiceAccount {
     @Column(name = "id", length = 36, nullable = false)
     private UUID id;
 
+    @Getter
     @Column(name = "subscriber_id", length = 36, nullable = false)
     private UUID subscriberId;
 
@@ -30,6 +31,7 @@ public class ServiceAccount {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Getter
     @Column(name = "status", length = 16, nullable = false)
     private String status;
 
@@ -42,4 +44,14 @@ public class ServiceAccount {
 
     protected ServiceAccount() {}
 
+    public ServiceAccount(UUID id, UUID subscriberId, String accountType, long balanceVnd, LocalDateTime expiresAt, String status, long version, LocalDateTime createdAt) {
+        this.id = id;
+        this.subscriberId = subscriberId;
+        this.accountType = accountType;
+        this.balanceVnd = balanceVnd;
+        this.expiresAt = expiresAt;
+        this.status = status;
+        this.version = version;
+        this.createdAt = createdAt;
+    }
 }

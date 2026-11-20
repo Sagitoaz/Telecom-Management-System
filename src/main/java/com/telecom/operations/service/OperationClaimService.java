@@ -1,17 +1,15 @@
 package com.telecom.operations.service;
 
 import com.telecom.operations.dto.OperationResult;
-import com.telecom.operations.entity.OperationRequest;
 import com.telecom.operations.exception.IdempotencyConflictException;
-import com.telecom.operations.model.Claim;
-import com.telecom.operations.model.ClaimOutcome;
-import com.telecom.operations.model.OperationStatus;
-import com.telecom.operations.model.RequestKey;
-import com.telecom.operations.repository.OperationRequestRepository;
+import com.telecom.operations.model.*;
+import com.telecom.operations.repository.OperationRequestDAO;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
@@ -19,18 +17,21 @@ import java.util.UUID;
 @Service
 public class OperationClaimService {
 
-    private final OperationRequestRepository operationRepo;
+    private final OperationRequestDAO operationDAO;
     private final OperationClaimWriter writer;
     private final ObjectMapper mapper;
+    private final DataSource dataSource;
 
     public OperationClaimService(
-            OperationRequestRepository operationRepo,
+            OperationRequestDAO operationDAO,
             OperationClaimWriter writer,
-            ObjectMapper mapper
+            ObjectMapper mapper,
+            DataSource dataSource
     ) {
-        this.operationRepo = operationRepo;
+        this.operationDAO = operationDAO;
         this.writer = writer;
         this.mapper = mapper;
+        this.dataSource = dataSource;
     }
 
     public Claim claim(RequestKey key, Map<String, Object> payload) {
@@ -41,39 +42,38 @@ public class OperationClaimService {
             UUID operationId = writer.insertProcessing(key, fingerprint, payload);
 
             return new Claim(operationId, ClaimOutcome.NEW, null);
-        } catch (DataIntegrityViolationException e) {
-            if (!isMySqlDuplicateKey(e)) {
-                throw e;
+        } catch (SQLException e) {
+
+            // Check duplicate key
+            if (!(e.getErrorCode() == 1062)) {
+                throw new IllegalStateException("Claim SQL failed", e);
             }
 
-            OperationRequest existing = operationRepo.findByKey(key).orElseThrow(() -> e);
+            try (Connection connection = dataSource.getConnection()) {
 
-            if (!fingerprint.equalsIgnoreCase(existing.getFingerprint())) {
-                throw new IdempotencyConflictException("IDEMPOTENCY_CONFLICT");
-            }
+                OperationClaimData existing = operationDAO.findByKey(connection, key);
 
-            OperationStatus status = OperationStatus.valueOf(existing.getStatus());
-
-            return switch (status) {
-                case PROCESSING -> new Claim(existing.getId(), ClaimOutcome.PROCESSING, null);
-                case SUCCEEDED, FAILED -> {
-                    OperationResult result = mapper.treeToValue(existing.getResponsePayload(), OperationResult.class);
-                    yield new Claim(existing.getId(), ClaimOutcome.REPLAY, result);
+                if (existing == null) {
+                    throw new IllegalArgumentException("Duplicate key doesn't match request key");
                 }
-            };
-        }
-    }
 
-    private boolean isMySqlDuplicateKey(DataIntegrityViolationException e) {
-        Throwable cause = e;
-        while (cause != null) {
-            if (cause instanceof SQLException sql) {
-                if (sql.getErrorCode() == 1062) {
-                    return true;
+                if (!fingerprint.equalsIgnoreCase(existing.fingerprint())) {
+                    throw new IdempotencyConflictException("IDEMPOTENCY_CONFLICT");
                 }
+
+                OperationStatus status = existing.status();
+
+                return switch (status) {
+                    case PROCESSING -> new Claim(existing.id(), ClaimOutcome.PROCESSING, null);
+                    case SUCCEEDED, FAILED -> {
+                        OperationResult result = mapper.treeToValue(existing.reponsePayload(), OperationResult.class);
+                        yield new Claim(existing.id(), ClaimOutcome.REPLAY, result);
+                    }
+                };
+
+            } catch (SQLException lookupError) {
+                throw new IllegalArgumentException("Cannot read operation", lookupError);
             }
-            cause = cause.getCause();
         }
-        return false;
     }
 }

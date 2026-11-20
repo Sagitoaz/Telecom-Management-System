@@ -2,63 +2,83 @@ package com.telecom.operations.service;
 
 import com.telecom.operations.entity.OperationRequest;
 import com.telecom.operations.model.RequestKey;
-import com.telecom.operations.repository.OperationRequestRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.telecom.operations.repository.OperationRequestDAO;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class OperationClaimWriter {
-    private final OperationRequestRepository operationRepo;
-    private final JdbcTemplate jdbcTemplate;
+    private final OperationRequestDAO operationDAO;
+    private final DataSource dataSource;
 
-    public OperationClaimWriter(OperationRequestRepository operationRepo, JdbcTemplate jdbcTemplate) {
-        this.operationRepo = operationRepo;
-        this.jdbcTemplate = jdbcTemplate;
+    public OperationClaimWriter(OperationRequestDAO operationDAO, DataSource dataSource) {
+        this.operationDAO = operationDAO;
+        this.dataSource = dataSource;
     }
 
-    @Transactional
     public UUID insertProcessing(
             RequestKey key,
             String fingerprint,
             Map<String, Object> payload
-    ) {
-        LocalDateTime receivedAt = jdbcTemplate.queryForObject(
-                "SELECT UTC_TIMESTAMP(6)",
-                LocalDateTime.class
-        );
-        if (receivedAt == null) {
-            throw new IllegalStateException("Could not read database time");
+    ) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+
+            connection.setAutoCommit(false);
+
+            try {
+                LocalDateTime receivedAt = getDBTime(connection);
+
+                OperationRequest op = OperationRequest.newRequest(
+                        key.callerId(),
+                        key.requestId(),
+                        key.operation(),
+                        fingerprint,
+                        payload,
+                        receivedAt
+                );
+                int rows = operationDAO.insertProcessing(connection, op);
+
+                if (rows != 1) {
+                    throw new IllegalStateException("Insert to operation request fail");
+                }
+
+                connection.commit();
+
+                return op.getId();
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                throw e;
+            }
         }
+    }
 
-        OperationRequest op = OperationRequest.newRequest(
-                key.callerId(),
-                key.requestId(),
-                key.operation(),
-                fingerprint,
-                payload,
-                receivedAt
-        );
+    private LocalDateTime getDBTime(Connection connection) throws SQLException {
+        LocalDateTime receivedAt;
+        String sql = "SELECT UTC_TIMESTAMP(6)";
 
-        int rows = operationRepo.insertProcessing(
-                op.getId(),
-                op.getCallerId(),
-                op.getRequestId(),
-                op.getOperation(),
-                op.getFingerprint(),
-                CanonicalPayload.canonicalize(op.getCanonicalPayload()),
-                op.getStatus(),
-                op.getReceivedAt()
-        );
+        try (
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();
+        ) {
+            if (!rs.next()) {
+                throw new SQLException("Couldn't get database time");
+            }
 
-        if (rows != 1) {
-            throw new IllegalStateException("Insert to operation request fail");
+            receivedAt = rs.getObject(1, LocalDateTime.class);
+
+            return receivedAt;
         }
-
-        return op.getId();
     }
 }

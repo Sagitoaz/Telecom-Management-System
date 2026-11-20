@@ -1,52 +1,192 @@
 package com.telecom.account.service;
 
 import com.telecom.account.dto.CreditRequest;
+import com.telecom.account.dto.FinancialResult;
 import com.telecom.account.entity.ServiceAccount;
-import com.telecom.account.repository.ServiceAccountRepository;
+import com.telecom.account.model.TxnDirection;
+import com.telecom.account.model.TxnSourceType;
+import com.telecom.account.repository.FinancialTransactionDAO;
+import com.telecom.account.repository.ServiceAccountDAO;
 import com.telecom.operations.dto.OperationResult;
+import com.telecom.operations.model.*;
+import com.telecom.operations.repository.OperationRequestDAO;
+import com.telecom.operations.service.OperationClaimService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class MoneyService {
 
-    private final ServiceAccountRepository accountRepo;
+    private final ServiceAccountDAO accountDAO;
     private final MoneyCore moneyCore;
+    private final DataSource dataSource;
+    private final FinancialTransactionDAO financialTxnDAO;
+    private final OperationRequestDAO operationRequestDAO;
+    private final OperationClaimService operationClaimService;
 
-    public MoneyService(ServiceAccountRepository accountRepo, MoneyCore moneyCore) {
-        this.accountRepo = accountRepo;
+    public MoneyService(
+            ServiceAccountDAO accountDAO,
+            MoneyCore moneyCore,
+            DataSource dataSource,
+            FinancialTransactionDAO financialTxnDAO,
+            OperationRequestDAO operationRequestDAO,
+            OperationClaimService operationClaimService
+        ) {
+        this.accountDAO = accountDAO;
         this.moneyCore = moneyCore;
+        this.dataSource = dataSource;
+        this.financialTxnDAO = financialTxnDAO;
+        this.operationRequestDAO = operationRequestDAO;
+        this.operationClaimService = operationClaimService;
     }
 
-    @Transactional
-    public OperationResult creditMoney(UUID accountId, CreditRequest request, String callerId) {
-        Optional<ServiceAccount> optAcc = accountRepo.findByIdForUpdate(accountId);
-        ServiceAccount account;
+    public OperationResult creditMoney(
+            UUID accountId,
+            CreditRequest request,
+            String callerId
+    ) throws SQLException {
 
-        if (optAcc.isPresent()) {
-            account = optAcc.get();
-        } else {
-            throw new IllegalArgumentException("Account not found");
-        }
-
-        long oldBalance = account.getBalanceVnd();
-        long newBalance = moneyCore.calculateCredit(account.getBalanceVnd(), request.amountVnd());
-
-        int update = accountRepo.updateBalance(
-                account.getId(),
-                account.getVersion(),
-                newBalance
+        RequestKey key = new RequestKey(
+                callerId,
+                OperationName.CREDIT,
+                request.requestId()
         );
 
-        if (update != 1) {
-            throw new IllegalArgumentException("Update account balance failed");
+        Map<String, Object> payload = Map.of(
+                "accountId", accountId.toString(),
+                "subscriberId", request.subscriberId().toString(),
+                "amountVnd", request.amountVnd()
+        );
+
+        Claim claim = operationClaimService.claim(key, payload);
+
+        // Check request status
+        if (claim.outcome() == ClaimOutcome.REPLAY) {
+            return claim.existingResult();
+        }
+        if (claim.outcome() == ClaimOutcome.PROCESSING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Operation is still processing");
         }
 
+        try (Connection connection = dataSource.getConnection()) {
 
+            connection.setAutoCommit(false);
 
-        return null;
+            try {
+                OperationStatus operationStatus = operationRequestDAO.findStatusByIdForUpdate(connection, claim.operationRequestId());
+
+                if (operationStatus != OperationStatus.PROCESSING) {
+                    throw new IllegalStateException("Operation is not in PROCESSING status");
+                }
+
+                ServiceAccount account = accountDAO.findByIdForUpdate(connection, accountId);
+
+                // Check account
+                if (account == null) {
+                    throw new IllegalArgumentException("Account not found");
+                }
+                if (!account.getSubscriberId().equals(request.subscriberId())) {
+                    throw new IllegalArgumentException("Account does not belong to subscriber");
+                }
+                if (!account.getStatus().equals("ACTIVE")) {
+                    throw new IllegalArgumentException("Account is not active");
+                }
+
+                long oldBalance = account.getBalanceVnd();
+                long newBalance = moneyCore.calculateCredit(account.getBalanceVnd(), request.amountVnd());
+
+                int update = accountDAO.updateBalance(
+                        connection,
+                        account.getId(),
+                        account.getVersion(),
+                        newBalance
+                );
+
+                if (update != 1) {
+                    throw new IllegalArgumentException("Update account balance failed");
+                }
+
+                //Insert financial transaction
+                UUID txnId = UUID.randomUUID();
+
+                LocalDateTime eligibilityCheckedAt = LocalDateTime.now(ZoneOffset.UTC);
+
+                int insertedRows = financialTxnDAO.insertTransaction(
+                        connection,
+                        txnId,
+                        claim.operationRequestId(),
+                        account.getId(),
+                        account.getSubscriberId(),
+                        null,
+                        null,
+                        TxnSourceType.CREDIT_TOPUP.name(),
+                        TxnDirection.CREDIT.name(),
+                        request.amountVnd(),
+                        oldBalance,
+                        newBalance,
+                        eligibilityCheckedAt,
+                        "CREDIT:" + claim.operationRequestId()
+                );
+
+                if (insertedRows != 1) {
+                    throw new IllegalStateException("Insert financial transaction failed");
+                }
+
+                FinancialResult financialResult = new FinancialResult(
+                        txnId,
+                        account.getId(),
+                        request.amountVnd(),
+                        oldBalance,
+                        newBalance
+                );
+
+                OperationResult result = new OperationResult(
+                        request.requestId(),
+                        OperationName.CREDIT,
+                        claim.operationRequestId().toString(),
+                        OperationStatus.SUCCEEDED,
+                        "CREDIT_SUCCESS",
+                        "Credit completed successfully",
+                        OffsetDateTime.now(ZoneOffset.UTC),
+                        financialResult,
+                        null,   // subscription
+                        null,   // cancelAcceptedAt
+                        null,   // cancelEffectedAt
+                        null    // receiptCheckedAt
+                );
+
+                int completedRows = operationRequestDAO.completeOperation(
+                        connection,
+                        claim.operationRequestId(),
+                        result
+                );
+
+                if (completedRows != 1) {
+                    throw new IllegalStateException("Complete operation failed");
+                }
+
+                connection.commit();
+
+                return result;
+
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                throw e;
+            }
+        }
     }
 }
