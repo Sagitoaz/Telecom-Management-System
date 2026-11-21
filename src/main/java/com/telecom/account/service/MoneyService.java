@@ -93,17 +93,58 @@ public class MoneyService {
 
                 // Check account
                 if (account == null) {
-                    throw new IllegalArgumentException("Account not found");
+                    return failCredit(
+                            connection,
+                            request,
+                            claim.operationRequestId(),
+                            "ACCOUNT_NOT_FOUND",
+                            "Account not found"
+                    );
                 }
                 if (!account.getSubscriberId().equals(request.subscriberId())) {
-                    throw new IllegalArgumentException("Account does not belong to subscriber");
+                    return failCredit(
+                            connection,
+                            request,
+                            claim.operationRequestId(),
+                            "SUBSCRIBER_MISMATCH",
+                            "Account does not belong to subscriber"
+                    );
                 }
                 if (!account.getStatus().equals("ACTIVE")) {
-                    throw new IllegalArgumentException("Account is not active");
+                    return failCredit(
+                            connection,
+                            request,
+                            claim.operationRequestId(),
+                            "ACCOUNT_NOT_ACTIVE",
+                            "Account is not active"
+                    );
                 }
 
                 long oldBalance = account.getBalanceVnd();
-                long newBalance = moneyCore.calculateCredit(account.getBalanceVnd(), request.amountVnd());
+                long newBalance = 0;
+                try {
+                    newBalance = moneyCore.calculateCredit(oldBalance, request.amountVnd());
+                } catch (IllegalArgumentException e) {
+                    if (e.getMessage().equals("Invalid balance")) {
+                        throw e;
+                    }
+
+                    return failCredit(
+                            connection,
+                            request,
+                            claim.operationRequestId(),
+                            "CREDIT_REJECTED",
+                            e.getMessage()
+                    );
+                } catch (ArithmeticException e) {
+                    return failCredit(
+                            connection,
+                            request,
+                            claim.operationRequestId(),
+                            "BALANCE_LIMIT_EXCEEDED",
+                            "Balance limit exceeded"
+                    );
+                }
 
                 int update = accountDAO.updateBalance(
                         connection,
@@ -188,5 +229,44 @@ public class MoneyService {
                 throw e;
             }
         }
+    }
+
+    private OperationResult failCredit(
+            Connection connection,
+            CreditRequest request,
+            UUID operationId,
+            String code,
+            String message
+    ) throws SQLException {
+        OperationResult result = new OperationResult(
+                request.requestId(),
+                OperationName.CREDIT,
+                operationId.toString(),
+                OperationStatus.FAILED,
+                code,
+                message,
+                OffsetDateTime.now(ZoneOffset.UTC),
+                null, // financial
+                null, // subscription
+                null, // cancelAcceptedAt
+                null, // cancelEffectedAt
+                null  // receiptCheckedAt
+        );
+
+        int rows = operationRequestDAO.completeOperation(
+                connection,
+                operationId,
+                result
+        );
+
+        if (rows != 1) {
+            throw new IllegalStateException(
+                    "Complete failed operation failed"
+            );
+        }
+
+        connection.commit();
+
+        return result;
     }
 }
